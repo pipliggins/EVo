@@ -1,0 +1,11 @@
+# Graphical output selection
+
+Plt_melt_species: True
+Plt_gas_species_wt: False
+Plt_gas_species_mol: True
+
+# Pick none, any or all gas ratios to plot from: CO2:CO, CO2:H2O, CO2:SO2 or H2S:SO2
+Plt_gas_ratios: []
+
+Plt_gas_fraction: True
+Plt_fo2_dFMQ: False

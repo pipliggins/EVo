@@ -1,0 +1,49 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+    
+    
+        {
+            "name": "Python: Run_EVO_output",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/dgs.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "chem.yaml", // Input chem file
+                "env.yaml",
+                "--output",
+                "output.yaml",
+            ]
+        },
+        {
+            "name": "Python: Run_EVO_yaml",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/dgs.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "chem.yaml", // Input chem file
+                "env.yaml",
+            ]
+        },
+        {
+            "name": "Python: multirun",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/multirun.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "chem.yaml", // Input chem file
+                "env.yaml",
+            ]
+        }
+    ]
+}
