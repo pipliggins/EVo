@@ -13,12 +13,7 @@ syntax: glob
 __pycache__/
 
 .vscode/*
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 
 venv
 
 Output/dgs_output.csv
-
-.vscode/settings.json
