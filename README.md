@@ -17,7 +17,7 @@ EVo can be set up using either melt volatile contents, or for a set amount of at
 
 This programme requires Python 3 to run. 
 
-If you use python virtual enviroments, or Anaconda, requirements files (requirements.txt and environment.yml for virtualenv and conda, respectively) can be found in the Data file.
+If you use python virtual environments, or Anaconda, requirements files (requirements.txt and environment.yml for virtualenv and conda, respectively) can be found in the Data file.
 
 ## Running EVo
 
@@ -25,7 +25,7 @@ The model is set up using the env.yaml file. Open the file and edit the paramete
 
 Then inside a terminal (and inside the virtual environment if you use one):
 ```
-python3 dgs.py chem.yaml env.yaml --outputs output.yaml
+python3 dgs.py chem.yaml env.yaml --output output.yaml
 ```
 
 The model should run and produce an output file Outputs/dgs_output.csv, and a set of graphs in the Output folder, if a decompression run has been selected.

@@ -292,6 +292,11 @@ def find_Y(P, T, species_list):
 
             def y(P, T, species):
 
+                # only calibrated to 1 bar, they start increasing gamma again below 1 bar
+                # which should happen - gases become more ideal at low pressure. 
+                if P < 1.0:
+                    return 1
+                
                 Tr = T/cnst.PTcrit[species][0]
                 Pr = P/cnst.PTcrit[species][1]
 
@@ -313,8 +318,8 @@ def find_Y(P, T, species_list):
                 h2s_y = y(P, T, 'H2S')
             elif species == 'OCS':
                 ocs_y = y(P, T, 'OCS')
-            elif species == 'N2':
-                n2_y = y(P, T, 'N2')
+            # elif species == 'N2':
+            #     n2_y = y(P, T, 'N2')
         
     return h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y, ocs_y
 

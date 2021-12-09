@@ -120,8 +120,9 @@ def main(f_chem, f_env, f_out):
         writeout_file(sys, gas, melt, sys.P_track)
 
     elif run.SINGLE_STEP == False:
-        while np.round(sys.P, decimals=5) >= run.P_STOP:
-            sys.P = np.round(sys.P, decimals=5)
+        dp = int(abs(np.floor(np.log10(np.abs(run.P_STOP)))))+1 if run.P_STOP < 1e-4 else 5
+        while np.round(sys.P, decimals=dp) >= run.P_STOP:
+            sys.P = np.round(sys.P, decimals=dp)
             sys.P_track.append(sys.P)
             solver.decompress(run, sys, melt, gas, molecules)  # does one pressure step
             sys.pressure_step()
