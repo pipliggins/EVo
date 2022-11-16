@@ -8,12 +8,10 @@ syntax: glob
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
 
-*.png
-
 __pycache__/
 
 .vscode/*
 
 venv
 
-Output/dgs_output.csv
+evo/Output
