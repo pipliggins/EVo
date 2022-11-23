@@ -1,14 +1,12 @@
 # ------------------------------------------------------------------------
 # solvgas.py
 
-import init_cons as ic
-import constants as cnst
-import conversions as cnvs
 from scipy.optimize import newton
 from math import exp, log10
 
 # local imports
-from dgs_classes import *
+from evo.dgs_classes import *
+from evo import constants as cnst
 #
 # 
 # --- HOMOGENOUS REACTIONS via solvgas ---

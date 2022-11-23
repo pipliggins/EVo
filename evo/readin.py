@@ -10,13 +10,12 @@ from numpy import log as ln
 from numpy import exp, log10
 import yaml
 
-# bundled scripts
-from dgs_classes import *
-import conversions as cnvs
-import solvgas as sg
-import messages as mess
-import sat_pressure as sat
-import fixed_weights as fw
+from evo import conversions as cnvs
+from evo.dgs_classes import *
+from evo import fixed_weights as fw
+from evo import messages as mess
+from evo import sat_pressure as sat
+from evo import solvgas as sg
 
 #------------------------------------------------------------------------
 # FUNCTION DEFINTIONS

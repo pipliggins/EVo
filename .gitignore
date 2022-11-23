@@ -14,4 +14,4 @@ __pycache__/
 
 venv
 
-evo/Output
+evo/Output/*

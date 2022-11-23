@@ -6,16 +6,15 @@ Sets WgT to 1e-6 wt% and solves to find the speciation of both the gas phase and
 the speciation within the melt.
 """
 
-from scipy.optimize import fsolve, root
 import numpy as np
+from scipy.optimize import fsolve, root
 import warnings
-import re
 
-import messages as msgs
-import constants as cnst
-import conversions as cnvs
-import solubility_laws as sl
-import solvgas as sg
+from evo import constants as cnst
+from evo import conversions as cnvs
+from evo import messages as msgs
+from evo import solubility_laws as sl
+from evo import solvgas as sg
 
 def get_molfrac(P, fugacities, gamma):
     "Converts fugacities into mol fractions using pressure and fugacity coefficients."

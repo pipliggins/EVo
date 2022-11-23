@@ -1,6 +1,6 @@
 # ferric.py
 # 
-# methods for calcualting ferric and ferrous iron from melt composition and fO2
+# methods for calculating ferric and ferrous iron from melt composition and fO2
 # do one or the other, assumes only one has been specified
 # plus methods for calculating the iron fraction during decompression steps, for use in fe_equilibrate
 

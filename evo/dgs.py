@@ -55,17 +55,13 @@ solve homogenoud and heterogeneous equilibria simultaneously at each step
 # IMPORTS
 #------------------------------------------------------------------------
 
-# python main [ ensure these are on your system ]
-import os.path
-import sys
 import argparse
 import time
 
-# bundled scripts
-from readin import *
-from dgs_classes import *
-from writeout import *
-import solver
+from evo.dgs_classes import *
+from evo.readin import *
+from evo import solver
+from evo.writeout import *
 
 #------------------------------------------------------------------------
 # MAIN

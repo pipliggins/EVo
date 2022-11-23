@@ -1,18 +1,21 @@
 """Writes the results of the run to a file and contains options to produce a graph of the results."""
-import conversions as cnvt
-import constants as cnst
-import numpy as np
-import matplotlib.pyplot as plt
-import os
 import glob
-import sat_pressure as sat
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+from pathlib import Path
 import warnings
 
+from evo import constants as cnst
+from evo import conversions as cnvt
+from evo import sat_pressure as sat
+
 def writeout_file(sys, gas, melt, P):
-    if not os.path.exists('Output'):
-        os.makedirs('Output')
+    filepath = Path(__file__).parent / "Output"
+    if not os.path.exists(filepath):
+        os.makedirs(filepath)
     
-    output = open('Output/dgs_output.csv', 'w')
+    output = open(filepath / 'dgs_output.csv', 'w')
     output.write(f"#Decompressing a {sys.run.COMPOSITION} {sys.run.GAS_SYS} {sys.run.RUN_TYPE} system at {sys.T:.2f} degrees (K). \n"
                  f"#Approx total H2O (wt%) starting fO2: {(gas.Wt['H2O'][0]*sys.WgT[0] + (melt.h2o[0]))*100:.3}, final fO2: {(gas.Wt['H2O'][-1]*sys.WgT[-1] + (melt.h2o[-1]))*100:.3}\n"
                  f"#Approx total CO2 starting fO2: {(gas.Wt['CO2'][0]*sys.WgT[0] + (melt.co2[0]))*100:.3} (wt%) {(gas.Wt['CO2'][0]*sys.WgT[0] + (melt.co2[0]))*1000000:.0} (ppm), final fO2: {((gas.Wt['CO2'][-1]*sys.WgT[-1] + (melt.co2[-1]))*100)*10000:.0} (ppm) \n"
@@ -43,10 +46,11 @@ def writeout_file(sys, gas, melt, P):
         output.close()
 
 def writeout_crash(sys, gas, melt, P):
-    if not os.path.exists('Output'):
-        os.makedirs('Output')
+    filepath = Path(__file__).parent / "Output"
+    if not os.path.exists(filepath):
+        os.makedirs(filepath)
     
-    output = open('Output/dgs_output.csv', 'w')
+    output = open(filepath / 'dgs_output.csv', 'w')
     output.write(f"#Decompressing a {sys.run.RUN_TYPE} {sys.run.COMPOSITION} {sys.run.GAS_SYS} system at {sys.T:.2f} degrees (K). \n#Crashed data file.\n")
     output.write("#\n")
     output.write(f"#{'':8} \t {'':8} \t {'':8} \t {'':8} \t {'':12} \t {'':12} \t {'Gas:':12} \t {'':10} \t {'':14} \t {'Gas by mol:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Gas by mass:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Melt (wt%):':8} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'Ratios:':8}\n")
@@ -71,7 +75,10 @@ def writeout_crash(sys, gas, melt, P):
     output.close()
 
 def writeout_ocs(sys, gas, melt, P):
-    output = open('Output/dgs_output.csv', 'w')
+    
+    filepath = Path(__file__).parent / "Output"
+    
+    output = open(filepath / 'dgs_output.csv', 'w')
     output.write(f"#Decompressing a {sys.run.COMPOSITION} {sys.run.GAS_SYS} system at {sys.T:.2f} degrees (K) with a final conversion to OCS production. \n"
                  f"#Approx total H2O (wt%) starting fO2: {(gas.Wt['H2O'][0]*sys.WgT[0] + (melt.h2o[0]/100))*100:.3}, final fO2: {(gas.Wt['H2O'][-1]*sys.WgT[-1] + (melt.h2o[-1]/100))*100:.3}\n"
                  f"#Approx total CO2 starting fO2: {(gas.Wt['CO2'][0]*sys.WgT[0] + (melt.co2[0]/100))*100:.3} (wt%) {(gas.Wt['CO2'][0]*sys.WgT[0] + (melt.co2[0]/100))*1000000:.0} (ppm), final fO2: {((gas.Wt['CO2'][-1]*sys.WgT[-1] + (melt.co2[-1]/100))*100)*10000:.0} (ppm) \n"
@@ -102,45 +109,47 @@ def writeout_ocs(sys, gas, melt, P):
 
 def writeout_figs(sys, melt, gas, out, P):
 
-    filelist = glob.glob("Output/*.png")
+    filepath = Path(__file__).parent / "Output"
+    
+    filelist = glob.glob(str(filepath / "*.png"))
     for file in filelist:
         os.remove(file)  # Removes previous files so if output specification is changed there is no confusion as to up to date files.
 
     if out is not None:  # If an output file listing requested figures has been included:
         if out.Plt_melt_species:
-            plot_meltspecies(melt, P)
+            plot_meltspecies(melt, P, filepath)
 
         if out.Plt_gas_species_wt:
-            plot_gasspecies_wt(gas, P)
+            plot_gasspecies_wt(gas, P, filepath)
 
         if out.Plt_gas_species_mol:
-            plot_gasspecies_mol(gas, P)
+            plot_gasspecies_mol(gas, P, filepath)
 
         if out.Plt_gas_fraction:
-            plot_gasfraction(sys, P)
+            plot_gasfraction(sys, P, filepath)
 
         if out.Plt_fo2_dFMQ:
-            plot_fo2FMQ(melt, gas, P)
+            plot_fo2FMQ(melt, gas, P, filepath)
 
         if out.Plt_gas_fraction != None:
             pass
             #plot
 
     else:  # else plot every option
-        plot_meltspecies(melt, P)
-        plot_gasspecies_wt(gas, P)
-        plot_gasspecies_mol(gas, P)
-        plot_gasfraction(sys, P)
-        plot_fo2FMQ(melt, gas, P)
+        plot_meltspecies(melt, P, filepath)
+        plot_gasspecies_wt(gas, P, filepath)
+        plot_gasspecies_mol(gas, P, filepath)
+        plot_gasfraction(sys, P, filepath)
+        plot_fo2FMQ(melt, gas, P, filepath)
 
 
 # fO2 and dFMQ
-def plot_fo2FMQ(melt, gas, P):
+def plot_fo2FMQ(melt, gas, P, path):
     plt.plot(P, melt.fmq)
     plt.xscale('log')
     plt.xlabel('Pressure (bars)')
     plt.ylabel(r'$\Delta$ FMQ')
-    plt.savefig('Output/FMQ.png')
+    plt.savefig(path / 'FMQ.png')
     plt.close()
 
     fo2 = []
@@ -151,11 +160,11 @@ def plot_fo2FMQ(melt, gas, P):
     #plt.xscale('log')
     plt.xlabel('Pressure (bars)')
     plt.ylabel('log(10) fO2')
-    plt.savefig('Output/fO2.png')
+    plt.savefig(path / 'fO2.png')
     plt.close()
 
 # Gas speciation mol
-def plot_gasspecies_mol(gas, P):
+def plot_gasspecies_mol(gas, P, path):
 
     plt.plot(gas.mH2O[1:], P, c='darkblue')
     plt.plot(gas.mH2[1:], P, c='steelblue')
@@ -184,12 +193,12 @@ def plot_gasspecies_mol(gas, P):
     plt.gca().invert_yaxis()
     plt.xlabel(f'Speciation in a {gas.sys.run.GAS_SYS} gas (mol frac)')
     plt.ylabel('Pressure (bar)')
-    plt.savefig('Output/speciation(mol).png')
+    plt.savefig(path / 'speciation(mol).png')
     plt.close()
 
 # Gas speciation wt%
 
-def plot_gasspecies_wt(gas, P):
+def plot_gasspecies_wt(gas, P, path):
 
     plt.plot(gas.Wt['H2O'], P, c='darkblue')
     plt.plot(gas.Wt['H2'], P, c='steelblue')
@@ -218,12 +227,12 @@ def plot_gasspecies_wt(gas, P):
     plt.gca().invert_yaxis()
     plt.xlabel(f'Gas phase speciation of a {gas.sys.run.GAS_SYS} system (wt %)')
     plt.ylabel('Pressure (bar)')
-    plt.savefig('Output/speciation(wt).png')
+    plt.savefig(path / 'speciation(wt).png')
     plt.close()
 
 # Melt volatile wt%
 
-def plot_meltspecies(melt, P):
+def plot_meltspecies(melt, P, path):
 
     plt.plot(melt.h2o, P, c='darkblue')
     plt.plot(melt.h2, P, c='steelblue')
@@ -242,12 +251,12 @@ def plot_meltspecies(melt, P):
     plt.gca().invert_yaxis()
     plt.xlabel('Melt volatile content (wt%)')
     plt.ylabel('Pressure (bar)')
-    plt.savefig('Output/meltspecies.png')
+    plt.savefig(path / 'meltspecies.png')
     plt.close()
 
 # Exsolved gas mass and volume
 
-def plot_gasfraction(sys, P):
+def plot_gasfraction(sys, P, path):
 
     fig, (ax1, ax2) = plt.subplots(1,2, sharey=True)
     ax1.plot(cnvt.frac2perc(sys.WgT[1:]), P)
@@ -256,7 +265,7 @@ def plot_gasfraction(sys, P):
     ax1.set_ylabel('Pressure (bar)')
     ax2.plot(cnvt.frac2perc(sys.GvF), P)
     ax2.set_xlabel('Exsolved gas volume %')
-    fig.savefig('Output/exsolved_gas.png')
+    fig.savefig(path / 'exsolved_gas.png')
 
 
 

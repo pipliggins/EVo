@@ -4,13 +4,13 @@ using the method specified in the run.yaml file.
 """
 
 import numpy as np
-from scipy.special import erf
-import warnings
-from scipy.optimize import fsolve
 import math
+from scipy.special import erf
+from scipy.optimize import fsolve
+import warnings
 
-import conversions as cnvs
-import constants as cnst
+from evo import constants as cnst
+from evo import conversions as cnvs
 
 # ------------------------------------------------------------------------------
 # MODEL DEFINITIONS (Melt from gas & fugacity from melt)

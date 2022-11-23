@@ -4,23 +4,21 @@
 # IMPORT
 # ------------------------------------------------------------------------
 
-# python
-import sys
 import copy
 import itertools
-import re
-import numpy as np
-
-# local
 import inspect
-import density
-import conversions as cnvs
-import constants as cnst
-import solvgas as sg
-import init_cons as ic
-import messages as msgs
-import solubility_laws as sl
+import numpy as np
+import re
+import sys
+from pathlib import Path
 
+from evo import constants as cnst
+from evo import conversions as cnvs
+from evo import density
+from evo import init_cons as ic
+from evo import messages as msgs
+from evo import solubility_laws as sl
+from evo import solvgas as sg
 
 # ------------------------------------------------------------------------
 # CLASSES
@@ -474,7 +472,9 @@ class Molecule:
         """
         T = sys.T
 
-        path = open("Data/"+self.Mol+".txt", "r")        # Opens the file for data for the molecule
+        file_path = Path(__file__).parent / f"Data/{self.Mol}.txt"
+        
+        path = open(file_path, "r")                      # Opens the file for data for the molecule
         Temp_ref = []                                    # To store temperatures which need to be interpolated
         del_G_ref = []                                   # To store values of G which need to be interpolated
         inter_count = 0

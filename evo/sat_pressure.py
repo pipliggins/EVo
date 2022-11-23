@@ -8,15 +8,16 @@ and the solver is allowed to find the starting conditions at that pressure.
 Using this method, the first and second values in mol fraction lists etc WILL NOT MATCH (recalculate) as they are for different pressures.
 """
 
-from scipy.optimize import fsolve
-import solvgas as sg
-import constants as cnst
-import conversions as cnvs
-import solubility_laws as sl
-import messages as msgs
-import re
 import numpy as np
+from scipy.optimize import fsolve
+import re
 import warnings
+
+from evo import constants as cnst
+from evo import conversions as cnvs
+from evo import messages as msgs
+from evo import solubility_laws as sl
+from evo import solvgas as sg
 
 def get_molfrac(P, fugacities, gamma):
     "Converts fugacities into mol fractions using pressure and fugacity coefficients."

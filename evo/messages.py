@@ -1,10 +1,11 @@
 """ Stores warning messages used thought the system to alert the user of an input error or failure to run to completion, and an explaination."""
-import writeout as wt
-import conversions as cnvs
-import constants as cnst
-import solubility_laws as sl
 import numpy as np
 import sys
+
+from evo import constants as cnst
+from evo import conversions as cnvs
+from evo import solubility_laws as sl
+from evo import writeout as wt
 
 def open_step():
     exit("Warning: Open system degassing is path dependent. \nFor internal consistency, please set the max (DP_MAX) and min (DP_MIN) pressure steps to be equal (we suggest <1 bar for the run to complete; 0.5 bar is usually sufficent)")

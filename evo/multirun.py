@@ -1,9 +1,11 @@
-import os
-from dgs import main
-import yaml
-import numpy as np
+
 from itertools import product
+import numpy as np
+import os
 from shutil import copyfile
+import yaml
+
+from evo.dgs import main
 
 def amend_env(file, **kwargs):
     """
@@ -56,7 +58,7 @@ def multirun(**kwargs):
         # Copies the dgs_output file into a separate file ready to be run again.
         copyfile('Output/dgs_output.csv', f'Output/output_{run_name}.csv')
 
-multirun(FO2_buffer_START=[1, -2], ATOMIC_C=[150, 550], ATOMIC_H = [200, 500])
+# multirun(FO2_buffer_START=[1, -2], ATOMIC_C=[150, 550], ATOMIC_H = [200, 500])
 
 
 
