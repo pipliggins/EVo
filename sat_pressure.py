@@ -19,7 +19,23 @@ import numpy as np
 import warnings
 
 def get_molfrac(P, fugacities, gamma):
-    "Converts fugacities into mol fractions using pressure and fugacity coefficients."
+    """
+    Converts fugacities into mole fractions.
+
+    Parameters
+    ----------
+    P : float
+        Pressure (bar)
+    fugacities : tuple of floats
+        tuple of all 10 fugacities
+    gamma : tuple of floats
+        tuple of all 10 fugacity coefficients
+
+    Returns
+    -------
+    tuple of floats
+        tuple of all the relevant mole fractions.
+    """
 
     fh2o, fo2, fh2, fco, fco2, fch4, fs2, fso2, fh2s, fn2 = fugacities
     h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
@@ -35,9 +51,26 @@ def get_molfrac(P, fugacities, gamma):
     else:
         return fh2o/(h2o_y*P), fo2/(o2_y*P), fh2/(h2_y*P), fco/(co_y*P), fco2/(co2_y*P), fch4/(ch4_y*P), fs2/(s2_y*P), fso2/(so2_y*P), fh2s/(h2s_y*P), fn2/(n2_y*P)
 
+def p_tot(P, fugacities, gamma):
+    """
+    Returns the difference between the sum of the gas phase partial pressures,
+    and the total system pressure.
 
-def p_tot(P, sys, fugacities, gamma):
-    "Returns the sum of the gas phase partial pressures, given the current system pressure"
+    Parameters
+    ----------
+    P : float
+        Total system pressure (bar)
+    fugacities : tuple of floats
+        tuple of all 10 fugacities
+    gamma : tuple of floats
+        tuple of all 10 fugacity coefficients
+
+    Returns
+    -------
+    float
+        The difference between the sum of the gas phase partial pressures,
+        and the total system pressure.
+    """
 
     fh2o, fo2, fh2, fco, fco2, fch4, fs2, fso2, fh2s, fn2 = fugacities
     h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
@@ -55,13 +88,61 @@ def p_tot(P, sys, fugacities, gamma):
 
 def sat_pressure(run, sys, gas, melt, mols):
     """
-    Calculate the volatile saturation pressure of a run, set the atomic masses at that pressure then round down to the nearest 1 bar to set the starting pressure
-    for the solver loop.
+    Calculates the volatile saturation pressure.
+    
+    The volatile saturation pressure is calculated for a given melt 
+    volatile content. Atomic masses for the system are then calculated
+    and fixed, and the pressure is rounded down for the first pressure
+    step using `decompress()`.
+
+    Parameters
+    ----------
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    gas : Gas class
+        The active instance of the Gas class
+    melt : Melt class
+        The active instance of the Melt class    
+    mols : {[H2O, O2, H2], [H2O, O2, H2, CO, CO2, CH4], [H2O, O2, H2, S2, SO2, H2S], 
+    [H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S], [H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2]}
+        A list of the active Molecule class instances.
+
+    Returns
+    -------
+    P_sat : float
+        The volatile saturation pressure (bar)
+    values : list of floats
+        The composition of the gas phase at `P_sat`, as mole fractions
+    gamma : list of floats
+        a list of all calculated fugacity coefficients at `P_sat`, as floats.
+    mols : {[H2O, O2, H2], [H2O, O2, H2, CO, CO2, CH4], [H2O, O2, H2, S2, SO2, H2S], 
+            [H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S], [H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2]}
+        An updated list of the active Molecule class instances.
+    melt.graphite_sat : bool
+        If the melt is graphite saturated at `P_sat`, returns True.
     """
     
     def get_f(P, sys, melt, gamma):
         """
-        Calculate the gas fugacities of species based on the melt composition and total pressure.
+        Returns gas fugacities at the current pressure according to the melt
+
+        Parameters
+        ----------
+        P : float
+            Current pressure
+        sys : ThermoSystem class
+            Active instance of the ThermoSystem class
+        melt : Melt class
+            Active instance of the Melt class
+        gamma : list of floats
+            list of fugacity coefficients
+
+        Returns
+        -------
+        fh2o, fo2, fh2, fco, fco2, fch4, fs2, fso2, fh2s, fn2 : tuple of floats
+            tuple of all the fugacity coefficients
         """
     
         O2.Y = gamma[1]
@@ -123,11 +204,30 @@ def sat_pressure(run, sys, gas, melt, mols):
         H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2 = mols
     
     def find_p(P, sys, melt):
+        """
+        Function to solve iteratively to find P_sat.
 
+        Parameters
+        ----------
+        P : float
+            Pressure (bar)
+        sys : ThermoSystem class
+            Active instance of the ThermoSystem class
+        melt : Melt class
+            Active instance of the Melt class
+
+        Returns
+        -------
+        dP : float
+            The difference between the sum of the gas phase partial
+            pressures, and the total system pressure.
+        """
         gamma = sg.find_Y(P, sys.T, sys.SC)[:10]
         fugacity = get_f(P, sys, melt, gamma)
+
+        dP = p_tot(P, fugacity, gamma)
         
-        return p_tot(P, sys, fugacity, gamma)
+        return dP
 
     with warnings.catch_warnings():
         warnings.filterwarnings('error')
@@ -389,6 +489,35 @@ def sat_pressure(run, sys, gas, melt, mols):
     return P_sat, values, gamma, mols, melt.graphite_sat
 
 def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
+    """
+    Returns a string in the same style as the output csv file for the
+    saturation pressure.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+    melt : Melt class
+        Active instance of the Melt class
+    gas : Gas class
+        Active instance of the Gas class
+    P : float
+        The volatile saturation pressure
+    values : list of floats
+        The composition of the gas phase in mole fractions
+    gamma : list of floats
+        list of the gas phase fugacity coefficients
+    mols : list of Molecule classes
+        A list of the active Molecule classes
+    graph_sat : bool, optional
+        If True, indicates that the melt was graphite saturated at the
+        point of volatile saturation, by default False
+
+    Returns
+    -------
+    string
+        A single string to be put at the top of the output csv file.
+    """
 
     if sys.run.GAS_SYS == 'OH':
         H2O, O2, H2 = mols

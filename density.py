@@ -12,16 +12,28 @@ import constants as cnst
 
 def den_calc_spera2000(Cm,T,P):
     """
-    Calculates density of melt calc according to composition, temperature, pressure. 
-    Encyclopeida of Volcanoes, Spera 2000
+    Calculates the density of the melt according to composition, T and P.
 
-    Args:
-        Cm (dict): composition of the melt, optionally including H2O and CO2, as mole fractions.
-        T (float): Current temperature, K
-        P (float): Current pressure, pascals (Pa)
+    Parameters
+    ----------
+    Cm : dict
+        Composition of the melt, optionally including H2O and CO2, as mole
+        fractions.
+    T : float
+        Temperature (K)
+    P : float
+        Pressure, pascals (Pa)
 
-    Returns:
-        melt density, in kg/m3
+    Returns
+    -------
+    float
+        melt density, kg/m3
+
+    References
+    ----------
+    Lesher, E.C., & Spera, F.J. (2015) Thermodynamic and transport 
+    properties of silicate melts and magma. The Encyclopedia of
+    Volcanoes.
     """
 
     T0 = 1673  # Ref temp, Kelvin (1400 celsius)
@@ -74,7 +86,7 @@ def den_calc_spera2000(Cm,T,P):
  
     # normalise to available oxides
     sm = 0
-    tmp_Cm = {}         #Composition in mole fractions
+    tmp_Cm = {}         # Composition in mole fractions
     for e in vols:
         if e in Cm.keys():
             sm += Cm[e]
@@ -86,10 +98,12 @@ def den_calc_spera2000(Cm,T,P):
     for x in tmp_Cm:
         V += tmp_Cm[x]*(vols[x] + dvdt[x]*(T-T0) + dvdp[x]*(P/10.**9-P0))
     M = sumM(tmp_Cm)
+    
     return((M/1000.)/V)
 
 
 def sumM(Cm):
+    """Sums the mole frac*molecular mass for the silicate melt composition"""
     M = 0.
     for e in Cm:
         M += cnst.m[e]*Cm[e]

@@ -9,52 +9,41 @@ from math import exp, log10
 
 # local imports
 from dgs_classes import *
-#
-# 
-# --- HOMOGENOUS REACTIONS via solvgas ---
-#
-# H1) H_2(fluid) + [1/2]O_2 = H_2O(fluid)
-#  K: Gibbs free energy based on Unterborn
-#
-# H2) CO(fluid) + [1/2]O_2 = CO_2(fluid)
-#  K: Symonds and Reed 1993
-#
-# H3) CH_4(fluid) + [2]O_2 = CO_2(fluid) + [2]H_2O(fluid)
-#  K: Symonds and Reed 1993
-#
-# H4) H_2S(fluid) + [1/2]O_2 = [1/2]S_2(fluid) + H_2O(fluid)
-#  K: Symonds and Reed 1993
-#
-# H5) [1/2]S_2(fluid) + O_2 = SO_2(fluid)
-#  K: Symonds and Reed 1993
-#
-# H6) N equilibria
-#  K: Symonds and Reed 1993
-# 
-# 
-# Species fugacities defined by:
-# f_i = gamma_i . X_i . P
-#   P, total pressure | gamma_i, species fugacitiy coefficients (LR Rule) | X, molar frac
-#
-# Solubility defined as maximum amount of given volatile species that remains in solution
-#   at corresponding pure species fugacity:
-# wt_i = wt_g . X_i + a_i . f_i ^ b_i
-#   wt_g, total gas weight fraction | X_i, mole fraction
-#   a_i, b_i, experimentally determined solubility constants can be function of P and T
-#   f_i fugacity
-
-
-# ------------------------------------------------------------------------
-# FUNCTIONS
-# ------------------------------------------------------------------------
 
 # ------------------------------------------------------------------------
 # FUGACITY COEFFICIENTS
 # ------------------------------------------------------------------------
 
 def find_Y(P, T, species_list):
-    """ Finds the fugacity coefficients of the relevant species, dependent on the system chemistry selected.
-    Decides which law to use, according to species name and TP conditions, set in the thermosystem (sys) object.
+    """
+    Calculates the fugacity coefficients for all relevant species.
+
+    Parameters
+    ----------
+    P : float
+        Pressure (bar)
+    T : float
+        Temperature (K)
+    species_list : [strings]
+        A list of each molecule in the system given as capitalised strings.
+
+    Returns
+    -------
+    tuple
+        a tuple of all the fugacity coefficients, as floats.
+
+    References
+    ----------
+    Shaw, H.R., & Wones, D.R. (1964). Fugacity coefficients for hydrogen
+    gas between 0 degrees and 1000C, for pressures to 3000 atm.
+    American Journal of Science.
+
+    Holland, T., & Powell, R. (1991). A Compensated-Redlich-Kwong (CORK)
+    equation for volumes and fugacities of CO2 and H2O in the range 1 bar 
+    to 50 kbar and 100-1600C. Contributions to Mineralogy and Petrology.
+
+    Shi, P., & Saxena, S. K. (1992). Thermodynamic modeling of the C-H-O-S
+    fluid system. American Mineralogist.
     """
 
     h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, ocs_y, n2_y = 0,0,0,0,0,0,0,0,0,0,0
@@ -172,7 +161,7 @@ def find_Y(P, T, species_list):
                 return a + b*Tr + c*Tr**-1 + d*Tr**2 + e*Tr**-2 + f*Tr**3 + g*Tr**-3 + h*np.log(Tr)
             
             def Z(a, b, c, d, pr, p0r):
-                # returns the integral Z(p, t)/P, eq. 11
+                """Returns the SS(1991) integral Z(p, t)/P, eq. 11"""
                 return a*np.log(pr/p0r) + b*(pr-p0r) + (c/2.0)*(pr**2 - p0r**2) + (d/3.0)*(pr**3 - p0r**3)
 
             def Z1000(pcrit, Tr):
@@ -291,6 +280,24 @@ def find_Y(P, T, species_list):
                 return A, B, C, D, P0r, Z0
 
             def y(P, T, species):
+                """
+                Main equation for calculating fugacity coefficients for a
+                single `species` using Shi & Saxena 1992.
+
+                Parameters
+                ----------
+                P : float
+                    Pressure (bar)
+                T : float
+                    Temperature (K)
+                species : string
+                    The species name
+
+                Returns
+                -------
+                float
+                    fugacity coefficient for `species`.
+                """
 
                 # only calibrated to 1 bar, they start increasing gamma again below 1 bar
                 # which should happen - gases become more ideal at low pressure. 
@@ -324,6 +331,16 @@ def find_Y(P, T, species_list):
     return h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y, ocs_y
 
 def set_Y(sys, molecules):
+    """
+    Sets the fugacity coefficient for each Molecule instance in the system
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+    molecules : list of Molecule classes
+        A list of the active Molecule class instances. Order-sensitive.
+    """
     if sys.run.GAS_SYS == "OH":
         H2O, O2, H2 = molecules
         H2O.Y, O2.Y, H2.Y = find_Y(sys.P, sys.T, sys.SC)[:3]
@@ -352,14 +369,31 @@ def set_Y(sys, molecules):
 # ------------------------------------------------------------------------
 # EQUILIBRIUM CONSTANTS
 # ------------------------------------------------------------------------
-"""Pressure independent. Calculated as constants on startup and stored in the Thermosystem 'sys' object.
-Gibbs free energy minimisation based on Unterborn (2016). """
-
 
 def get_K(sys, molecules):
-    """Calculates the equilibrium constants for the reactions in each system, self selects based on the system chem.
-     When called, molecules are objects based on the molecule class, e.g. O2 with all associated properties.
-     """
+    """
+    Calculates equilibrium constants using Gibbs Free Energy minimisation.
+
+    Pressure independent, calculated on startup for a fixed temperature,
+    based on the methods used in Unterborn (2016).
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+    molecules : list of Molecule classes
+        A list of the active Molecule class instances. Order-sensitive.
+
+    Returns
+    -------
+    K : dict
+        A dictionary of equilibrium constants.
+
+    References
+    ----------
+    Unterborn, C.T., Dismukes, E.E. & Panero, W.R. (2016) Scaling the Earth:
+    A sensitivity analysis of terrestrial exoplanetary interior models. ApJ.
+    """
     
     K = {}  # Temporary store for K values
     del_Gf_dict = {}  # Stores dG of formation values with molecules as key value pairs

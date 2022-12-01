@@ -7,8 +7,18 @@ from shutil import copyfile
 
 def amend_env(file, **kwargs):
     """
-    Duplicates the env.yaml file, then edits with the gridsearch values relevant
-    to the specific run.
+    Duplicates the environment input file to use in `multirun()`
+    
+    Duplicates the environment file, then edits the file with the relevant
+    values for performing a run within the gridsearch. Saves the duplicated
+    file as 'multirun.yaml'.
+
+    Parameters
+    ----------
+    file : str
+        Path to the standard environment file
+    **kwargs : 
+        str:any pairs corresponding to items in the env.yaml file
     """
 
     with open(file, 'r') as f:
@@ -25,11 +35,18 @@ def amend_env(file, **kwargs):
 
 def multirun(**kwargs):
     """
-    Gridsearch over all the kwargs given (as lists or arrays), having setup variables you don't want to search over
-    within the env.yaml already.
+    Performs a gridsearch, running EVo over all vars given as parameters
 
+    Gridsearch over all the kwargs given (as lists or arrays), having 
+    setup variables you don't want to search over within the env.yaml
+    already.
     Each run result will be saved as a separate output file in Outputs, named using the
-    values used for that gridsearch.
+    variable values used for that run.
+
+    Parameters
+    ----------
+    **kwargs : 
+        str:list of floats pairs corresponding to items in the env.yaml file
     """
     
     # delete any pre-existing multirun setup files

@@ -18,7 +18,23 @@ import solubility_laws as sl
 import solvgas as sg
 
 def get_molfrac(P, fugacities, gamma):
-    "Converts fugacities into mol fractions using pressure and fugacity coefficients."
+    """
+    Converts fugacities into mole fractions.
+
+    Parameters
+    ----------
+    P : float
+        Pressure (bar)
+    fugacities : tuple of floats
+        tuple of all 10 fugacities
+    gamma : tuple of floats
+        tuple of all 10 fugacity coefficients
+
+    Returns
+    -------
+    tuple of floats
+        tuple of all the relevant mole fractions.
+    """
 
     fh2o, fo2, fh2, fco, fco2, fch4, fs2, fso2, fh2s, fn2 = fugacities
     h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
@@ -34,8 +50,26 @@ def get_molfrac(P, fugacities, gamma):
     else:
         return fh2o/(h2o_y*P), fo2/(o2_y*P), fh2/(h2_y*P), fco/(co_y*P), fco2/(co2_y*P), fch4/(ch4_y*P), fs2/(s2_y*P), fso2/(so2_y*P), fh2s/(h2s_y*P), fn2/(n2_y*P)
 
-def p_tot(P, sys, fugacities, gamma):
-    "Returns the sum of the gas phase partial pressures, given the current system pressure"
+def p_tot(P, fugacities, gamma):
+    """
+    Returns the difference between the sum of the gas phase partial pressures,
+    and the total system pressure.
+
+    Parameters
+    ----------
+    P : float
+        Total system pressure (bar)
+    fugacities : tuple of floats
+        tuple of all 10 fugacities
+    gamma : tuple of floats
+        tuple of all 10 fugacity coefficients
+
+    Returns
+    -------
+    float
+        The difference between the sum of the gas phase partial pressures,
+        and the total system pressure.
+    """
 
     fh2o, fo2, fh2, fco, fco2, fch4, fs2, fso2, fh2s, fn2 = fugacities
     h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
@@ -54,8 +88,46 @@ def p_tot(P, sys, fugacities, gamma):
 
 def sat_pressure(run, sys, gas, melt, mols):
     """
-    Calculate the volatile saturation pressure of a run, set the atomic masses at that pressure then round down to the nearest 1 bar to set the starting pressure
-    for the solver loop.
+    Calculates the volatile saturation pressure.
+    
+    The volatile saturation pressure is calculated where the volatile
+    content has been given as a set of elemental weight fractions.
+    Initial guesses are made for the masses of each species (H2O etc)
+    dissolved in the melt, then the saturation pressure for those guesses is
+    calculated, and elemental masses implied at that pressure are calculated.
+    This is iterated to find the volatile content of the melt and volatile
+    saturation pressure which satisfies the provided element mass data.
+    
+    The volatile saturation pressure is stored, and the pressure is rounded
+    down for the first pressure step using `decompress()`.
+
+    Parameters
+    ----------
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    gas : Gas class
+        The active instance of the Gas class
+    melt : Melt class
+        The active instance of the Melt class    
+    mols : {[H2O, O2, H2], [H2O, O2, H2, CO, CO2, CH4], [H2O, O2, H2, S2, SO2, H2S], 
+    [H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S], [H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2]}
+        A list of the active Molecule class instances.
+
+    Returns
+    -------
+    P_sat : float
+        The volatile saturation pressure (bar)
+    values : list of floats
+        The composition of the gas phase at `P_sat`, as mole fractions
+    gamma : list of floats
+        a list of all calculated fugacity coefficients at `P_sat`, as floats.
+    mols : {[H2O, O2, H2], [H2O, O2, H2, CO, CO2, CH4], [H2O, O2, H2, S2, SO2, H2S], 
+            [H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S], [H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2]}
+        An updated list of the active Molecule class instances.
+    melt.graphite_sat : bool
+        If the melt is graphite saturated at `P_sat`, returns True.
     """
 
     if run.GAS_SYS == 'OH':
@@ -87,7 +159,31 @@ def sat_pressure(run, sys, gas, melt, mols):
 
     def get_f(P, melt_h2o, melt_co2, melt_s, melt_n, sys, melt, gamma):
         """
-        Calculate the gas fugacities of species based on the melt composition and total pressure.
+        Returns gas fugacities at the current pressure according to the melt
+
+        Parameters
+        ----------
+        P : float
+            Current pressure
+        melt_h2o : float
+            Current guess for the weight fraction of water in the melt
+        melt_co2 : float
+            Current guess for the weight fraction of CO2 in the melt
+        melt_s : float
+            Current guess for the weight fraction of sulfur in the melt
+        melt_n : float
+            Current guess for the weight fraction of nitrogen in the melt
+        sys : ThermoSystem class
+            Active instance of the ThermoSystem class
+        melt : Melt class
+            Active instance of the Melt class
+        gamma : list of floats
+            list of fugacity coefficients
+
+        Returns
+        -------
+        fh2o, fo2, fh2, fco, fco2, fch4, fs2, fso2, fh2s, fn2 : tuple of floats
+            tuple of all the fugacity coefficients
         """
 
         O2.Y = gamma[1]
@@ -129,13 +225,57 @@ def sat_pressure(run, sys, gas, melt, mols):
         return fh2o, fo2, fh2, fco, fco2, fch4, fs2, fso2, fh2s, fn2
     
     def find_p(P, melt_h2o, melt_co2, melt_s, melt_n, sys, melt):
+        """
+        Function to solve iteratively to find P_sat.
+
+        Parameters
+        ----------
+        P : float
+            Pressure (bar)
+        melt_h2o : float
+            Current guess for the weight fraction of water in the melt
+        melt_co2 : float
+            Current guess for the weight fraction of CO2 in the melt
+        melt_s : float
+            Current guess for the weight fraction of sulfur in the melt
+        melt_n : float
+            Current guess for the weight fraction of nitrogen in the melt
+        sys : ThermoSystem class
+            Active instance of the ThermoSystem class
+        melt : Melt class
+            Active instance of the Melt class
+
+        Returns
+        -------
+        dP : float
+            The difference between the sum of the gas phase partial
+            pressures, and the total system pressure.
+        """
 
         gamma = sg.find_Y(P, sys.T, sys.SC)[:10]
         fugacity = get_f(P, melt_h2o, melt_co2, melt_s, melt_n, sys, melt, gamma)
         
-        return p_tot(P, sys, fugacity, gamma)
+        dP = p_tot(P, fugacity, gamma)
+        return dP
 
     def fixed_weights_oh(guesses=[0.0]):
+        """
+        Returns the difference between calc'd element masses and fixed values
+
+        func(x) = 0, as required for use with a non-linear solver.
+
+        Parameters
+        ----------
+        guesses : list of 1 float
+            initial guess for the melt water content
+
+        Returns
+        -------
+        list of floats
+            The difference between the total mass of H in the system
+            fixed by the initial conditions, and that calculated using the 
+            `guess` value for the mass fraction of water in the melt.
+        """
         melt_h2o = guesses[0]
         melt_co2, melt_n, melt_s = 0.0, 0.0, 0.0
 
@@ -168,6 +308,23 @@ def sat_pressure(run, sys, gas, melt, mols):
         return [(N * (mH2O + mH2) + sl.h2_melt(mH2, H2, P_sat, melt, name=run.H2_MODEL, Y=h2_y) + sl.h2o_melt(mH2O, H2O, P_sat, name=run.H2O_MODEL, Y=h2o_y)) - (sys.atomicM['h']/(2*cnst.m['h']))]
     
     def fixed_weights_coh(guesses=[0.0, 0.0]):
+        """
+        Returns the difference between calc'd element masses and fixed values
+
+        func(x) = 0, as required for use with a non-linear solver.
+
+        Parameters
+        ----------
+        guesses : list of 2 floats
+            initial guess for the melt water, CO2 content
+
+        Returns
+        -------
+        list of floats
+            The difference between the total mass of each element in the
+            system fixed by the initial conditions, and that calculated
+            using the `guess` values. (dH, dC)
+        """
         melt_h2o, melt_co2 = guesses[0], guesses[1]
         melt_n, melt_s = 0.0, 0.0
 
@@ -208,6 +365,23 @@ def sat_pressure(run, sys, gas, melt, mols):
         (N * (mCO + mCO2 + mCH4) + sl.co2_melt((co2_y*mCO2*P_sat), CO2, (o2_y*mO2*P_sat), sys.T, P_sat, melt, name=run.C_MODEL) + sl.co_melt((co_y*mCO*P_sat), P_sat, name = run.CO_MODEL) + sl.ch4_melt((ch4_y*mCH4*P_sat), P_sat, name = run.CH4_MODEL) + melt.graph_current) - (sys.atomicM['c']/cnst.m['c'])]
     
     def fixed_weights_soh(guesses=[0.0, 0.0]):
+        """
+        Returns the difference between calc'd element masses and fixed values
+
+        func(x) = 0, as required for use with a non-linear solver.
+
+        Parameters
+        ----------
+        guesses : list of 2 floats
+            initial guess for the melt water, sulfur content
+
+        Returns
+        -------
+        list of floats
+            The difference between the total mass of each element in the
+            system fixed by the initial conditions, and that calculated
+            using the `guess` values. (dH, dS)
+        """
         melt_h2o, melt_s = guesses[0], guesses[1]
         melt_n, melt_co2 = 0.0, 0.0
 
@@ -242,6 +416,23 @@ def sat_pressure(run, sys, gas, melt, mols):
         (N*(mSO2 + mH2S + 2*mS2) + sl.sulfide_melt((s2_y*mS2*P_sat), (o2_y*mO2*P_sat), P_sat, sys.T, melt, name=run.SULFIDE_CAPACITY) + sl.sulfate_melt((s2_y*mS2*P_sat), (o2_y*mO2*P_sat), P_sat, sys.T, melt, run, name=run.SULFATE_CAPACITY)) - (sys.atomicM['s']/cnst.m['s'])]
     
     def fixed_weights_cohs(guesses=[0.0, 0.0, 0.0]):
+        """
+        Returns the difference between calc'd element masses and fixed values
+
+        func(x) = 0, as required for use with a non-linear solver.
+
+        Parameters
+        ----------
+        guesses : list of 3 floats
+            initial guess for the melt water, CO2, sulfur content
+
+        Returns
+        -------
+        list of floats
+            The difference between the total mass of each element in the
+            system fixed by the initial conditions, and that calculated
+            using the `guess` values. (dH, dS, dC)
+        """
         melt_h2o, melt_co2, melt_s = guesses[0], guesses[1], guesses[2]
         melt_n = 0.0 
 
@@ -284,6 +475,23 @@ def sat_pressure(run, sys, gas, melt, mols):
         (N * (mCO + mCO2 + mCH4) + sl.co2_melt((co2_y*mCO2*P_sat), CO2, (o2_y*mO2*P_sat), sys.T, P_sat, melt, name=run.C_MODEL) + sl.co_melt((co_y*mCO*P_sat), P_sat, name = run.CO_MODEL) + sl.ch4_melt((ch4_y*mCH4*P_sat), P_sat, name = run.CH4_MODEL) + melt.graph_current) - (sys.atomicM['c']/cnst.m['c'])]
 
     def fixed_weights_cohsn(guesses=[0.0, 0.0, 0.0, 0.0]):
+        """
+        Returns the difference between calc'd element masses and fixed values
+
+        func(x) = 0, as required for use with a non-linear solver.
+
+        Parameters
+        ----------
+        guesses : list of 4 floats
+            initial guess for the melt water, CO2, sulfur, nitrogen content
+
+        Returns
+        -------
+        list of floats
+            The difference between the total mass of each element in the
+            system fixed by the initial conditions, and that calculated
+            using the `guess` values. (dN, dH, dS, dC)
+        """
         melt_h2o, melt_co2, melt_s, melt_n = guesses[0], guesses[1], guesses[2], guesses[3]      
 
         try:

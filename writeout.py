@@ -9,6 +9,21 @@ import sat_pressure as sat
 import warnings
 
 def writeout_file(sys, gas, melt, P):
+    """
+    At the end of a run, writes data to a single output CSV file
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+    gas : Gas class
+        Active instance of the Gas class
+    melt : Melt class
+        Active instance of the Melt class
+    P : float
+        Final pressure (bar)
+    """
+
     if not os.path.exists('Output'):
         os.makedirs('Output')
     
@@ -43,6 +58,21 @@ def writeout_file(sys, gas, melt, P):
         output.close()
 
 def writeout_crash(sys, gas, melt, P):
+    """
+    For a run that's ended early, writes data to a single output CSV file
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+    gas : Gas class
+        Active instance of the Gas class
+    melt : Melt class
+        Active instance of the Melt class
+    P : float
+        Current pressure (bar)
+    """
+    
     if not os.path.exists('Output'):
         os.makedirs('Output')
     
@@ -70,37 +100,26 @@ def writeout_crash(sys, gas, melt, P):
     
     output.close()
 
-def writeout_ocs(sys, gas, melt, P):
-    output = open('Output/dgs_output.csv', 'w')
-    output.write(f"#Decompressing a {sys.run.COMPOSITION} {sys.run.GAS_SYS} system at {sys.T:.2f} degrees (K) with a final conversion to OCS production. \n"
-                 f"#Approx total H2O (wt%) starting fO2: {(gas.Wt['H2O'][0]*sys.WgT[0] + (melt.h2o[0]/100))*100:.3}, final fO2: {(gas.Wt['H2O'][-1]*sys.WgT[-1] + (melt.h2o[-1]/100))*100:.3}\n"
-                 f"#Approx total CO2 starting fO2: {(gas.Wt['CO2'][0]*sys.WgT[0] + (melt.co2[0]/100))*100:.3} (wt%) {(gas.Wt['CO2'][0]*sys.WgT[0] + (melt.co2[0]/100))*1000000:.0} (ppm), final fO2: {((gas.Wt['CO2'][-1]*sys.WgT[-1] + (melt.co2[-1]/100))*100)*10000:.0} (ppm) \n"
-                 f"#Approx total C (ppm) starting fO2: {(((gas.Wt['CO2'][0]*sys.WgT[1]) + (melt.co2[0]/100))/cnst.m['co2'] + (gas.Wt['CO'][0]*sys.WgT[1])/cnst.m['co'] + (gas.Wt['CH4'][0]*sys.WgT[1])/cnst.m['ch4'])*1000000*cnst.m['c']}, final fO2: {(((gas.Wt['CO2'][-1]*sys.WgT[-1]) + (melt.co2[-1]/100))/cnst.m['co2'] + (gas.Wt['CO'][-1]*sys.WgT[-1])/cnst.m['co'] + (gas.Wt['CH4'][-1]*sys.WgT[-1])/cnst.m['ch4'])*1000000*cnst.m['c']}\n"
-                 f"#Total H (ppm): {sys.atomicM['h']*1000000} wt%: {sys.atomicM['h']*100}\n")
-
-    output.write("#\n")
-    output.write(f"#{'':8} \t {'':8} \t {'':8} \t {'':12} \t {'':12} \t {'Gas:':12} \t {'':10} \t {'by mol:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'by mass:':10} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Melt (wt%):':8} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'Ratios:':8} \t {'':8} \t {'':8} \t {'':8} \n")
-    
-    output.write(f"#{'P (bar)':8} \t {'FMQ':8} \t {'fo2':8} \t {'rho (bulk):':12} \t {'rho (melt):':12} \t {'Exsol. vol%':12} \t {'Gas wt%':10} \t {'mH2O':12} \t {'mH2':12} \t {'mO2':12} \t {'mCO2':12} \t {'mCO':12} \t {'mCH4':12} \t {'mSO2':12} \t {'mH2S':12} \t {'mS2':12} \t {'mOCS':12} \t {'wH2O':10} \t {'wH2':12} \t {'wO2':12} \t {'wCO2':8} \t {'wCO':12} \t {'wCH4':12} \t {'wSO2':12} \t {'wH2S':12} \t {'wS2':12} \t {'H2Omelt:':10} \t {'H2melt:':12} \t {'CO2melt:':10} \t {'S2-_melt:':10} \t {'S6+_melt:':10} \t {'mCO2/CO':12} \t {'mCO2/H2O':12} \t {'mCO2/SO2':12} \t {'mH2S/SO2':12} \t {'fH2':10} \t {'fH2O':10} \t {'fCO2':10} \t {'fCO':10} \t {'fCH4':10} \t {'fSO2':10}\t {'fH2S':10} \t {'fS2':10} \t {'fN2':10} \t {'tot H (ppm)':12} \t {'tot C (ppm)':12} \t {'tot O (ppm)':12} \t {'tot S (ppm)':12} \t {'tot N (ppm)':12} \n")
-
-    i = 0
-
-    if sys.run.SINGLE_STEP == False:
-
-        while i < len(P):
-            output.write(f"{P[i]:8.1f} \t {cnvt.fo2_2fmq(np.log10(np.exp(gas.fo2[i])),sys.T,P[i],sys.run.FMQ_MODEL):+8.3} \t {np.exp(gas.fo2[i]):8.3e} \t {sys.rho[i]:12.3} \t {melt.rho(P=(P[i])*1e5):12.3} \t {sys.GvF[i] * 100:12} \t {sys.WgT[i+1] * 100:10} \t {gas.mH2O[i+1]:12.g} \t {gas.mH2[i+1]:12.g} \t {gas.mO2[i+1]:12.g} \t {gas.mCO2[i+1]:12.g} \t {gas.mCO[i+1]:12.g} \t {gas.mCH4[i+1]:12.g} \t {gas.mSO2[i+1]:12.g} \t {gas.mH2S[i+1]:12.g} \t {gas.mS2[i+1]:12.g} \t {0:12} \t {gas.Wt['H2O'][i]:10.g} \t {gas.Wt['H2'][i]:12.g} \t {gas.Wt['O2'][i]:12.g} \t {gas.Wt['CO2'][i]:8.g} \t {gas.Wt['CO'][i]:12.g} \t {gas.Wt['CH4'][i]:12.g} \t {gas.Wt['SO2'][i]:12.g} \t {gas.Wt['H2S'][i]:12.g} \t {gas.Wt['S2'][i]:12.g} \t {melt.h2o[i]:10.g} \t {melt.h2[i]:12.g} \t {melt.co2[i]:10.g} \t {melt.sulfide[i]:10.g} \t {melt.sulfate[i]:10.g} \t {gas.mCO2[i+1]/gas.mCO[i+1]:8.6e} \t {gas.mCO2[i+1]/gas.mH2O[i+1]:8.6e} \t {gas.mCO2[i+1]/gas.mSO2[i+1]:8.6e} \t {gas.mH2S[i+1]/gas.mSO2[i+1]:8.6e} \t {gas.f['H2'][i]:10.8g} \t {gas.f['H2O'][i]:10.6g} \t {gas.f['CO2'][i]:10.6e} \t {gas.f['CO'][i]:10.6e} \t {gas.f['CH4'][i]:10.6g} \t {gas.f['SO2'][i]:10.8g} \t {gas.f['H2S'][i]:10.8g} \t {gas.f['S2'][i]:10.8g} \t {gas.f['N2'][i]:10.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'h', i)*1000000:12.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'c', i)*1000000:12.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o', i)*1000000:12.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 's', i)*1000000:12.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'n', i)*1000000:12.8g} \n")
-            i += 1
-            
-    else:
-        output.write(
-                f"{P[- 1]:8.1f} \t {cnvt.fo2_2fmq(np.log10(np.exp(gas.fo2[-2])), sys.T, P[-1], sys.run.FMQ_MODEL):+8.3} \t {np.exp(gas.fo2[-2]):8.3e} \t {sys.rho[-2]:12.3} \t {melt.rho(P=(P[-1])*1e5):12.3} \t {sys.GvF[-2] * 100:12} \t {sys.WgT[-2] * 100:10} \t {gas.mH2O[-2]:12.g} \t {gas.mH2[-2]:12.g} \t {gas.mO2[-2]:12.g} \t {gas.mCO2[-2]:12.g} \t {gas.mCO[-2]:12.g} \t {gas.mCH4[-2]:12.g} \t {gas.mSO2[-2]:12.g} \t {gas.mH2S[-2]:12.g} \t {gas.mS2[-2]:12.g} \t {0:12} \t {gas.Wt['H2O'][-1]:10.g} \t {gas.Wt['H2'][-1]:12.g} \t {gas.Wt['O2'][-1]:12.g} \t {gas.Wt['CO2'][-1]:8.g} \t {gas.Wt['CO'][-1]:12.g} \t {gas.Wt['CH4'][-1]:12.g} \t {gas.Wt['SO2'][-1]:12.g} \t {gas.Wt['H2S'][-1]:12.g} \t {gas.Wt['S2'][-1]:12.g} \t {melt.h2o[-2]:10.g} \t {melt.h2[-2]:12.g} \t {melt.co2[-2]:10.g} \t {melt.sulfide[-2]:10.g} \t {melt.sulfate[-2]:10.g} \t {gas.mCO2[-2]/gas.mCO[-2]:8.g} \t {gas.mCO2[-2]/gas.mH2O[-2]:8.6g} \t {gas.mCO2[-2]/gas.mSO2[-2]:8.6g} \t {gas.mH2S[-2]/gas.mSO2[-2]:8.6g} \t {gas.f['H2'][-2]:10.8g} \t {gas.f['H2O'][-2]:10.6g} \t {gas.f['CO2'][-2]:10.8g} \t {gas.f['CO'][-2]:10.8g} \t {gas.f['CH4'][-2]:10.6g} \t {gas.f['SO2'][-2]:10.8g} \t {gas.f['H2S'][-2]:10.8g} \t {gas.f['S2'][-2]:10.8g} \t {gas.f['N2'][-2]:10.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'h', -1)*1000000:12.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'c', -1)*1000000:12.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o', -1)*1000000:12.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 's', -1)*1000000:12.8g}  \t {cnvt.atomicM_calc(sys, melt, gas, 'n', -1)*1000000:12.8g} \n")
-    
-    # OCS line last
-    output.write(f"{P[- 1]:8.1f} \t {cnvt.fo2_2fmq(np.log10(np.exp(gas.fo2[-1])), sys.T, P[-1], sys.run.FMQ_MODEL):+8.3} \t {np.exp(gas.fo2[-1]):8.3e} \t {sys.rho[-1]:12.3} \t {melt.rho(P=(P[-1])*1e5):12.3} \t {sys.GvF[-1] * 100:12} \t {sys.WgT[-1] * 100:10} \t {gas.mH2O[-1]:12.g} \t {gas.mH2[-1]:12.g} \t {gas.mO2[-1]:12.g} \t {gas.mCO2[-1]:12.g} \t {gas.mCO[-1]:12.g} \t {gas.mCH4[-1]:12.g} \t {gas.mSO2[-1]:12.g} \t {gas.mH2S[-1]:12.g} \t {gas.mS2[-1]:12.g} \t {gas.mOCS[-1]:12.g} \t {'N/A':10} \t {'N/A':12} \t {'N/A':12} \t {'N/A':8} \t {'N/A':12} \t {'N/A':12} \t {'N/A':12} \t {'N/A':12} \t {'N/A':12} \t {melt.h2o[-1]:10.g} \t {melt.h2[-1]:12.g} \t {melt.co2[-1]:10.g} \t {melt.sulfide[-1]:10.g} \t {melt.sulfate[-1]:10.g} \t {gas.mCO2[-1]/gas.mCO[-1]:8.6e} \t {gas.mCO2[-1]/gas.mH2O[-1]:8.6e} \t {gas.mCO2[-1]/gas.mSO2[-1]:8.6e} \t {gas.mH2S[-1]/gas.mSO2[-1]:8.6e} \t {gas.f['H2'][-1]:10.8g} \t {gas.f['H2O'][-1]:10.6g} \t {gas.f['CO2'][-1]:10.8g} \t {gas.f['CO'][-1]:10.8g} \t {gas.f['CH4'][-1]:10.6g} \t {gas.f['SO2'][-1]:10.8g} \t {gas.f['H2S'][-1]:10.8g} \t {gas.f['S2'][-1]:10.8g} \t {gas.f['N2'][-1]:10.8g} \t {'N/A':12} \t {'N/A':12} \t {'N/A':12} \t {'N/A':12} \t {'N/A':12} \n")
-    
-    output.close()
-
 def writeout_figs(sys, melt, gas, out, P):
+    """
+    Selects the figures to produce at the end of a successful run.
+
+    If an output file is not used to select the required figures, all
+    options are plotted.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+    melt : Melt class
+        Active instance of the Melt class
+    gas : Gas class
+        Active instance of the Gas class    
+    out : Output class or None
+        Active instance of the Output class, or None
+    P : list of float
+        List of the pressures each step was calculated at (bar)
+    """
 
     filelist = glob.glob("Output/*.png")
     for file in filelist:
@@ -136,6 +155,7 @@ def writeout_figs(sys, melt, gas, out, P):
 
 # fO2 and dFMQ
 def plot_fo2FMQ(melt, gas, P):
+    """Plots the fO2 relative to FMQ against pressure"""
     plt.plot(P, melt.fmq)
     plt.xscale('log')
     plt.xlabel('Pressure (bars)')
@@ -156,6 +176,7 @@ def plot_fo2FMQ(melt, gas, P):
 
 # Gas speciation mol
 def plot_gasspecies_mol(gas, P):
+    """Plots the gas speciation (mole fraction) vs pressure"""
 
     plt.plot(gas.mH2O[1:], P, c='darkblue')
     plt.plot(gas.mH2[1:], P, c='steelblue')
@@ -190,6 +211,7 @@ def plot_gasspecies_mol(gas, P):
 # Gas speciation wt%
 
 def plot_gasspecies_wt(gas, P):
+    """Plots the gas speciation (weight fraction) vs pressure"""
 
     plt.plot(gas.Wt['H2O'], P, c='darkblue')
     plt.plot(gas.Wt['H2'], P, c='steelblue')
@@ -224,6 +246,7 @@ def plot_gasspecies_wt(gas, P):
 # Melt volatile wt%
 
 def plot_meltspecies(melt, P):
+    """Plots the volatile content of the melt vs pressure"""
 
     plt.plot(melt.h2o, P, c='darkblue')
     plt.plot(melt.h2, P, c='steelblue')
@@ -248,6 +271,7 @@ def plot_meltspecies(melt, P):
 # Exsolved gas mass and volume
 
 def plot_gasfraction(sys, P):
+    """Plots the gas volume fraction vs pressure"""
 
     fig, (ax1, ax2) = plt.subplots(1,2, sharey=True)
     ax1.plot(cnvt.frac2perc(sys.WgT[1:]), P)

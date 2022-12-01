@@ -72,6 +72,19 @@ import solver
 #------------------------------------------------------------------------
 
 def main(f_chem, f_env, f_out):
+    """Main function for EVo.
+
+    Call to run the model.
+
+    Parameters
+    ----------
+    f_chem : str
+        Path to the chemistry input file
+    f_env : str
+        Path to the environment input file
+    f_out : str or NoneType
+        Path to the file describing the required outputs, None if not used
+    """
     start = time.time()
     
     print("Reading in from:")

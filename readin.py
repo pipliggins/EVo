@@ -23,6 +23,24 @@ import fixed_weights as fw
 #------------------------------------------------------------------------
 
 def readin_env(f):
+    """
+    Instantiates the RunDef and ThermoSystem classes.
+
+    Sets the parameters of the RunDef and ThermoSystem classes according
+    to the setup parameters listed in the environment input file.
+
+    Parameters
+    ----------
+    f : file object
+        The open environment file
+
+    Returns
+    -------
+    run : RunDef class
+        The instantiated RunDef class
+    sys : ThermoSystem class
+        The instantiated ThermoSystem class
+    """
 
     # creates a dictionary of the environment parameters from env.yaml
     x = yaml.full_load(f)
@@ -67,6 +85,28 @@ def readin_env(f):
 
 #  -------------------------------------------------------------------------
 def readin_chem(f, run, sys):
+    """
+    Instantiates the Melt class, reading in the chemistry file.
+
+    Sets the parameters of the Melt class according to the chemistry
+    input file. Checks that only recognised species are listed in the
+    melt composition, and that all the information required to run the
+    requested setup is provided.
+
+    Parameters
+    ----------
+    f : file object
+        The open chemistry file
+    run : RunDef class
+        Active instance of the RunDef class
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+
+    Returns
+    -------
+    melt : Melt class
+        The instantiated Melt class
+    """
 
     data = yaml.full_load(f)
     
@@ -117,6 +157,19 @@ def readin_chem(f, run, sys):
 
 #  -------------------------------------------------------------------------
 def readin_output(f):
+    """
+    Instantiates the Output class using the output file.
+
+    Parameters
+    ----------
+    f : file object
+        The open environment file
+
+    Returns
+    -------
+    out : Output class
+        The instantiated Output class
+    """
 
     x = yaml.full_load(f)
 
@@ -127,6 +180,16 @@ def readin_output(f):
 
 #  ------------------------------------------------------------------------
 def run_melt_match(run, melt):
+    """
+    Asserts that the composition name given matches the melt SiO2 content.
+
+    Parameters
+    ----------
+    run : RunDef class
+        Active instance of the RunDef class
+    melt : Melt class
+        Active instance of the Melt class
+    """
 
     if run.COMPOSITION == 'basalt':
         sio2_lim = [45, 55]
@@ -146,6 +209,32 @@ def run_melt_match(run, melt):
 
 #  -------------------------------------------------------------------------
 def readin(f_chem,f_env,*args):
+    """
+    Opens the input files and sets up major classes with the input data.
+
+    Checks that correct input data has been provided for the requested 
+    run type.
+
+    Parameters
+    ----------
+    f_chem : string
+        Path to the chemistry input file
+    f_env : string
+        Path to the environment input file
+    *args : string
+        optional path to the output options input file
+
+    Returns
+    -------
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    melt : Melt class
+        The active instance of the Melt class
+    out : Output class
+        The active instance of the Output class
+    """
 
     # environment
     with open(f_env,"r") as f:
@@ -153,10 +242,10 @@ def readin(f_chem,f_env,*args):
     
     # check stepsize requirements
     if run.DP_MIN > run.DP_MAX:
-        mess.step_size()
+        raise ValueError("Please make the minimum stepsize DP_MIN <= maximum stepsize DP_MAX.")
     
     if run.RUN_TYPE == 'open' and run.DP_MAX != run.DP_MIN:
-        mess.open_step()
+        raise ValueError("Open system degassing is path dependent. \nFor internal consistency, please set the max (DP_MAX) and min (DP_MIN) pressure steps to be equal (we suggest <1 bar for the run to complete; 0.5 bar is usually sufficient)")
         
     
     # chemistry
@@ -184,10 +273,38 @@ def readin(f_chem,f_env,*args):
 
 # -------------------------------------------------------------------------
 def set_init_chem(run, sys, melt):
-    """Creates each of the molecule classes; K values for the relevant equilibria;
-    activity constants at initial pressure; masses of atomic volatiles for mass balance;
-    initial gas species partitioning; normalises the melt oxide composition with the volatile content and
-    records the mass of Fe in the system.
+    """
+    Wrapper function to setup initial conditions of the volcanic system.
+
+    Instantiates the Molecule class for each of the gas phase species.
+    Calculates the equilibrium constants for the system temperature, the
+    initial gas gas composition, the starting pressure (if the saturation
+    pressure is requested) and sets the atomic volatile masses for mass
+    balance conservation. Normalises the melt oxide composition with the
+    volatile content and records the mass of total Fe in the system.
+
+    Parameters
+    ----------
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    melt : Melt class
+        The active instance of the Melt class
+
+    Returns
+    -------
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    melt : Melt class
+        The active instance of the Melt class
+    gas : Gas class
+        The active instance of the Gas class
+    molecules : tuple of Molecule classes
+        A tuple of all the Molecule class instances. Setup to be passed
+        through all functions, preserving ordering.
     """
 
     # Instantiates the Molecule class with each of the species that should be present
@@ -235,10 +352,12 @@ def set_init_chem(run, sys, melt):
     sg.set_Y(sys, molecules)  # Gets all relevant activity coefficients
 
     if run.FIND_SATURATION ==True:
-        sys.sat_conditions = sat.sat_pressure(run, sys, gas, melt, molecules)  # Finds the saturation pressure for the melt composition given, sets sys.P to this and WgT to 0.001%
+        # Finds the saturation pressure for the melt composition given, sets sys.P to this and WgT to 0.001%
+        sys.sat_conditions = sat.sat_pressure(run, sys, gas, melt, molecules)  
 
     elif run.ATOMIC_MASS_SET == True:
-        sys.sat_conditions = fw.sat_pressure(run, sys, gas, melt, molecules)  # Finds the saturation pressure for the melt composition given, sets sys.P to this and WgT to 0.001%
+        # Finds the saturation pressure for the melt composition given, sets sys.P to this and WgT to 0.001%
+        sys.sat_conditions = fw.sat_pressure(run, sys, gas, melt, molecules)  
     
     else:
         sys.get_atomic_mass(run, gas, melt, molecules)  # Gets atomic mass values and initial partitioning

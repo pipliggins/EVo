@@ -10,10 +10,35 @@ import numpy as np
 # FUNCTIONS
 #------------------------------------------------------------------------
 
-def kc91_fo2(C,T,P,FO2):  # If fo2 was set
-    " Returns the mFe2O3/mFeO ratio; pressure in Pa"
-    # Kress and Carmichael 1991, CMP
-    # FO2 is imported as ln(fo2)
+def kc91_fo2(C,T,P,lnfo2):
+    """
+    Calculates the Fe2O3/FeO mole ratio of a melt where the fO2 is known.
+
+    Parameters
+    ----------
+    C : dictionary
+        Major element composition of the silicate melt as MOLE FRACTIONS
+        Required species: Al2O3, FeOt, CaO,  Na2O, K2O    
+    T : float
+        Temperature in degrees K    
+    P : float
+        Pressure in pascals (Pa)    
+    lnfo2 : float
+        ln(fO2)
+
+    Returns
+    -------
+    F : float
+        Fe2O3/FeO mole ratio
+
+    References
+    ----------
+    Kress and Carmichael (1991) The compressibility of silicate liquids
+    containing Fe2O3 and the effect of composition, temperature, oxygen 
+    fugacity and pressure on their redox states.
+    Contributions to Mineralogy and Petrology.
+    """
+    
     a = 0.196
     b = 1.1492e4                # K
     c = -6.675
@@ -31,15 +56,39 @@ def kc91_fo2(C,T,P,FO2):  # If fo2 was set
 
     T0 = 1673.0                 # K
 
-    F = np.exp(a*FO2 + b/T + c +
+    F = np.exp(a*lnfo2 + b/T + c +
                dal2o3*C['al2o3'] + dfeo*C['feo'] + dcao*C['cao'] + dna2o*C['na2o'] + dk2o*C['k2o'] + e*(1.0 - T0/T - np.log(T/T0)) + f*P/T + g*(T-T0)*P/T + h*P**2/T)
 
     # returns mole fraction Fe2O3/FeO
     return(F)
 
-def kc91_fe3(Cm,T,P):  # if the ratio was set
-    "Returns fO2 when provided with fe2o3/feo ratio and composition as mol fraction; pressure in Pa"
-    # Kress and Carmichael 1991, CMP
+def kc91_fe3(Cm,T,P):
+    """
+    Calculates the oxygen fugacity (fO2) of a melt given where the ferric/
+    ferrous ratio is known. 
+
+    Parameters
+    ----------
+    C : dictionary
+        Major element composition of the silicate melt as mole fractions
+        Required species: Al2O3, FeO, Fe2O3, CaO,  Na2O, K2O    
+    T : float
+        Temperature in degrees K    
+    P : float
+        Pressure in pascals (Pa)
+
+    Returns
+    -------
+    FO2 : float
+        Absolute fO2
+    
+    References
+    ----------
+    Kress and Carmichael (1991) The compressibility of silicate liquids
+    containing Fe2O3 and the effect of composition, temperature, oxygen
+    fugacity and pressure on their redox states.
+    Contributions to Mineralogy and Petrology.
+    """
     a = 0.196
     b = 1.1492e4                # K
     c = -6.675
@@ -63,11 +112,30 @@ def kc91_fe3(Cm,T,P):  # if the ratio was set
 
 def r2013_fo2(cm, T, P, lnfo2):
     """
-    Returns the Fe3/Fe2 ratio for a melt where the fO2 is specified, for a high Fe melt.
+    Calculates the Fe2O3/FeO mole ratio of an FeOt>15 wt% melt where the
+    fO2 is known.   
+
+    Parameters
+    ----------
+    C : dictionary
+        Major element composition of the silicate melt as mole fractions
+        Required species: Al2O3, FeOt, CaO, Na2O, K2O, P2O5    
+    T : float
+        Temperature in degrees K    
+    P : float
+        Pressure in pascals (Pa)    
+    lnfo2 : float
+        ln(fO2)
+
+    Returns
+    -------
+    F : float
+        Fe2O3/FeO mole ratio
     
-    Takes the melt composition as normalised mole fractions, with all iron as feo(t), pressure as Pa, converted to GPa
-    
-    Using Righter et al., 2013; valid for FeO(t) values above 15 wt% (Martian shergottities)
+    References
+    ----------
+    Righter et al. (2013) Redox systematics of martian magmas with
+    implications for magnetite stability. American Mineralogist.
     """
         
     a = 0.22
@@ -89,11 +157,28 @@ def r2013_fo2(cm, T, P, lnfo2):
 
 def r2013_fe3(Cm, T, P):
     """
-    Returns the fO2 for a melt where the fe3/fe2 ratio is specified, for a high Fe melt.
-    
-    Takes the melt composition as normalised mole fractions, P in Pa then converted to GPa.
-    
-    Using Righter et al., 2013; valid for FeO(t) values above 15 wt% (Martian shergottities)
+    Calculates the oxygen fugacity (fO2) of an FeOt>15 wt% melt given
+    where the ferric/ferrous ratio is known.
+
+    Parameters
+    ----------
+    C : dictionary
+        Major element composition of the silicate melt as mole fractions
+        Required species: Al2O3, FeOt, CaO, Na2O, K2O, P2O5    
+    T : float
+        Temperature in degrees K    
+    P : float
+        Pressure in pascals (Pa)
+
+    Returns
+    -------
+    FO2 : float
+        Absolute fO2
+
+    References
+    ----------
+    Righter et al. (2013) Redox systematics of martian magmas with 
+    implications for magnetite stability.
     """
         
     a = 0.22

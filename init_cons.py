@@ -2,14 +2,44 @@
 Finds the atomic mass fraction of the system if they haven't already been set (ATOMIC_MASS_SET = True)
 and the saturation pressure hasn't been asked for (FIND_SATURATION=TRUE).
 """
-
-import constants as cnst
-import solubility_laws as sl
 import numpy as np
 from numpy import sqrt
-import messages as msgs
 
-def get_inputs(sys, run, melt, gas, mols):
+import constants as cnst
+import messages as msgs
+import solubility_laws as sl
+
+def get_inputs(sys, run, melt, gas, mols) -> tuple[float, ...]:
+    """
+    Calculates a subset of gas mole fractions based on the provided
+    input parameters.
+
+    Calculates the gas mole fractions corresponding to the initial
+    provided parameters. E.g., calculates the mole fraction of H2O if the
+    weight fraction of H2O in the melt is provided as an input parameter.
+
+    If the fO2 is calculated at this point, the ferric/ferrous ratio in
+    the melt is also set here.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    run : RunDef class
+        The active instance of the RunDef class    
+    melt : Melt class
+        The active instance of the Melt class
+    gas : Gas class
+        The active instance of the Gas class
+    mols : tuple of Molecule classes
+        A tuple of all the Molecule class instances. Setup to be passed
+        through all functions, preserving ordering.
+
+    Returns
+    -------
+    tuple of floats
+        mole fractions of H2O, O2, H2, or CO2, H2O, O2 and H2 is the system is COHS(N).
+    """
 
     if run.GAS_SYS == 'COH':
         H2O, O2, H2, CO, CO2, CH4 = mols
@@ -138,6 +168,35 @@ def get_inputs(sys, run, melt, gas, mols):
         return mCO2, mH2O, mO2, mH2
 
 def oh(sys, run, melt, gas, mols):
+    """
+    Calculates the initial conditions for the OH system.
+
+    Based on the subset of parameters provided at input, where the starting
+    pressure is known, the speciation of the gas phase as mole fractions is
+    calculated. Based on this data, the volatile content of the melt is
+    found and the masses of each volatile element (O, C, H etc) is set,
+    ready for use in the equilibrium constant and mass-balance solution.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    run : RunDef class
+        The active instance of the RunDef class    
+    melt : Melt class
+        The active instance of the Melt class
+    gas : Gas class
+        The active instance of the Gas class
+    mols : tuple of Molecule classes
+        A tuple of all the Molecule class instances. Setup to be passed
+        through all functions, preserving ordering.
+
+    Returns
+    -------
+    sys.atomicM : dict
+        A dictionary containing the mass fraction of each volatile element
+        in the system.
+    """
     H2O, O2, H2 = mols
 
     if run.FH2_SET == True:
@@ -189,6 +248,35 @@ def oh(sys, run, melt, gas, mols):
     return sys.atomicM
 
 def coh(sys, run, melt, gas, mols):
+    """
+    Calculates the initial conditions for the COH system.
+
+    Based on the subset of parameters provided at input, where the starting
+    pressure is known, the speciation of the gas phase as mole fractions is
+    calculated. Based on this data, the volatile content of the melt is
+    found and the masses of each volatile element (O, C, H etc) is set,
+    ready for use in the equilibrium constant and mass-balance solution.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    run : RunDef class
+        The active instance of the RunDef class    
+    melt : Melt class
+        The active instance of the Melt class
+    gas : Gas class
+        The active instance of the Gas class
+    mols : tuple of Molecule classes
+        A tuple of all the Molecule class instances. Setup to be passed
+        through all functions, preserving ordering.
+
+    Returns
+    -------
+    sys.atomicM : dict
+        A dictionary containing the mass fraction of each volatile element
+        in the system.
+    """
     H2O, O2, H2, CO, CO2, CH4 = mols
 
     # uses get_inputs to find which parameters have been set and get the water system.
@@ -241,6 +329,35 @@ def coh(sys, run, melt, gas, mols):
     return sys.atomicM
 
 def soh(sys, run, melt, gas, mols):
+    """
+    Calculates the initial conditions for the SOH system.
+
+    Based on the subset of parameters provided at input, where the starting
+    pressure is known, the speciation of the gas phase as mole fractions is
+    calculated. Based on this data, the volatile content of the melt is
+    found and the masses of each volatile element (O, C, H etc) is set,
+    ready for use in the equilibrium constant and mass-balance solution.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    run : RunDef class
+        The active instance of the RunDef class    
+    melt : Melt class
+        The active instance of the Melt class
+    gas : Gas class
+        The active instance of the Gas class
+    mols : tuple of Molecule classes
+        A tuple of all the Molecule class instances. Setup to be passed
+        through all functions, preserving ordering.
+
+    Returns
+    -------
+    sys.atomicM : dict
+        A dictionary containing the mass fraction of each volatile element
+        in the system.
+    """
     H2O, O2, H2, S2, SO2, H2S = mols
 
     # uses get_inputs to find which parameters have been set and get the water system.
@@ -291,6 +408,35 @@ def soh(sys, run, melt, gas, mols):
     return sys.atomicM
 
 def cohs(sys, run, melt, gas, mols):
+    """
+    Calculates the initial conditions for the COHS system.
+
+    Based on the subset of parameters provided at input, where the starting
+    pressure is known, the speciation of the gas phase as mole fractions is
+    calculated. Based on this data, the volatile content of the melt is
+    found and the masses of each volatile element (O, C, H etc) is set,
+    ready for use in the equilibrium constant and mass-balance solution.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    run : RunDef class
+        The active instance of the RunDef class    
+    melt : Melt class
+        The active instance of the Melt class
+    gas : Gas class
+        The active instance of the Gas class
+    mols : tuple of Molecule classes
+        A tuple of all the Molecule class instances. Setup to be passed
+        through all functions, preserving ordering.
+
+    Returns
+    -------
+    sys.atomicM : dict
+        A dictionary containing the mass fraction of each volatile element
+        in the system.
+    """
     H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S = mols
 
     # uses get_inputs to find which parameters have been set and get the water system + CO2 for full system.
@@ -390,6 +536,35 @@ def cohs(sys, run, melt, gas, mols):
     return sys.atomicM
 
 def cohsn(sys, run, melt, gas, mols):
+    """
+    Calculates the initial conditions for the COHSN system.
+
+    Based on the subset of parameters provided at input, where the starting
+    pressure is known, the speciation of the gas phase as mole fractions is
+    calculated. Based on this data, the volatile content of the melt is
+    found and the masses of each volatile element (O, C, H etc) is set,
+    ready for use in the equilibrium constant and mass-balance solution.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    run : RunDef class
+        The active instance of the RunDef class    
+    melt : Melt class
+        The active instance of the Melt class
+    gas : Gas class
+        The active instance of the Gas class
+    mols : tuple of Molecule classes
+        A tuple of all the Molecule class instances. Setup to be passed
+        through all functions, preserving ordering.
+
+    Returns
+    -------
+    sys.atomicM : dict
+        A dictionary containing the mass fraction of each volatile element
+        in the system.
+    """
     H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2 = mols
 
     # uses get_inputs to find which parameters have been set and get the water system + CO2 for full system.

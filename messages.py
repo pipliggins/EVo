@@ -1,4 +1,4 @@
-""" Stores warning messages used thought the system to alert the user of an input error or failure to run to completion, and an explaination."""
+""" Stores warning messages used thought the system to alert the user of an input error or failure to run to completion, and an explanation."""
 import writeout as wt
 import conversions as cnvs
 import constants as cnst
@@ -6,23 +6,43 @@ import solubility_laws as sl
 import numpy as np
 import sys
 
-def open_step():
-    exit("Warning: Open system degassing is path dependent. \nFor internal consistency, please set the max (DP_MAX) and min (DP_MIN) pressure steps to be equal (we suggest <1 bar for the run to complete; 0.5 bar is usually sufficent)")
-
-def step_size():
-    exit('Error: Please make the minimum stepsize DP_MIN <= maximum stepsize DP_MAX.')
-
 def open_earlyexit(sys, gas, melt): 
+    """
+    Saves the current run information and prints an error to be used in other functions
+
+    Suitable when open system degassing is being used.
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    gas : Gas class
+        The active instance of the Gas class
+    melt : Melt class
+        The active instance of the Melt class
+    """
     wt.writeout_crash(sys, gas, melt, np.arange(sys.run.P_START, sys.P, sys.run.DP_MAX*-1.0))
     print('Error: This run has finished before the assigned P_STOP, as one or more volatile element is now present in too low an amount to solve the system with the specified pressure step.\nPlease try reducing the stepsize for a complete run.\nThe run so far has been written out in Output/dgs_output.csv')
 
 def closed_earlyexit(sys, gas, melt):
-    
+    """
+    Saves the current run information and prints an error to be used in other functions
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    gas : Gas class
+        The active instance of the Gas class
+    melt : Melt class
+        The active instance of the Melt class
+    """
     wt.writeout_crash(sys, gas, melt, sys.P_track)
 
     print('Error: This run has finished before the assigned P_STOP.\n The run so far has been written out in Output/dgs_output.csv')
 
 def earlyexit(sys, gas, melt, msg):
+    """Calls the early exit function and raises an assertion error."""
     if sys.run.RUN_TYPE == 'open':
         open_earlyexit(sys, gas, melt)
     elif sys.run.RUN_TYPE == 'closed':
@@ -30,6 +50,7 @@ def earlyexit(sys, gas, melt, msg):
     raise AssertionError(msg + ' Try reducing the maximum pressure stepsize (DP_MAX) for model convergence.')
     
 def runtime_error(sys, gas, melt, msg):
+    """Calls the early exit function and raises a runtime error."""
     if sys.run.RUN_TYPE == 'open':
         open_earlyexit(sys, gas, melt)
     elif sys.run.RUN_TYPE == 'closed':
@@ -37,14 +58,22 @@ def runtime_error(sys, gas, melt, msg):
     raise RuntimeError(msg)
 
 def query_yes_no(question, default="yes"):
-    """Ask a yes/no question via raw_input() and return their answer.
+    """
+    Ask a yes/no question via raw_input() and return their answer.
 
-    "question" is a string that is presented to the user.
-    "default" is the presumed answer if the user just hits <Enter>.
+    Parameters
+    ----------
+    question : string
+        A string that is presented to the user.
+    default : bool, optional
+        The presumed answer if the user just hits <Enter>.
         It must be "yes" (the default), "no" or None (meaning
         an answer is required of the user).
 
-    The "answer" return value is True for "yes" or False for "no".
+    Returns
+    -------
+    answer : bool
+        True for "yes" or False for "no".
     """
     valid = {"yes": True, "y": True, "ye": True,
              "no": False, "n": False}
@@ -69,6 +98,22 @@ def query_yes_no(question, default="yes"):
                              "(or 'y' or 'n').\n")
 
 def run_chem_mismatch(mtype, lims, sio2):
+    """Checks the SiO2 content and melt descriptor are correct
+
+    If the melt descriptor (e.g. 'basalt') does not match the SiO2 content of the melt,
+    function is called to either force the run to continue, or allow it to be terminated.
+
+    Parameters
+    ----------
+    mtype : {'basalt', 'phonolite', 'rhyolite'}
+        The melt descriptor.
+    lims : List[float, float]
+        upper and lower limits on the SiO2 weight fraction associated with
+        `mtype`.
+    sio2 : float
+        Weight fraction of SiO2 in the melt as set in the chemistry input
+        file.
+    """
     if sio2 < lims[0]:
         print(f'Warning: You specified {mtype.upper()} in the env.yaml file, but the SiO2 content of your melt specified in the chem.yaml file is LESS THAN {lims[0]} wt%.\n')
         answer = query_yes_no('Are you sure you want to continue?', default='no')
@@ -80,7 +125,17 @@ def run_chem_mismatch(mtype, lims, sio2):
         exit('Exiting...')
 
 def solubility_temp(T, limits):
-    
+    """
+    Allows the user to force a run to continue is the T is outside the
+    tested limit of a solubility law.
+
+    Parameters
+    ----------
+    T : float
+        Temperature (K)
+    limits : list of float
+        Upper and lower temperature limits
+    """
     print(f'Warning: The set temperature of {T:3Ng} K is outside the T-dependent solubility limits of {limits[0]} to {limits[1]} K.\n')
     answer = query_yes_no('Would you like to proceed with fixed solubility coefficients?', default='yes')
 
@@ -88,6 +143,26 @@ def solubility_temp(T, limits):
         exit('Exiting...')
 
 def sulfate_warn(s6, sys, gas, melt):
+    """
+    Finishes a pressure step and ends a run.
+
+    Called if sulfate makes up >10% of the dissolved sulfur content.
+
+    Parameters
+    ----------
+    s6 : float
+        The S6+/S_total ratio
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    gas : Gas class
+        The active instance of the Gas class
+    melt : Melt class
+        The active instance of the Melt class
+
+    Raises
+    ------
+    ValueError
+    """
     # Finish off this run
     sys.GvF.append(gas.get_vol_frac(melt))
     sys.rho.append(sys.rho_bulk(melt, gas))
@@ -97,12 +172,29 @@ def sulfate_warn(s6, sys, gas, melt):
         sys.P_track.append(sys.P)
     
     # Writeout results
-
     closed_earlyexit(sys, gas, melt)
 
-    exit(f"Warning: The sulfate (S6+ speciated as SO4) content of the melt is {s6*100:.1f}% of the total melt S content.\nAs sulfate currently does not exsolve, gas phase sulphur-bearing species will now be significantly underestimated.\nRun is terminated here, results up to this point have been exported to CSV.")
+    raise ValueError(f"The sulfate (S6+ speciated as SO4) content of the melt is {s6*100:.1f}% of the total melt S content.\nAs sulfate currently does not exsolve, gas phase sulphur-bearing species will now be significantly underestimated.\nRun is terminated here, results up to this point have been exported to CSV.")
 
 def scss_warn(scss, s, sys, gas, melt):
+    """
+    Finishes a pressure step and ends a run.
+
+    Called if the melt is sulfide saturated and therefore EVo is no longer valid.
+
+    Parameters
+    ----------
+    scss : float
+        The sulfide content at sulfur saturation (ppm)
+    s : float
+        The sulfide content of the melt (ppm)
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    gas : Gas class
+        The active instance of the Gas class
+    melt : Melt class
+        The active instance of the Melt class
+    """
     # Finish off this run
     sys.GvF.append(gas.get_vol_frac(melt))
     sys.rho.append(sys.rho_bulk(melt, gas))
@@ -117,11 +209,18 @@ def scss_warn(scss, s, sys, gas, melt):
 
     exit(f'You have reached sulphide saturation, this code is no longer valid. SCSS: {scss:.1g} ppm, Sulfide in melt: {s:.1g} ppm\nRun is terminated here, results up to this point have been exported to CSV.')
 
-def undersat():
-    exit('Error: The system is volatile undersaturated at this pressure. Please lower the starting pressure and try again.')
-
 def vol_setup_standard(run, sys):
-    "Checks that the conditions set in Env file match the run type specified."
+    """
+    Checks that the conditions set in the environment file match the run
+    type specified.
+
+    Parameters
+    ----------
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    """
     
     # check some volatile species aren't being set twice as wt% and fugacity
     if (run.FH2O_SET == True and run.WTH2O_SET == True) or (run.FCO2_SET == True and run.WTCO2_SET == True):
@@ -207,7 +306,17 @@ def vol_setup_standard(run, sys):
 
 
 def vol_setup_saturation(run, sys):
-    "Checks that the conditions set in Env file match the run type specified when a finding the saturation point is specified."
+    """
+    Checks that the conditions set in the environment file match the
+    requirements for finding the volatile saturation point.
+
+    Parameters
+    ----------
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    """
 
     # check some volatile species aren't being set twice as wt% and fugacity
     if (run.FH2O_SET == True and run.WTH2O_SET == True) or (run.FCO2_SET == True and run.WTCO2_SET == True):
@@ -280,9 +389,20 @@ def vol_setup_saturation(run, sys):
 
 def graphite_warn(melt):
     """
-    Warns of graphite saturation without knowledge of the size of the graphite reservoir if melt_co2 is set but melt is graphite saturated.
+    Warns the melt will be graphite saturated under the initial conditions.
 
-    Returns True is the graphite content is set internally, returns false if it still needs to be calculated.
+    Warns of graphite saturation without knowledge of the size of the
+    graphite reservoir if melt_co2 is set but melt is graphite saturated.
+
+    Parameters
+    ----------
+    melt : Melt class
+        Active instance of the Melt class
+
+    Returns
+    -------
+    bool
+        Returns True if the graphite content has now been set.
     """
     print(f'Warning: The melt is graphite saturated.\n')
     
@@ -328,7 +448,18 @@ def graphite_warn(melt):
 
 def graphite_warn_saturation(melt, fCO2, fO2, CO2):
     """
-    Warns of graphite saturation in saturation solver & provides options to continue.
+    Warns of graphite saturation & provides options to continue
+
+    Parameters
+    ----------
+    melt : Melt class
+        Active instance of the Melt class
+    fCO2 : float
+        CO2 fugacity
+    fO2 : float
+        Absolute oxygen fugacity
+    CO2 : Molecule class
+        CO2 instance of the Molecule class
     """
 
     print('Warning: Melt is graphite saturated at the volatile saturation pressure.\nRun cannot proceed without knowing the size of the graphite reservoir at volatile saturation.\n')
@@ -355,6 +486,17 @@ def graphite_warn_saturation(melt, fCO2, fO2, CO2):
         exit('Error: Run cannot proceed without knowing the size of the graphite reservoir at volatile saturation.\nExiting...')
 
 def fo2_model_mismatch(feot, run):
+    """
+    Warns that the model selected for Ferric/Ferrous -> fO2 is out of
+    bounds for the amount of Fe in the melt.
+
+    Parameters
+    ----------
+    feot : float
+        total weight fraction of Fe in the melt
+    run : RunDef class
+        Active instance of the RunDef class
+    """
 
     names = {'r2013':'Righter et al. (2013)', 'kc1991':'Kress & Carmicheal (1991)'}
     

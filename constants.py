@@ -3,7 +3,8 @@
 # Universal gas constant
 R = 8.3144598
 
-m = {}  # atomic and molecular masses  g/mol
+m = {}
+"""Atomic and molecular masses, g/mol"""
 m['h'] = 1.00794
 m['o'] = 15.9994
 m['c'] = 12.0000
