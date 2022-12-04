@@ -57,6 +57,7 @@ solve homogenoud and heterogeneous equilibria simultaneously at each step
 
 import argparse
 import time
+import pandas as pd
 
 from evo.dgs_classes import *
 from evo.readin import *
@@ -143,6 +144,10 @@ def main(f_chem, f_env, f_out):
 
         writeout_file(sys, gas, melt, sys.P_track)
         writeout_figs(sys, melt, gas, out, sys.P_track)
+
+        filepath = Path(__file__).parent / "Output"
+        df = pd.read_csv(filepath / "dgs_output.csv", sep='\t', header=8)
+        return df
 
 if __name__ == "__main__":
        
