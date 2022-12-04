@@ -362,7 +362,7 @@ def set_init_chem(run, sys, melt):
     else:
         sys.get_atomic_mass(run, gas, melt, molecules)  # Gets atomic mass values and initial partitioning
 
-    sys.norm_with_gas(melt, molecules, gas)  # Normalises the wt % fractions of oxides in the melt with the volatile species and FeO(t).
+    sys.norm_with_gas(melt)  # Normalises the wt % fractions of oxides in the melt with the volatile species and FeO(t).
 
     sys.get_wto_tot(melt)  # Gets the total WtO after the melt (and therefore Fe) has been normalised to the gas content
 

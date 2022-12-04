@@ -27,10 +27,104 @@ import solubility_laws as sl
 # ------------------------------------------------------------------------
 
 #  -------------------------------------------------------------------------
+#
+""" Creates an object defining the parameters of the degassing run.
+Contains system properties, start and stop T/P, FO2 and buffering.
+fo2 - Delta FMQ (Frost 1991, Rev. Min.)
+"""
 class RunDef:
-    """ Creates an object defining the parameters of the degassing run.
-    Contains system properties, start and stop T/P, FO2 and buffering.
-    fo2 - Delta FMQ (Frost 1991, Rev. Min.)
+    """
+    Stores the parameters of the degassing run
+
+    Attributes
+    ----------
+    COMPOSITION : {'basalt', 'phonolite', 'rhyolite'}
+        Name of magma composition
+    RUN_TYPE : {'closed', 'open'}
+        Run type - closed keeps gas and melt in contact, open removes an
+        aliquot of the gas after every pressure step
+    SINGLE_STEP : bool, default = False
+        Choose whether to calculate the composition at a single pressure
+    FIND_SATURATION : bool, default = False
+        Choose to calculate the volatile saturation point rather than set
+        a starting pressure
+    GAS_SYS : {'OH', 'COH', 'SOH', 'COHS', 'COHSN'}
+        Sets the volatile elements of interest
+    FE_SYSTEM : bool, default = True
+        If True, oxygen is exchanged between iron in the melt and the gas
+    S_SAT_WARN : bool, default = True
+        If true, stops a run is the melt becomes sulfide saturated.
+    T_START : float
+        System temperature, K
+    P_START : float
+        Starting pressure, bar
+    DP_MIN : float
+        Minimum pressure step size, bar. Must be equal to `DP_MAX` if
+        `RUN_TYPE` = 'open'
+    DP_MAX : float
+        Maximum pressure step size, bar. Must be equal to `DP_MIN` if
+        `RUN_TYPE` = 'open'
+    MASS : float
+        System mass, grams
+    WgT : float
+        Initial gas mass fraction (not percent). Not required if either
+        `FIND_SATURATION` or `ATOMIC_MASS_SET` = True.
+    LOSS_FRAC : float, <1
+        The fraction of the total gas in the system to be removed if 
+        `RUN_TYPE` = 'open'.
+    DENSITY_MODEL : {'spera2000'}
+        Select a model to calculate the magma density with.
+    FO2_MODEL : {'kc1991', 'r2013'}
+        Select the model to calculate the relationship between the ferric/
+        ferrous ratio and the melt fO2.
+    FMQ_MODEL : {'frost1991'}
+        Select the model to calculate fO2 mineral buffers with
+    H2O_MODEL : {'burguisser2015'}
+        Select the H2O solubility model
+    H2_MODEL : {'gaillard2003', 'burguisser2015'}
+        Select the H2 solubility model
+    C_MODEL : {'burguisser2015', 'eguchi2018'}
+        Select the CO2 solubility model
+    CO_MODEL : {None, 'armstrong2015'}
+        Select the CO solubility model
+    CH4_MODEL : {None, 'ardia2013'}
+        Select the CH4 solubility model
+    SULFIDE_CAPACITY : {'oneill2020', 'oneill2002'}
+        Select the sulfide capacity model
+    SULFATE_CAPACITY : {'nash2019'}
+        Select the sulfate capacity model
+    SCSS : {'liu2007'}
+        Select the model to calculate the sulfide capacity at sulfide
+        saturation
+    N_MODEL : {'libourel2003'}
+        Select the N2 solubility model
+    FO2_buffer : {'FMQ', 'IW', 'NNO'}
+        Mineral buffer to cite fO2 relative to
+    FO2_buffer_START : float
+        System fO2 relative to `FO2_buffer`.
+    FO2_START : float
+        Set the absolute fO2. Do not use in conjunction with `FO2_buffer_START`.
+    FH2_START : float
+        Set the H2 fugacity as a starting condition (bar)
+    FH2O_START : float
+        Set the H2O fugacity as a starting condition (bar)
+    FCO2_START : float
+        Set the CO2 fugacity as a starting condition (bar)
+    ATOMIC_MASS_SET : bool, default False
+        Choose to set the mass of each volatile element in the system and calculate the volatile saturation point, rather than set
+        a starting pressure
+    ATOMIC_H, ATOMIC_C, ATOMIC_S, ATOMIC_N : float
+        Mass fraction (parts per million) of the corresponding element in
+        the system. Only use alongside `ATOMIC_MASS_START`.
+    WTH2O_START, WTCO2_START, SULFUR_START, NITROGEN_START : float
+        Initial weight FRACTION (not %) of the species dissolved in the
+        melt at the starting pressure.
+    GRAPHITE_SATURATED  : bool, default = False
+        If True, the melt starts graphite saturated, with a mass of 
+        graphite specified in `GRAPHITE_START`.
+    GRAPHITE_START : float
+        Initial melt graphite content as a weight fraction, use if 
+        `GRAPHITE_SATURATED` is True
     """
 
     # keep track of number of possible parameters (mainly for output purposes)
@@ -45,7 +139,7 @@ class RunDef:
         self.SINGLE_STEP = False                # Specifies single pressure or full decompression
         self.FIND_SATURATION = False            # Search for the saturation point based on melt composition; ignores P_Start and WgT
         self.GAS_SYS = "OH"                     # Sets the gas phase system user wants to look at
-        self.FE_SYSTEM = False                  # Set to true to run iron equilibration steps
+        self.FE_SYSTEM = True                   # Set to true to run iron equilibration steps
         self.OCS = False
         self.S_SAT_WARN = True                  # Turns the check on sulphur saturation on/off for a system including S and Fe_system on.
 
@@ -64,7 +158,7 @@ class RunDef:
         self.FO2_MODEL = str('kc1991')
         self.FMQ_MODEL = str('frost1991')
         self.H2O_MODEL = str('burguisser2015')
-        self.H2_MODEL = str('burguisser2015')
+        self.H2_MODEL = str('gaillard2003')
         self.C_MODEL = str('burguisser2015')
         self.CO_MODEL = str('None')
         self.CH4_MODEL = str('None')     
@@ -107,6 +201,16 @@ class RunDef:
 
 
     def param_set(self, params):
+        """
+        Sets class up with parameters from the environment file.
+
+        Checks for invalid strings and values from the input file.
+
+        Parameters
+        ----------
+        params : dict
+            dictionary of attribute:value pairs read in from yaml file.
+        """
 
         # expect dictionary of key:value pairs
         # force type based on what's already been set
@@ -133,23 +237,21 @@ class RunDef:
             exit(f"RUN_TYPE '{self.RUN_TYPE}'' is not recognised. Please select either 'closed' or 'open'; gas-only is not available in this release.")
         
         if self.MASS <= 0:
-            sys.exit("Error: The system has no mass value")
+            raise ValueError("The system has no mass value")
         
-        if self.WgT <= 0:
-            sys.exit("Error: A gas weight fraction of greater than 0 must be entered")
+        if self.WgT <= 0 and self.FIND_SATURATION == False and self.ATOMIC_MASS_SET == False:
+            raise ValueError("A gas weight fraction of greater than 0 must be entered if the saturation pressure is not being calculated.")
 
 
-    # helper methods
     def zTest_Params(self, par):  # z is a fudge to put at end of print list, so l stops the 'method class' stuff printing
-
+        """Checks `par` is a valid attribute of the RunDef class"""
         for item in inspect.getmembers(self):
             if item[0] == par:
                 return True
         return 0
 
-    # Prints the run conditions to the console
     def print_conditions(self):
-        
+        """Prints the run conditions to the terminal after setup with file."""
         l = 0
         for item in inspect.getmembers(self):
             if l < self.n_par:
@@ -161,7 +263,51 @@ class RunDef:
 
 #  -------------------------------------------------------------------------
 class ThermoSystem:
-    """ Thermodynamic properties of the whole system (gas and melt) """
+    """
+    Thermodynamic properties of the whole system (gas and melt).
+
+    Attributes
+    ----------
+
+    run : RunDef class
+        Active instance of the RunDef class
+    T : float
+        System temperature (K), inherited from RunDef
+    P : float
+        Current pressure (bar)
+    P_step : float
+        The current size of the pressure step to take (bar)
+    P_track : list of floats
+        Stores the pressures at which solutions have been found
+    M : float
+        The system mass, inherited from RunDef
+    rho : list of floats
+        The current bulk density of the melt+gas at every step
+    sat_conditions : tuple
+        Stores the saturation conditions (P_sat, gas composition, fugacity
+        coefficients, melt content)
+    graph_unsat_rerun : bool, default = False
+        Records whether a re-run of a pressure is being performed because
+        the melt became graphite under-saturated.
+    FO2 : float
+        current absolute fO2 STORED AS LN(FO2)
+    FO2_buffer : float
+        Stores the fO2 of the system relative to the mineral buffer stored
+        in RunDef.
+    SC : list of str
+        Stores the system chemistry - the gas species being modelled.
+    K : dict
+        Stores the the equilibrium constants for gas phase equilibria
+    atomicM : dict
+        Masses of each volatile element - weight fractions.
+    WgT : list of floats
+        stores the total gas weight fraction at every pressure step.
+    GvF : list of floats
+        Stores the gas volume fraction at every pressure step
+    Cw : dict
+        Stores the SYSTEM mass fractions of oxides and volatile elements, 
+        normalised to 1. Iron stored as Fe so oxygen isn't counted twice.    
+    """
 
     def __init__(self, run):
         self.run = run
@@ -177,7 +323,6 @@ class ThermoSystem:
         # intialise for subsequent setting
         self.FO2 = None                 # fo2 # STORED AS A LN(FO2) SO DO e**SELF.FO2 WHERE IT'S NEEDED
         self.FO2_buffer = None          # stores the fo2 as a value relative to the chosen buffer, default is FMQ.
-        self.FH2 = None                 # fH2
         self.SC = []                    # System chemistry - i.e. gas species present.
         self.K = {}                     # Stores K values (equilibrium constants)
         self.atomicM = {}               # Atomic masses for mass balance - weight fraction
@@ -188,14 +333,25 @@ class ThermoSystem:
 
     @property
     def Ppa(self):
-        """
-        Converts system pressure in bar, to pressure in pascal (Pa)
-        """
+        """Converts system pressure in bar, to pressure in pascal (Pa)"""
         return self.P*1e5
     
     # Selects the system chemistry from the system the user wants to examine.
     def gas_system(self, run):
+        """
+        Selects the system chemistry given the elements the user wishes to track.
+        
+        Parameters
+        ----------
+        run : RunDef class
+            Active instance of the RunDef class
 
+        Returns
+        -------
+        self.SC : list of str
+            List of all the gas phase species.
+        """
+        
         run.GAS_SYS = run.GAS_SYS.upper()
 
         def perm(string, length):
@@ -225,6 +381,7 @@ class ThermoSystem:
         return self.SC
 
     def get_atomic_mass(self, run, gas, melt, mols):
+        """Finds the masses of volatile elements in the system."""
 
         if run.GAS_SYS == 'OH':
             ic.oh(self, run, melt, gas, mols)
@@ -237,7 +394,20 @@ class ThermoSystem:
         elif run.GAS_SYS == 'COHSN':
             ic.cohsn(self, run, melt, gas, mols)
 
-    def norm_with_gas(self, melt, mols, gas):  # for iron equilibration.
+    def norm_with_gas(self, melt):  # for iron equilibration.
+        """
+        Normalises the melt with the gas phase ready to equilibrate the oxygen.
+
+        Updates the Cw attribute of ThermoSystem to be oxides + gases
+        normalised to 1. Finds the ferric/ferrous ratio and adds this
+        to melt.F
+
+        Parameters
+        ----------
+        melt : Melt class
+            Active instance of the Melt class
+        """
+        
         cons = 0  # holds the values that DON'T want to be normalised, i.e. volatile species and iron content
         C_s = {}  # Holds the values to be normalised
         C_w = melt.Cw()  # wt %
@@ -265,8 +435,23 @@ class ThermoSystem:
         melt.F.append(F)
 
     def get_wto_tot(self, melt):
-        # This is after the norm with gas step, so factors in the gas equilibration.
-        # update self.Cw so it has feo/fe2o3 ratio in, and then change the volatile storage so stores as o, ogas and ofe
+        """
+        Calculates the total amount of O: volatile system + iron.
+        
+        Finds the mass fraction of elemental iron, O stored in Fe within
+        the melt and total O in the system. Updates self.Cw so it has 
+        feo/fe2o3 ratio.
+
+        Parameters
+        ----------
+        melt : Melt class
+            Active instance of the Melt class
+
+        Returns
+        -------
+        self.atomicM : dict
+            Dict of the volatile element masses, updated with oxygen values
+        """
 
         Cm = cnvs.wt2mol(self.Cw)
         
@@ -300,13 +485,19 @@ class ThermoSystem:
         """
         Calculate the amount of oxygen in the melt for use in solver.
 
-        Args:
-            melt (class): active instance of the Melt class
-            mo2 (mpfr): current mol fraction of O2 in the gas phase
-            O2 (class): O2 instance of the Molecule class
+        Parameters
+        ----------
+        melt : Melt class
+            Active instance of the Melt class
+        mo2 : float
+            Current mol fraction of O2 in the gas phase
+        O2 : Molecule class
+            O2 instance of the Molecule class
 
-        Returns:
-            ofe (mpfr): atomic mass of O in the melt.
+        Returns
+        -------
+        ofe : float
+            Mass of volatile elemental O in the melt.
         """
 
         fo2 = np.log(O2.Y * mo2 * self.P)
@@ -320,7 +511,19 @@ class ThermoSystem:
 
     def fe_save(self, melt, mo2, O2):
         """
-        Saveout the amount of O in the gas and melt respectively after a successful fe_equil run.
+        Saveout the amount of O in the gas and melt.
+
+        After the melt is in redox equilibrium with the gas phase, the
+        amount of oxygen and the ferric/ferrous ratio is recorded.
+
+        Parameters
+        ----------
+        melt : Melt class
+            Active instance of the Melt class
+        mo2 : float
+            mole fraction of O2 in the gas phase
+        O2 : Molecule class
+            O2 instance of the Molecule class
         """
 
         fo2 = np.log(O2.Y * mo2 * self.P)
@@ -337,18 +540,19 @@ class ThermoSystem:
     
     def mass_conservation_reset(self, melt, gas):
         """
-        If mass is no longer conserved go back and rerun last step with lower stepsize.
+        Deletes results of current run to redo at a higher pressure.
 
-        If the atomic masses are no longer being conserved, delete the results of the 
-        last run and reduces the stepsize to help convergence towards the correct
-        solution.
+        Called if the element masses are no longer being conserved. Deletes
+        the results of the last run and reduces the step size to help
+        convergence towards the correct solution, ready to run again with
+        the same initial conditions at a higher pressure.
 
-        Args:
-            melt (class): active instance of the Melt class
-            gas (class): active instance of the Gas class
-        
-        Returns:
-            None
+        Parameters
+        ----------
+        melt : Melt class
+            Active instance of the Melt class
+        gas : Gas class
+            Active instance of the Gas class
         """
 
         sys_lsts = [self.WgT, self.GvF, self.rho]
@@ -377,13 +581,16 @@ class ThermoSystem:
             msgs.closed_earlyexit(self, gas, melt)
             exit('Error: Mass is no longer being conserved. Please reduce the minimum pressure stepsize and try again.\nExiting...')
 
-    # Reduces the size of the pressure step by factors of 10 as it approaches the P_STOP value.
     def pressure_step(self):
+        """Reduces the pressure step size by x10 as it approaches `P_STOP`"""
 
-        if self.P - self.P_step > self.run.P_STOP: # If taking another pressure step won't take you below the final pressure specified, continue.
+        # If taking another pressure step won't take you below the final pressure specified, continue.
+        if self.P - self.P_step > self.run.P_STOP: 
             self.P -= self.P_step
         
-        elif self.P - self.P_step/10 > self.run.P_STOP and self.P_step/10 <= self.run.DP_MIN: # If taking another step puts you below the min pressure and step/10 is less than the minimum stepsize, set stepsize to min.
+        # If taking another step puts you below the min pressure and step/10 is less 
+        # than the minimum stepsize, set stepsize to min.
+        elif self.P - self.P_step/10 > self.run.P_STOP and self.P_step/10 <= self.run.DP_MIN: 
             self.P_step = self.run.DP_MIN
             self.P -= self.P_step
         
@@ -399,7 +606,7 @@ class ThermoSystem:
                 self.P -= self.P_step  # This will trigger the outer loop when it sees self.P < P_STOP.
         
     def variable_step(self):
-        # reduces the step size by x10 when called during decompression
+        """Reduces the step size by x10 when called during decompression"""
 
         if self.P_step / 10 >= self.run.DP_MIN:
             self.P = self.P + self.P_step - (self.P_step/10)
@@ -410,12 +617,51 @@ class ThermoSystem:
             return f'Minimum pressure step reached without achieving convergence at {self.P} bar.'
 
     def rho_bulk(self, melt, gas):
+        """Returns the density of the bulk magma (gas+melt combined)"""
+
         return (gas.rho()*self.GvF[-1]) + (melt.rho(P=self.P*1e5)*(1-self.GvF[-1]))
 
 
 #  -------------------------------------------------------------------------
 class Molecule:
-    """Defines the properties of each molecular species in the gas phase"""
+    """
+    Defines the properties of each molecular species in the gas phase
+    
+    Parameters
+    ----------
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+    melt : Melt class
+        The active instance of the Melt class
+    mol : str
+        The name of the molecule being instantated
+    
+    Attributes
+    ----------
+    Mol : str
+        Molecule name
+    M : float
+        Molecular mass (g/mol)
+    PTcrit : dict
+        Critical T's (K) and P's (bar) for calculating fugacity coefficients
+        using the method from Shi and Saxena (1992)
+    solCon : dict
+        Contains the 'a' and 'b' solubility constants for use in solubility
+        laws from Burguisser & Scaillet (2015).
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+    melt : Melt class
+        The active instance of the Melt class
+    delG : float
+        Gibbs free energy of formation
+    Y : float
+        Current fugacity coefficient
+    y_constants : dict
+        Stores any constants required for calculating the fugacity
+        coefficient.
+    """
 
     def __init__(self, run, sys, melt, mol):
 
@@ -468,18 +714,31 @@ class Molecule:
         self.Y = 0              # Fugacity coefficient
         self.y_constants = {}   # Stores any constants needed for the activity coefficient calculation
 
-    def get_G(self, sys):
-        """Gets the Gibbs free energy of formation for a given temperature for K calculation.
-        Assumes that T is going to be constant - if not then read in ALL values of G for later pick + choose.
+    def get_G(self, T):
         """
-        T = sys.T
+        Gets the Gibbs free energy of formation.
+        
+        Calculates the GfF for a given temperature, to use in calculations
+        of equilibrium constants. Reads in critical data for the species
+        from the Data folder, linearly interpolating between temperatures.
+
+        Parameters
+        ----------
+        T : float
+            Current temperature (K)
+
+        Returns
+        -------
+        self.delG : float
+            Gibbs free energy of formation
+        """
 
         path = open("Data/"+self.Mol+".txt", "r")        # Opens the file for data for the molecule
         Temp_ref = []                                    # To store temperatures which need to be interpolated
         del_G_ref = []                                   # To store values of G which need to be interpolated
         inter_count = 0
-        for aRow in path:                                # iterates through the file to find the correct values according to the temperature provided.
-            values = aRow.split('\t')                    # indicates tab delimited
+        for aRow in path:                                # iterates through file to find correct values according to T provided.
+            values = aRow.split('\t')
             if not aRow.startswith('#'):                 # takes out descriptive headers
                 if T - float(values[0]) == 0:            # can find K with values in table, no interpolation needed
                     self.delG = float(values[6])         # adds name of mol. and delG. of form. to the del_G dictionary
@@ -499,7 +758,50 @@ class Molecule:
 
 #  -------------------------------------------------------------------------
 class Melt:
-    """Creates an object which is specifically the melt - stores mass and chemical composition"""
+    """
+    Creates an object for the silicate melt, stores mass and chemical comp
+    
+    Parameters
+    ----------    
+    run : RunDef class
+        The active instance of the RunDef class
+    sys : ThermoSystem class
+        The active instance of the ThermoSystem class
+
+    Attributes
+    ----------
+    graphite_sat : bool, default = False
+        Records whether the melt is currently graphite saturated
+    Cs : dict
+        Stores the major oxide chemistry as real mass values (g).
+        All iron as FeO.
+    cm_dry : dict
+        Dry major oxide composition as mole fractions, with feo+fe2o3
+    cm_density : dict
+        Stores the normalised major oxide comp plus H2O and CO2 as mole 
+        fractions, for use calculating the melt density.
+    cm_volatiles : dict
+        Stores the full melt composition, major oxides plus volatiles, as
+        mole fractions.
+    fmq : list of floats
+        Stores the fO2 of the melt at every pressure step relative to the
+        FMQ buffer
+    h2o, h2, co2, co, ch4, sulfide, sulfate, n : list of floats
+        Stores the melt weight fraction of each species after every 
+        pressure step
+    s : list of floats
+        Stores the total melt S weight fraction after every P step
+    F : list of floats
+        Stores the ferric/ferrous ratio of the melt after every P step
+    ofe : list of floats
+        Store the mass of O in iron oxides after every P step
+    graph_current : float
+        The number of moles in the system in the current timestep
+    graphite : list of floats
+        Stores the weight fraction of graphite in the melt after every P step
+    rho_store : list of floats
+        Stores the density of the volatile free melt after every P step
+    """
 
     def __init__(self, run, sys):
         self.run = run
@@ -509,15 +811,12 @@ class Melt:
         self.cm_dry = {}  # Stores silicate melt composition as a mol fraction including both feo and fe2o3
         self.cm_density = {}  # Stores the mol fraction composition of the silicate melt plus dissolved H2O and CO2 content for melt density calculation.
         self.cm_volatiles = {}  # Stores the mol fractions of the entire melt here, all volatiles plus silicate ions, normalised to 1
-        self.fe_mass = 0
         self.fmq = []
         self.h2o = []
         self.h2 = []
         self.co2 = []
         self.co = []
         self.ch4 = []
-        self.so2 = []
-        self.h2s = []
         self.sulfide = []  # stores s2-
         self.sulfate = []  # stores s6+
         self.s = []  # stores the melt S content (mass of S in so2 and h2s dissolved) - now based on s2(g) -> s2-
@@ -529,7 +828,23 @@ class Melt:
         self.rho_store = []
 
     def chem_init(self, eles, chem):
+        """
+        Loads in major oxide composition from chemistry file.
 
+        Gets the weight percent and actual masses of the oxide species
+        in the silicate melt, adds in fe2o3 as a required species if
+        missing, checks the ferric/ferrous model is appropriate for
+        the amount of iron in the melt and calculates the fO2 if the
+        ferric/ferrous ratio has been given.
+
+        Parameters
+        ----------
+        eles : list of str
+            The oxide names present in the silicate melt
+        chem : list of floats
+            The proportion of each species in the melt as weight PERCENT
+        """
+        
         # intialise constant masses of oxides vectors
         # as record of conserved system property
         self.C_s = {}           # actual oxide masses (g) NOT MASS FRACTION
@@ -571,6 +886,24 @@ class Melt:
         self.eles = self.Cs.keys()
 
     def iron_fraction(self, fo2, ppa = None):
+        """
+        Returns the melt composition and ferric/ferrous ratio for a given fO2
+
+        Parameters
+        ----------
+        fo2 : float
+            Ln(fO2)
+        ppa : float, optional
+            Current pressure in pascal, by default None. If None, pressure
+            is taken from the ThermoSystem object
+
+        Returns
+        -------
+        composition : dict
+            major oxide composition as mole fractions, updated with new ferric/ferrous ratio
+        F : float
+            ferric/ferrous ratio
+        """
 
         if ppa == None:
             ppa = self.sys.Ppa
@@ -604,18 +937,22 @@ class Melt:
 
     def cm_singleO(self, mol_oxides):
         """
-        Converts major element oxides as wt frac, to the composition as mol fractions
-        on a single oxygen basis.
+        Returns the melt composition as mol fracs on a single oxygen basis
 
-        Args:
-            mol_oxides (dict): Melt composition as mol fraction
+        Parameters
+        ----------
+        mol_oxides : dict
+            Melt composition as mole fractions
 
-        Returns:
-            cation_formula (dict): Melt composition as single oxygen mole fractions, with names as cations only.
+        Returns
+        -------
+        cation_formula : dict
+            Melt composition as single oxygen mole fractions, with names
+            as cations only.
         """
 
         def num_oxygen(x):
-            
+            """Returns the number of oxygen atoms in a species"""
             if x in ['na2o', 'k2o', 'mgo', 'cao', 'mno', 'feo', 'nio']:
                 return 1
             
@@ -629,6 +966,7 @@ class Melt:
                 return 5
         
         def num_anion(x):
+            """Returns the number of anion atoms in a species"""
             if x in ['sio2', 'tio2', 'mgo', 'cao', 'mno', 'feo', 'nio']:
                 return 1
 
@@ -664,14 +1002,20 @@ class Melt:
     def formula_weight(self, fo2, P):
         """
         Calculates the single-O formula weight of the volatile-free melt.
-        Finds the fe2/fe3 content first.
-
-        Args:
-            fO2 (float): Oxygen fugacity (bar)
-            P (float): Pressure (bar)
         
-        Returns:
-            fwm (float): The mean formula weight (g/mol)
+        Finds the fe2/fe3 ratio first.
+
+        Parameters
+        ----------
+        fO2 : float
+            Absolute oxygen fugacity (bar)
+        P : float
+            Pressure (bar)
+        
+        Returns
+        -------
+        fwm : float
+            The mean formula weight (g/mol)
         """
 
         mol_oxides = self.iron_fraction(np.log(fo2), ppa = P*1e5)[0]
@@ -692,7 +1036,7 @@ class Melt:
         return fwm
     
     def rho(self,T=None,P=None):
-        """calculates the density of the silicate melt phase (without any dissolved volatiles)"""
+        """calculates the density of the volatile-free silicate melt"""
         if T is None:
             T = self.sys.T
         if P is None:
@@ -706,9 +1050,27 @@ class Melt:
         # K, Pa
         if self.run.DENSITY_MODEL == "spera2000":
             return density.den_calc_spera2000(composition, T, P)
-        
+
     def sulfide_sat(self, comp):
-        "Comp is the dictionary containing the normalised mol fraction of the melt phase, including dissolved volatiles."
+        """
+        Calculates the sulfur content at sulfide saturation of the melt
+
+        Parameters
+        ----------
+        comp : dict
+            The composition of the melt as mole fractions, including the
+            dissolved volatile content.
+
+        Returns
+        -------
+        float
+            The sulfur content at sulfide saturation, in parts per million
+
+        References
+        ----------
+        Liu, Y., Samaha, N-T., Baker, D.R. (2007) Sulfur concentration at 
+        sulfide saturation (SCSS) in magmatic silicate melts. GCA.
+        """
         
         if self.run.SCSS == 'liu2007':
             "Liu et al 2007"
@@ -734,6 +1096,19 @@ class Melt:
             return np.exp(11.35251 - 4454.6/self.sys.T - 0.0319*(self.sys.P/self.sys.T) + 0.71006*np.log(MFM) - 1.98063*(MFM*mH2O) + 0.21867*np.log(mH2O) + 0.36192*np.log(mFeO))
 
     def melt_dicts(self):
+        """
+        Generates dicts containing the mole fraction composition of
+        melt+volatiles, and one to calculate the density with.
+
+        Returns
+        -------
+        melt_wet_mol : dict
+            Melt + volatile composition as mole fractions,
+             for melt.cm_volatiles
+        density_mol : dict
+            Melt + CO2 + H2O composition as mole fractions,
+             for melt.cm_density
+        """
         dry_wt = cnvs.mol2wt(self.cm_dry)
         dry_wt['wgt'] = self.sys.WgT[-1]
 
@@ -745,7 +1120,7 @@ class Melt:
         dry_wt['s'] = self.s[-1]
         dry_wt['n'] = self.n[-1]
         
-        sys_wet_wt = cnvs.norm(dry_wt)
+        sys_wet_wt = cnvs.norm(dry_wt) # PL: check this at a later date, seems superfluous?
 
         melt_wet_wt = dict(sys_wet_wt)
         melt_wet_wt.pop('wgt', None)
@@ -766,8 +1141,22 @@ class Melt:
         return melt_wet_mol, density_mol
     
     def melt_composition(self, gas, mols):
-        """Calculates the amount of volatile in the melt, creates a normalised melt composition of minerals and dissolved volatiles,
-        then checks for sulphide (and eventually carbon) saturation."""        
+        """
+        Major function to run at end of P step, updates all results stores.
+
+        Runs after a successful pressure step. Calculates and stores the
+        new volatile content of the melt, saves the fO2, ferric/ferrous
+        ratio and new major oxide fractions, and checks for both sulfide
+        saturation and whether the sulfate fraction exceeds 10% (at which 
+        point the run ends).
+        
+        Parameters
+        ----------
+        gas : Gas class
+            Active instance of the Gas class
+        mols : list of Molecule classes
+            A list of the active Molecule classes
+        """        
         
         # set the molecule names, and calculate the melt volatile weight percents.
         if self.run.GAS_SYS == 'OH':
@@ -852,8 +1241,31 @@ class Melt:
                 msgs.sulfate_warn(S6/(S+S6), self.sys, gas, self)   # If the S6 content is >10%, writes out current data and closes as so4 currently doesn't degass.
 
 #  -------------------------------------------------------------------------
+"""Stores the properties of the exsolved gas as it decompresses. Holds the results of each decompression step. """
 class Gas:
-    """Stores the properties of the exsolved gas as it decompresses. Holds the results of each decompression step. """
+    """Stores the properties and results for the gas as it decompresses.
+
+    Attributes
+    ----------
+    sys : ThermoSystem object
+        Active instance of the ThermoSystem class
+    fo2 : string of floats
+        ln(fo2) after every pressure step
+    mO2, mH2O, mH2, mCO, mCO2, mCH4, mSO2, mH2S, mS2, mN2 : list of floats
+        Stores the mole fractions of each species in the gas phase after
+        every pressure step
+    atomicM : dict
+        Stores the mass fraction of each element in the gas phase
+    wt : dict
+        Temporary store for the results of converting mole frac to wt frac
+    Wt : dict
+        Stores the gas weight fraction after every pressure step
+    f : dict
+        Stores the fugacity of each species in the gas phase after every 
+        pressure step
+    M : list of floats
+        Stores the mean molecular mass of the gas phase after every P step
+    """
 
     def __init__(self, sys):
         self.sys = sys
@@ -867,7 +1279,6 @@ class Gas:
         self.mSO2 = []
         self.mH2S = []
         self.mS2 = []
-        self.mOCS = []
         self.mN2 = []
         self.atomicM = {}
         self.wt = {}    # Temporary store for the results of converting mole frac to weight frac
@@ -921,7 +1332,21 @@ class Gas:
             return wgt
 
     def get_vol_frac(self, melt):
-        # EQ 15, D-Compress paper. Returns the gas volume fraction of the system (a).
+        """
+        Returns the gas volume fraction of the system.
+
+        Eq 15 of Burguisser & Scaillet (2015).
+
+        Parameters
+        ----------
+        melt : Melt class
+            Active instance of the Melt class
+
+        Returns
+        -------
+        GvF : float
+            The volume fraction of gas in the system.
+        """
 
         if self.sys.run.GAS_SYS == 'OH':
             self.wt = cnvs.mols2wts(H2O=self.mH2O[-1], O2=self.mO2[-1], H2=self.mH2[-1])
@@ -963,8 +1388,19 @@ class Gas:
         return GvF
 
     def get_fugacity(self, molecules, gas_phase):
-        """returns the fugacity of species in the gas phase.
-        Data provided as a list of molecule instances (e.g. H2O) and their corresponding mol fraction values (e.g. gas.mH2O[-1])"""
+        """Returns the fugacity of each species in the gas phase.
+
+        Saves the fugacities directly to self.f. Inputs as [H2O, O2,...],
+        [gas.mH2O[-1], gas.mO2[-1],...].
+
+        Parameters
+        ----------
+        molecules : list of Molecule instances
+            List of all the Molecule instances, corresponding to all 
+            species in the gas phase.
+        gas_phase : list of floats
+            List of gas phase mole fractions, in same order as `molecules`
+        """
 
         for m, g in zip(molecules, gas_phase):  # zips together an instance of the molecule class to it's corresponding list of stored mol frac values
             if isinstance(m, str):
@@ -980,6 +1416,7 @@ class Gas:
                     self.f[m.Mol] = [m.Y * g * self.sys.P]
 
     def rho(self):
+        """Returns the density of the gas phase"""
         M = 0
         for mol in self.sys.SC:
             M += self.wt[mol] * cnst.m[mol.lower()]
@@ -987,10 +1424,36 @@ class Gas:
         return ((M/1000)*self.sys.P*1e5) / (cnst.R * self.sys.T)
 
     def get_ys(self, system):
-        # Calls the solvgas find_Y function to recalculate activity constants for each species in the system in question
+        """
+        Returns the fugacity coefficients of all the gas phase species
+
+        Calls the solvgas function `set_Y()`.
+
+        Parameters
+        ----------
+        system : tuple of Molecule instances
+            Tuple containing all the Molecule class instances, 
+            corresponding to all the species in the gas phase.
+        """
+        
         return sg.set_Y(self.sys, system)
 
     def get_atomic_mass(self, run, sys):
+        """
+        Calculates the mass fraction of each element in the gas phase only
+
+        Parameters
+        ----------
+        run : RunDef class
+            Active instance of the RunDef class
+        sys : ThermoSystem class
+            Active instance of the ThermoSystem class
+
+        Warnings
+        --------
+        Currently unused, only valid for 'gas only' runs currently not
+        implemented.
+        """
 
         if run.GAS_SYS == 'COHS' and sys.OCS == True:
 
@@ -1027,7 +1490,25 @@ class Gas:
                                                 (sys.WgT[-1] * mSO2) / sum(mjMj))
 
     def open_system(self, melt, fraction):
-        # reduces the gas fraction by removing the amount designated by fraction. I.e. if fraction = 0.9, 10% of the gas fraction remains after the run.
+        """
+        Reduces the gas fraction by removing an aliquot.
+
+        Removes a gas fraction from the system in accordance with open 
+        system degassing. Fraction to be removed is controlled by the user 
+        in the environment file. If fraction = 0.9, 10% 0f the gas phase 
+        will remain after a pressure step.
+
+        Then recalculates the masses of each volatile element in the
+        system now some has been removed.
+
+        Parameters
+        ----------
+        melt : Melt class
+            Active instance of the Melt class
+        fraction : float
+            Fraction of the gas phase to be removed after every pressure step.
+        """
+
         keep = 1 - fraction
         self.sys.WgT[-1] = self.sys.WgT[-1]*keep
         
@@ -1041,30 +1522,58 @@ class Gas:
 
 #  -------------------------------------------------------------------------
 class Output:
-    """To request the desired outputs through the tmp.out file"""
+    """
+    To request the desired outputs through the output control file
+    
+    Attributes
+    ----------
+    Plt_melt_species : bool
+        If True, the melt volatile content will be plotted against 
+        pressure at the end of the run.
+    Plt_gas_species_wt : bool
+        If True, the composition of the gas phase as weight fractions
+        will be plotted against pressure at the end of the run.
+    Plt_gas_species_mol : bool
+        If True, the composition of the gas phase as mole fractions
+        will be plotted against pressure at the end of the run.
+    Plt_gas_fraction : bool
+        If True, the gas volume fraction will be plotted against pressure
+    Plt_fo2_dFMQ : bool
+        If True, fO2 relative to FMQ will be plotted against pressure
+    """
 
-    n_par = int(6)
+    n_par = int(5)
 
     def __init__(self):
         # Graphical outputs
         self.Plt_melt_species = True
         self.Plt_gas_species_wt = True
         self.Plt_gas_species_mol = True
-        self.Plt_gas_ratios = []
         self.Plt_gas_fraction = True
         self.Plt_fo2_dFMQ = False
 
     def set_outputs(self, params):
+        """
+        Sets class up with parameters from the file.
 
-            for par, val in params.items():
-                if self.zTest_Params(par):
-                    setattr(self, par, val)
+        Checks for invalid strings and values from the file.
 
-                else:
-                    sys.exit("Warning: %s not a valid calculation parameter" % par)
+        Parameters
+        ----------
+        params : dict
+            dictionary of attribute:value pairs read in from yaml file.
+        """
+
+        for par, val in params.items():
+            if self.zTest_Params(par):
+                setattr(self, par, val)
+
+            else:
+                sys.exit("Warning: %s not a valid output option" % par)
 
     # helper methods
     def zTest_Params(self, par):
+        """Checks `par` is a valid attribute of the Output class"""
 
         for item in inspect.getmembers(self):
             if item[0] == par:
@@ -1073,6 +1582,7 @@ class Output:
 
 
     def print_conditions(self):
+        """Prints the chosen outputs to the terminal after setup with file."""
 
         l = 0
         for item in inspect.getmembers(self):
