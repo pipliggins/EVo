@@ -14,9 +14,9 @@ melt and the gas phase coexist in constant thermochemical equilibrium,
 alongside a solid graphite phase under sufficiently reduced conditions.
 The physical-chemical separation of gas and melt is implemented as being
 either impossible (closed-system), or instantaneous (open system - see
-`1.2 <#section:run_types>`__). The highly complex nature of volcanic
+:ref:`section_run_types`). The highly complex nature of volcanic
 systems necessitates simplifications in my approach; crystallisation
-kinetics and sulfide formation (see `1.1.5 <#section:cands>`__) are
+kinetics and sulfide formation (see :ref:`section_cands`) are
 neglected, so in those cases where precipitation of solids during ascent
 is important in driving degassing, EVo may underestimate the volume and
 composition of gases evolved from the melt.
@@ -30,7 +30,7 @@ composition of gases evolved from the melt.
 the composition of the gas and melt phase at stages from the pressure of
 volatile saturation to the surface.
 
-.. _`section:overview_of_model`:
+.. _section_overview_of_model:
 
 Overview of the chemical model
 ------------------------------
@@ -203,7 +203,7 @@ listed, along with the compositional, temperature, and pressure ranges
 they are calibrated for.
 
 .. _table_solubility_laws:
-.. list-table:: : The solubility laws implemented in EVo. The values listed here are strictly those used to calibrate the model – e.g., when using the Volatile-Calc spreadsheet temperatures of 600-1500 °C are allowed despite the solubility laws only being calibrated at 1200 °C. DC = D-Compress; VC-B = VolatileCalc Basalt simplification. a finds the sulfide capacity or dissolved sulfide/sulfate ratio in the melt, as discussed in `1.1.5 <#section:cands>`__.
+.. list-table:: : The solubility laws implemented in EVo. The values listed here are strictly those used to calibrate the model – e.g., when using the Volatile-Calc spreadsheet temperatures of 600-1500 °C are allowed despite the solubility laws only being calibrated at 1200 °C. DC = D-Compress; VC-B = VolatileCalc Basalt simplification. a finds the sulfide capacity or dissolved sulfide/sulfate ratio in the melt, as discussed in :ref:`section_cands`.
    :class: borderless
 
    * - .. image:: images/table1.png
@@ -227,7 +227,7 @@ graphite saturation occurs, |CO2| solubility is forced to be calculated with
 Eguchi and Dasgupta (2018), which can account for
 both graphite and fluid saturation within the same equation. Sulfur
 solubility, and the way EVo handles both C and S saturation is covered
-in `1.1.5 <#section:cands>`__.
+in :ref:`section_cands`.
 
 EVo takes into account the way that iron dissolved in the melt affects
 the redox state of the magma by modelling the exchange of oxygen,
@@ -299,8 +299,7 @@ where :math:`W_Ti` for each volatile species (not element) is calculated
 using :eq:`eq_gasplusmelt`, :math:`M_i` is the
 molecular mass of species :math:`i`, :math:`W_{O(Fe)}` is the weight
 fraction of oxygen held in iron (FeO/Fe\ :sub:`2`\ O\ :sub:`3`\) within the melt, and
-:math:`W_{C(graph)}` is the mass of graphite in the system (see
-`1.1.4 <#section:worked_example>`__).
+:math:`W_{C(graph)}` is the mass of graphite in the system (see :ref:`section_worked_example`).
 
 In order to solve for the state of the magmatic system at a given
 temperature and pressure, equations for chemical equilibrium :eq:`eq_k1` 
@@ -311,8 +310,7 @@ system down to the smallest number of equations. In the case of the
 COHSN system, this is 4, which requires four variables to be solved for
 (:math:`X_{CO}`, :math:`X_{\ce{S2}}`, :math:`X_{\ce{O2}}` and
 :math:`X_{\ce{N2}}`). An example of how these equations are derived and
-then solved is shown for the COHSN system in
-`1.1.4 <#section:worked_example>`__. It is the case that the number of
+then solved is shown for the COHSN system in :ref:`section_worked_example`. It is the case that the number of
 equations, and therefore variables, is always :math:`n-1` for :math:`n`
 number of volatile elements involved. These reduced equations are solved
 simultaneously, using an iterative method from the SciPy python package
@@ -335,7 +333,7 @@ Lesher and Spera (2015), and
 .. math:: \mu = \sum^{10}_{i=1} X_i M_i.
    :label: eq_mean_mol_mass
 
-.. _`section:worked_example`:
+.. _section_worked_example:
 
 Example of solving equations for the COHSN system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -499,9 +497,9 @@ appropriate until a solution is found. As the pressure is decreased in
 steps by EVo, the initial guess for each new pressure is the solution to
 the previous step. For the starting pressure, the entire system is
 constrained, so iteration is not required (see
-`1.2 <#section:run_types>`__ for details on how this is achieved).
+:ref:`section_run_types` for details on how this is achieved).
 
-.. _`section:cands`:
+.. _section_cands:
 
 Handling additional phases: carbon and sulfur
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -593,8 +591,7 @@ step if the system is not known to already be graphite-saturated.
 
 When solving for a graphite-saturated system, the fugacity of all 3
 carbon-bearing species can be determined solely using the :math:`f_{\ce{O2}}` and :eq:`eq_graphite_eqb`. This removes an extra unknown from all systems containing carbon; 
-in the example shown in
-`1.1.4 <#section:worked_example>`__,
+in the example shown in :ref:`section_worked_example`,
 :eq:`eq_worked_example_c` is no longer used, and :math:`X_{\ce{CO}}` is
 no longer a variable being
 solved for. The mass of the carbon reservoir is calculated as the
@@ -713,7 +710,7 @@ The amount of S\ :sup:`2-` which can be dissolved in a silicate melt at sulfide 
 using :eq:`eq_sulfide_cap` to the SCSS. If :math:`w^m_{\ce{S^{2-}}}` :math:`\geq` SCSS, then the melt is sulfide saturated and EVo produces a warning stating that sulfide saturation has
 been reached, and the model is no longer valid.
 
-.. _`section:run_types`:
+.. _section_run_types:
 
 Run types, set-up options and input parameters
 ----------------------------------------------
@@ -752,7 +749,7 @@ used to find the equilibrium conditions at a single pressure, either at
 a set pressure using option (1), or the volatile saturation pressure,
 found using either (2) or (3).
 
-.. _`section:standard_setup`:
+.. _section_standard_setup:
 
 1) Where :math:`P_{start}` and :math:`W_{gT}` are known
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -939,12 +936,12 @@ under standard run conditions (with |H2| and |CO2| solubility laws from Gaillard
 version is referred to as EVo(DC). The two major differences left
 between the two models are therefore the treatment of sulfur solubility
 (EVo uses the sulfide capacity, as described in
-`1.1.5 <#section:cands>`__, while DCompress has a solubility law for |SO2| and |H2S|), and the source of the equilibrium constants. DCompress uses equations
+:ref:`section_cands`, while DCompress has a solubility law for |SO2| and |H2S|), and the source of the equilibrium constants. DCompress uses equations
 from Ohmoto and Kerrick (1977)
 to calculate equilibrium constants K1-K5, while EVo and EVo(DC)
 calculate them using more recent thermochemical data from
 Chase (1998) as described
-in `1.1 <#section:overview_of_model>`__. The differences between the two
+in :ref:`section_overview_of_model`. The differences between the two
 methods in K1-5 are shown in :numref:`k_comparison`.
 
 .. _k_comparison:
@@ -956,7 +953,7 @@ methods in K1-5 are shown in :numref:`k_comparison`.
    DCompress and EVo, expressed as K1(EVo)/K1(DC).
 
 EVo(DC) and DCompress were run at a single pressure, using input method
-(1) as described in `1.2.1 <#section:standard_setup>`__, a gas weight
+(1) as described in :ref:`section_standard_setup`, a gas weight
 fraction of 0.001%, and other parameters as listed on the individual
 panels within :numref:`dc2evo_initial_conditions` to compare the
 calculation of the gas phase chemistry.
