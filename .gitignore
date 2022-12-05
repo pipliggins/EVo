@@ -15,3 +15,6 @@ __pycache__/
 venv
 
 evo/Output/*
+
+# sphinx docs
+docs/_build/

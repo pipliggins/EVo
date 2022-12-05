@@ -19,5 +19,8 @@ dependencies = ["numpy>=1.21.0",
   "pyyaml",
   "ruamel.yaml",]
 
+[project.optional-dependencies]
+doc = ["sphinx == 5.3.0"]
+
 [project.urls]
 Home = "https://github.com/pipliggins/EVo"
