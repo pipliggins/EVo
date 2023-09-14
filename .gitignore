@@ -14,6 +14,7 @@ __pycache__/
 
 .vscode/*
 
-venv
+.venv
+.vscode
 
-Output/dgs_output.csv
+Output/*
