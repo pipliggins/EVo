@@ -548,6 +548,15 @@ def graphite_fco2(T, P, fO2):
 
     return graph_fco2
 
+# find the inverse: melt -> gas phase
+# the functions that find the saturation need to know the fugacity in the gas phase given melt, hence two functions
+# - update environment file for new solubility law name
+# - for running model, make all decisions through the environment file
+# - there is a readme and a read the docs that should explain most of it
+# - for testing: basalt, closed system, 'find saturation = true', 
+# - for system composition: set atomic mass fraction of volatiles, use 'atomic mass set', which will find speciation at fO2
+#   and the pressure
+
 def libourel2003(mN2, fO2, P):
     """
     Returns the weight fraction of N in the melt.
@@ -864,6 +873,8 @@ def h2_melt(mH2, H2, P, melt, name='gaillard2003', Y = None):
         The number of moles of H2 in the melt.
     """
     
+    # Pip says: the burgisser model is wrong
+    #   OS: have a look around for updated H2 solubility model
     if name == 'burguisser2015':
         return burguisser2015_h2(mH2, H2, P, H2Y=Y)/cnst.m['h2']
 
@@ -899,6 +910,9 @@ def h2o_melt(mH2O, H2O, P, name='burguisser2015', Y = None):
     if name == 'burguisser2015':
         return burguisser2015_h2o(mH2O, H2O, P, H2OY=Y)/cnst.m['h2o']
 
+# this function controls which solubility law will get used.  So new function needs to go in here
+#   go through whole code and add argument for passing melt composition
+#   e.g., H2 melt for how to do this
 def n_melt(mN2, fO2, P, name='libourel2003'):
     """
     Returns the number of moles of N in the melt.
