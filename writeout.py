@@ -3,7 +3,6 @@ Writes the results of the run to a file and
 contains options to produce a graph of the results.
 """
 import conversions as cnvt
-import constants as cnst
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -32,22 +31,33 @@ def writeout_file(sys, gas, melt, P):
         os.makedirs("Output")
 
     output = open("Output/dgs_output.csv", "w")
+    # write file header
     output.write(
-        f"#Decompressing a {sys.run.COMPOSITION} {sys.run.GAS_SYS} {sys.run.RUN_TYPE} system at {sys.T:.2f} degrees (K). \n"
-        f"#Approx total H2O (wt%) starting fO2: {(gas.Wt['H2O'][0]*sys.WgT[0] + (melt.h2o[0]))*100:.3}, final fO2: {(gas.Wt['H2O'][-1]*sys.WgT[-1] + (melt.h2o[-1]))*100:.3}\n"
-        f"#Approx total CO2 starting fO2: {(gas.Wt['CO2'][0]*sys.WgT[0] + (melt.co2[0]))*100:.3} (wt%) {(gas.Wt['CO2'][0]*sys.WgT[0] + (melt.co2[0]))*1000000:.0} (ppm), final fO2: {((gas.Wt['CO2'][-1]*sys.WgT[-1] + (melt.co2[-1]))*100)*10000:.0} (ppm) \n"
-        f"#Approx total C (ppm) starting fO2: {(((gas.Wt['CO2'][0]*sys.WgT[1]) + (melt.co2[0]))/cnst.m['co2'] + (gas.Wt['CO'][0]*sys.WgT[1])/cnst.m['co'] + (gas.Wt['CH4'][0]*sys.WgT[1])/cnst.m['ch4'])*1000000*cnst.m['c']}, final fO2: {(((gas.Wt['CO2'][-1]*sys.WgT[-1]) + (melt.co2[-1]))/cnst.m['co2'] + (gas.Wt['CO'][-1]*sys.WgT[-1])/cnst.m['co'] + (gas.Wt['CH4'][-1]*sys.WgT[-1])/cnst.m['ch4'])*1000000*cnst.m['c']}\n"
-        f"#Total H (ppm): {sys.atomicM['h']*1000000} wt%: {sys.atomicM['h']*100}\n"
-        f"#fTH2 = {gas.mH2[-1]+gas.mH2S[-1]+(2*gas.mCH4[-1])}\n"
+        f"#Decompressing a {sys.run.COMPOSITION} {sys.run.GAS_SYS} {sys.run.RUN_TYPE} "
+        f"system at {sys.T:.2f} degrees (K). \n"
     )
 
     output.write("#\n")
     output.write(
-        f"#{'':8} \t {'':8} \t {'':8} \t {'':8} \t {'':12} \t {'':12} \t {'Gas:':12} \t {'':10} \t {'':14} \t {'Gas by mol:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Gas by mass:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Melt (wt%):':8} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'Ratios:':8}\n"
+        f"#{'':8} \t {'':8} \t {'':8} \t {'':8} \t {'':12} \t {'':12} \t {'Gas:':12} \t"
+        f" {'':10} \t {'':14} \t {'Gas by mol:':12} \t {'':12} \t {'':12} \t {'':12} \t"
+        f" {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t "
+        f"{'Gas by mass:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t"
+        f" {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Melt (wt%):':8} \t {'':10} \t "
+        f"{'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t "
+        f"{'':10} \t {'Ratios:':8}\n"
     )
-
+    # write column headings
     output.write(
-        f"{'P'}\t{sys.run.FO2_buffer}\t{'fo2'}\t{'F'}\t{'rho_bulk'}\t{'rho_melt'}\t{'Exsol_vol%'}\t{'Gas_wt'}\t{'mol_mass'}\t{'mH2O'}\t{'mH2'}\t{'mO2'}\t{'mCO2'}\t{'mCO'}\t{'mCH4'}\t{'mSO2'}\t{'mH2S'}\t{'mS2'}\t{'mN2'}\t{'wH2O'}\t{'wH2'}\t{'wO2'}\t{'wCO2'}\t{'wCO'}\t{'wCH4'}\t{'wSO2'}\t{'wH2S'}\t{'wS2'}\t{'wN2'}\t{'H2O_melt'}\t{'H2_melt'}\t{'CO2_melt'}\t{'CO_melt'}\t{'CH4_melt'}\t{'graph_melt'}\t{'S2-_melt'}\t{'S6+_melt'}\t{'Stot_melt'}\t{'N_melt'}\t{'mCO2/CO'}\t{'mCO2/H2O'}\t{'mCO2/SO2'}\t{'mH2S/SO2'}\t{'fH2'}\t{'fH2O'}\t{'fCO2'}\t{'fCO'}\t{'fCH4'}\t{'fSO2'}\t{'fH2S'}\t{'fS2'}\t{'fN2'}\t{'tot_H'}\t{'tot_C'}\t{'tot_O_gas'}\t{'tot_O'}\t{'tot_S'}\t{'tot_N'}\n"
+        f"{'P'}\t{sys.run.FO2_buffer}\t{'fo2'}\t{'F'}\t{'rho_bulk'}\t{'rho_melt'}\t"
+        f"{'Exsol_vol%'}\t{'Gas_wt'}\t{'mol_mass'}\t{'mH2O'}\t{'mH2'}\t{'mO2'}\t"
+        f"{'mCO2'}\t{'mCO'}\t{'mCH4'}\t{'mSO2'}\t{'mH2S'}\t{'mS2'}\t{'mN2'}\t{'wH2O'}\t"
+        f"{'wH2'}\t{'wO2'}\t{'wCO2'}\t{'wCO'}\t{'wCH4'}\t{'wSO2'}\t{'wH2S'}\t{'wS2'}\t"
+        f"{'wN2'}\t{'H2O_melt'}\t{'H2_melt'}\t{'CO2_melt'}\t{'CO_melt'}\t{'CH4_melt'}\t"
+        f"{'graph_melt'}\t{'S2-_melt'}\t{'S6+_melt'}\t{'Stot_melt'}\t{'N_melt'}\t"
+        f"{'mCO2/CO'}\t{'mCO2/H2O'}\t{'mCO2/SO2'}\t{'mH2S/SO2'}\t{'fH2'}\t{'fH2O'}\t"
+        f"{'fCO2'}\t{'fCO'}\t{'fCH4'}\t{'fSO2'}\t{'fH2S'}\t{'fS2'}\t{'fN2'}\t{'tot_H'}"
+        f"\t{'tot_C'}\t{'tot_O_gas'}\t{'tot_O'}\t{'tot_S'}\t{'tot_N'}\n"
     )
 
     i = 0
@@ -71,12 +81,73 @@ def writeout_file(sys, gas, melt, P):
         if sys.run.SINGLE_STEP is False:
             while i < len(P):
                 output.write(
-                    f"{P[i]} \t {cnvt.generate_fo2_buffer(sys, np.exp(gas.fo2[i]), P[i]):+.3} \t {np.exp(gas.fo2[i]):.3e} \t {melt.F[i+1]:.3} \t {sys.rho[i]:.3} \t {melt.rho_store[i]:.3} \t {sys.GvF[i] * 100:} \t {sys.WgT[i+1] * 100:.5g} \t {gas.M[i]} \t {gas.mH2O[i+1]:.8g} \t {gas.mH2[i+1]:.8g} \t {gas.mO2[i+1]:.6g} \t {gas.mCO2[i+1]:.6g} \t {gas.mCO[i+1]:.6g} \t {gas.mCH4[i+1]:.6g} \t {gas.mSO2[i+1]:.6g} \t {gas.mH2S[i+1]:.6g} \t {gas.mS2[i+1]:.6g} \t {gas.mN2[i+1]:.6g} \t {gas.Wt['H2O'][i]:.6g} \t {gas.Wt['H2'][i]:.6g} \t {gas.Wt['O2'][i]:.6g} \t {gas.Wt['CO2'][i]:.6g} \t {gas.Wt['CO'][i]:.6g} \t {gas.Wt['CH4'][i]:.6g} \t {gas.Wt['SO2'][i]:.6g} \t {gas.Wt['H2S'][i]:.6g} \t {gas.Wt['S2'][i]:.6g} \t {gas.Wt['N2'][i]:.6g} \t {melt.h2o[i]*100:.6g} \t {melt.h2[i]*100:.6g} \t {melt.co2[i]*100:.6g} \t {melt.co[i]*100:.6g} \t {melt.ch4[i]*100:.6g} \t {melt.graphite[i]*100:.6g} \t {melt.sulfide[i]*100:.6g} \t {melt.sulfate[i]*100:.6g} \t {melt.s[i]*100:.6g} \t {melt.n[i]*100:.6g} \t {gas.mCO2[i+1]/gas.mCO[i+1]:.6g} \t {gas.mCO2[i+1]/gas.mH2O[i+1]:.6g} \t {gas.mCO2[i+1]/gas.mSO2[i+1]:.6g} \t {gas.mH2S[i+1]/gas.mSO2[i+1]:.6g} \t {gas.f['H2'][i]:.8g} \t {gas.f['H2O'][i]:.6g} \t {gas.f['CO2'][i]:.6g} \t {gas.f['CO'][i]:.6g} \t {gas.f['CH4'][i]:.6g} \t {gas.f['SO2'][i]:.8g} \t {gas.f['H2S'][i]:.8g} \t {gas.f['S2'][i]:.8g} \t {gas.f['N2'][i]:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'h', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'c', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o_tot', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 's', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'n', i)*1000000:.8g} \n"
+                    f"{P[i]} \t "
+                    f"{cnvt.generate_fo2_buffer(sys, np.exp(gas.fo2[i]), P[i]):+.3} \t "
+                    f"{np.exp(gas.fo2[i]):.3e} \t {melt.F[i+1]:.3} \t {sys.rho[i]:.3} "
+                    f"\t {melt.rho_store[i]:.3} \t {sys.GvF[i] * 100:} \t "
+                    f"{sys.WgT[i+1] * 100:.5g} \t {gas.M[i]} \t {gas.mH2O[i+1]:.8g} \t "
+                    f"{gas.mH2[i+1]:.8g} \t {gas.mO2[i+1]:.6g} \t {gas.mCO2[i+1]:.6g} "
+                    f"\t {gas.mCO[i+1]:.6g} \t {gas.mCH4[i+1]:.6g} \t "
+                    f"{gas.mSO2[i+1]:.6g} \t {gas.mH2S[i+1]:.6g} \t {gas.mS2[i+1]:.6g} "
+                    f"\t {gas.mN2[i+1]:.6g} \t {gas.Wt['H2O'][i]:.6g} \t "
+                    f"{gas.Wt['H2'][i]:.6g} \t {gas.Wt['O2'][i]:.6g} \t "
+                    f"{gas.Wt['CO2'][i]:.6g} \t {gas.Wt['CO'][i]:.6g} \t "
+                    f"{gas.Wt['CH4'][i]:.6g} \t {gas.Wt['SO2'][i]:.6g} \t "
+                    f"{gas.Wt['H2S'][i]:.6g} \t {gas.Wt['S2'][i]:.6g} \t "
+                    f"{gas.Wt['N2'][i]:.6g} \t {melt.h2o[i]*100:.6g} \t "
+                    f"{melt.h2[i]*100:.6g} \t {melt.co2[i]*100:.6g} \t "
+                    f"{melt.co[i]*100:.6g} \t {melt.ch4[i]*100:.6g} \t "
+                    f"{melt.graphite[i]*100:.6g} \t {melt.sulfide[i]*100:.6g} \t "
+                    f"{melt.sulfate[i]*100:.6g} \t {melt.s[i]*100:.6g} \t "
+                    f"{melt.n[i]*100:.6g} \t {gas.mCO2[i+1]/gas.mCO[i+1]:.6g} \t "
+                    f"{gas.mCO2[i+1]/gas.mH2O[i+1]:.6g} \t "
+                    f"{gas.mCO2[i+1]/gas.mSO2[i+1]:.6g} \t "
+                    f"{gas.mH2S[i+1]/gas.mSO2[i+1]:.6g} \t {gas.f['H2'][i]:.8g} \t "
+                    f"{gas.f['H2O'][i]:.6g} \t {gas.f['CO2'][i]:.6g} \t "
+                    f"{gas.f['CO'][i]:.6g} \t {gas.f['CH4'][i]:.6g} \t "
+                    f"{gas.f['SO2'][i]:.8g} \t {gas.f['H2S'][i]:.8g} \t "
+                    f"{gas.f['S2'][i]:.8g} \t {gas.f['N2'][i]:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'h', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'c', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'o', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'o_tot', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 's', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'n', i)*1000000:.8g} \n"
                 )
                 i += 1
         else:
             output.write(
-                f"{P[-1]} \t {cnvt.generate_fo2_buffer(sys, np.exp(gas.fo2[-1]), P[-1]):+.3} \t {np.exp(gas.fo2[-1]):.3e} \t {melt.F[-1]:.3} \t {sys.rho[-1]:.3} \t {melt.rho_store[-1]:.3} \t {sys.GvF[-1] * 100} \t {sys.WgT[-1] * 100:.5g} \t {gas.M[-1]} \t {gas.mH2O[-1]:.8g} \t {gas.mH2[-1]:.8g} \t {gas.mO2[-1]:.6g} \t {gas.mCO2[-1]:.6g} \t {gas.mCO[-1]:.6g} \t {gas.mCH4[-1]:.6g} \t {gas.mSO2[-1]:.6g} \t {gas.mH2S[-1]:.6g} \t {gas.mS2[-1]:.6g} \t {gas.mN2[-1]:.6g} \t {gas.Wt['H2O'][-1]:.6g} \t {gas.Wt['H2'][-1]:.6g} \t {gas.Wt['O2'][-1]:.6g} \t {gas.Wt['CO2'][-1]:.6g} \t {gas.Wt['CO'][-1]:.6g} \t {gas.Wt['CH4'][-1]:.6g} \t {gas.Wt['SO2'][-1]:.6g} \t {gas.Wt['H2S'][-1]:.6g} \t {gas.Wt['S2'][-1]:.6g} \t {gas.Wt['N2'][-1]:.6g} \t {melt.h2o[-1]*100:.6g} \t {melt.h2[-1]*100:.6g} \t {melt.co2[-1]*100:.6g} \t {melt.co[-1]*100:.6g} \t {melt.ch4[-1]*100:.6g} \t {melt.graphite[-1]*100:.6g} \t {melt.sulfide[-1]*100:.6g} \t {melt.sulfate[-1]*100:.6g} \t {melt.s[-1]*100:.6g} \t {melt.n[-1]*100:.6g} \t {gas.mCO2[-1]/gas.mCO[-1]:.6g} \t {gas.mCO2[-1]/gas.mH2O[-1]:.6g} \t {gas.mCO2[-1]/gas.mSO2[-1]:.6g} \t {gas.mH2S[-1]/gas.mSO2[-1]:.6g} \t {gas.f['H2'][-1]:.8g} \t {gas.f['H2O'][-1]:.6g} \t {gas.f['CO2'][-1]:.8g} \t {gas.f['CO'][-1]:.8g} \t {gas.f['CH4'][-1]:.6g} \t {gas.f['SO2'][-1]:.8g} \t {gas.f['H2S'][-1]:.8g} \t {gas.f['S2'][-1]:.8g} \t {gas.f['N2'][-1]:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'h', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'c', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o_tot', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 's', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'n', -1, WgT=sys.WgT[-1])*1000000:.8g} \n"
+                f"{P[-1]} \t "
+                f"{cnvt.generate_fo2_buffer(sys, np.exp(gas.fo2[-1]), P[-1]):+.3} \t "
+                f"{np.exp(gas.fo2[-1]):.3e} \t {melt.F[-1]:.3} \t {sys.rho[-1]:.3} \t "
+                f"{melt.rho_store[-1]:.3} \t {sys.GvF[-1] * 100} \t "
+                f"{sys.WgT[-1] * 100:.5g} \t {gas.M[-1]} \t {gas.mH2O[-1]:.8g} \t "
+                f"{gas.mH2[-1]:.8g} \t {gas.mO2[-1]:.6g} \t {gas.mCO2[-1]:.6g} \t "
+                f"{gas.mCO[-1]:.6g} \t {gas.mCH4[-1]:.6g} \t {gas.mSO2[-1]:.6g} \t "
+                f"{gas.mH2S[-1]:.6g} \t {gas.mS2[-1]:.6g} \t {gas.mN2[-1]:.6g} \t "
+                f"{gas.Wt['H2O'][-1]:.6g} \t {gas.Wt['H2'][-1]:.6g} \t "
+                f"{gas.Wt['O2'][-1]:.6g} \t {gas.Wt['CO2'][-1]:.6g} \t "
+                f"{gas.Wt['CO'][-1]:.6g} \t {gas.Wt['CH4'][-1]:.6g} \t "
+                f"{gas.Wt['SO2'][-1]:.6g} \t {gas.Wt['H2S'][-1]:.6g} \t "
+                f"{gas.Wt['S2'][-1]:.6g} \t {gas.Wt['N2'][-1]:.6g} \t "
+                f"{melt.h2o[-1]*100:.6g} \t {melt.h2[-1]*100:.6g} \t "
+                f"{melt.co2[-1]*100:.6g} \t {melt.co[-1]*100:.6g} \t "
+                f"{melt.ch4[-1]*100:.6g} \t {melt.graphite[-1]*100:.6g} \t "
+                f"{melt.sulfide[-1]*100:.6g} \t {melt.sulfate[-1]*100:.6g} \t "
+                f"{melt.s[-1]*100:.6g} \t {melt.n[-1]*100:.6g} \t "
+                f"{gas.mCO2[-1]/gas.mCO[-1]:.6g} \t {gas.mCO2[-1]/gas.mH2O[-1]:.6g} \t "
+                f"{gas.mCO2[-1]/gas.mSO2[-1]:.6g} \t {gas.mH2S[-1]/gas.mSO2[-1]:.6g} \t"
+                f" {gas.f['H2'][-1]:.8g} \t {gas.f['H2O'][-1]:.6g} \t "
+                f"{gas.f['CO2'][-1]:.8g} \t {gas.f['CO'][-1]:.8g} \t "
+                f"{gas.f['CH4'][-1]:.6g} \t {gas.f['SO2'][-1]:.8g} \t "
+                f"{gas.f['H2S'][-1]:.8g} \t {gas.f['S2'][-1]:.8g} \t "
+                f"{gas.f['N2'][-1]:.8g} \t "
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'h', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'c', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'o', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'o_tot', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 's', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'n', -1, WgT=sys.WgT[-1])*1000000:.8g} \n"  # noqa:E501
             )
         output.close()
 
@@ -102,15 +173,30 @@ def writeout_crash(sys, gas, melt, P):
 
     output = open("Output/dgs_output.csv", "w")
     output.write(
-        f"#Decompressing a {sys.run.RUN_TYPE} {sys.run.COMPOSITION} {sys.run.GAS_SYS} system at {sys.T:.2f} degrees (K). \n#Crashed data file.\n"
+        f"#Decompressing a {sys.run.RUN_TYPE} {sys.run.COMPOSITION} {sys.run.GAS_SYS} "
+        f"system at {sys.T:.2f} degrees (K). \n#Crashed data file.\n"
     )
     output.write("#\n")
     output.write(
-        f"#{'':8} \t {'':8} \t {'':8} \t {'':8} \t {'':12} \t {'':12} \t {'Gas:':12} \t {'':10} \t {'':14} \t {'Gas by mol:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Gas by mass:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Melt (wt%):':8} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'Ratios:':8}\n"
+        f"#{'':8} \t {'':8} \t {'':8} \t {'':8} \t {'':12} \t {'':12} \t {'Gas:':12} \t"
+        f" {'':10} \t {'':14} \t {'Gas by mol:':12} \t {'':12} \t {'':12} \t {'':12} \t"
+        f" {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t "
+        f"{'Gas by mass:':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'':12} \t"
+        f" {'':12} \t {'':12} \t {'':12} \t {'':12} \t {'Melt (wt%):':8} \t {'':10} \t "
+        f"{'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t {'':10} \t "
+        f"{'':10} \t {'Ratios:':8}\n"
     )
-
+    # write column headings
     output.write(
-        f"{'P'}\t{sys.run.FO2_buffer}\t{'fo2'}\t{'F'}\t{'rho_bulk'}\t{'rho_melt'}\t{'Exsol_vol%'}\t{'Gas_wt'}\t{'mol_mass'}\t{'mH2O'}\t{'mH2'}\t{'mO2'}\t{'mCO2'}\t{'mCO'}\t{'mCH4'}\t{'mSO2'}\t{'mH2S'}\t{'mS2'}\t{'mN2'}\t{'wH2O'}\t{'wH2'}\t{'wO2'}\t{'wCO2'}\t{'wCO'}\t{'wCH4'}\t{'wSO2'}\t{'wH2S'}\t{'wS2'}\t{'wN2'}\t{'H2O_melt'}\t{'H2_melt'}\t{'CO2_melt'}\t{'CO_melt'}\t{'CH4_melt'}\t{'graph_melt'}\t{'S2-_melt'}\t{'S6+_melt'}\t{'Stot_melt'}\t{'N_melt'}\t{'mCO2/CO'}\t{'mCO2/H2O'}\t{'mCO2/SO2'}\t{'mH2S/SO2'}\t{'fH2'}\t{'fH2O'}\t{'fCO2'}\t{'fCO'}\t{'fCH4'}\t{'fSO2'}\t{'fH2S'}\t{'fS2'}\t{'fN2'}\t{'tot_H'}\t{'tot_C'}\t{'tot_O_gas'}\t{'tot_O'}\t{'tot_S'}\t{'tot_N'}\n"
+        f"{'P'}\t{sys.run.FO2_buffer}\t{'fo2'}\t{'F'}\t{'rho_bulk'}\t{'rho_melt'}\t"
+        f"{'Exsol_vol%'}\t{'Gas_wt'}\t{'mol_mass'}\t{'mH2O'}\t{'mH2'}\t{'mO2'}\t"
+        f"{'mCO2'}\t{'mCO'}\t{'mCH4'}\t{'mSO2'}\t{'mH2S'}\t{'mS2'}\t{'mN2'}\t{'wH2O'}\t"
+        f"{'wH2'}\t{'wO2'}\t{'wCO2'}\t{'wCO'}\t{'wCH4'}\t{'wSO2'}\t{'wH2S'}\t{'wS2'}\t"
+        f"{'wN2'}\t{'H2O_melt'}\t{'H2_melt'}\t{'CO2_melt'}\t{'CO_melt'}\t{'CH4_melt'}\t"
+        f"{'graph_melt'}\t{'S2-_melt'}\t{'S6+_melt'}\t{'Stot_melt'}\t{'N_melt'}\t"
+        f"{'mCO2/CO'}\t{'mCO2/H2O'}\t{'mCO2/SO2'}\t{'mH2S/SO2'}\t{'fH2'}\t{'fH2O'}\t"
+        f"{'fCO2'}\t{'fCO'}\t{'fCH4'}\t{'fSO2'}\t{'fH2S'}\t{'fS2'}\t{'fN2'}\t{'tot_H'}"
+        f"\t{'tot_C'}\t{'tot_O_gas'}\t{'tot_O'}\t{'tot_S'}\t{'tot_N'}\n"
     )
 
     i = 0
@@ -134,12 +220,73 @@ def writeout_crash(sys, gas, melt, P):
         if len(P) > 1:
             while i < len(P):
                 output.write(
-                    f"{P[i]} \t {cnvt.generate_fo2_buffer(sys, np.exp(gas.fo2[i]), P[i]):+.3} \t {np.exp(gas.fo2[i]):.3e} \t {melt.F[i+1]:.3} \t {sys.rho[i]:.3} \t {melt.rho_store[i]:.3} \t {sys.GvF[i] * 100:} \t {sys.WgT[i+1] * 100:.6g} \t {gas.M[i]} \t {gas.mH2O[i+1]:.6g} \t {gas.mH2[i+1]:.6g} \t {gas.mO2[i+1]:.6g} \t {gas.mCO2[i+1]:.6g} \t {gas.mCO[i+1]:.6g} \t {gas.mCH4[i+1]:.6g} \t {gas.mSO2[i+1]:.6g} \t {gas.mH2S[i+1]:.6g} \t {gas.mS2[i+1]:.6g} \t {gas.mN2[i+1]:.6g} \t {gas.Wt['H2O'][i]:.6g} \t {gas.Wt['H2'][i]:.6g} \t {gas.Wt['O2'][i]:.6g} \t {gas.Wt['CO2'][i]:.6g} \t {gas.Wt['CO'][i]:.6g} \t {gas.Wt['CH4'][i]:.6g} \t {gas.Wt['SO2'][i]:.6g} \t {gas.Wt['H2S'][i]:.6g} \t {gas.Wt['S2'][i]:.6g} \t {gas.Wt['N2'][i]:.6g} \t {melt.h2o[i]*100:.6g} \t {melt.h2[i]*100:.6g} \t {melt.co2[i]*100:.6g} \t {melt.co[i]*100:.6g} \t {melt.ch4[i]*100:.6g} \t {melt.graphite[i]*100:.6g} \t {melt.sulfide[i]*100:.6g} \t {melt.sulfate[i]*100:.6g} \t {melt.s[i]*100:.6g} \t {melt.n[i]*100:.6g} \t {gas.mCO2[i+1]/gas.mCO[i+1]:.6g} \t {gas.mCO2[i+1]/gas.mH2O[i+1]:.6g} \t {gas.mCO2[i+1]/gas.mSO2[i+1]:.6g} \t {gas.mH2S[i+1]/gas.mSO2[i+1]:.6e} \t {gas.f['H2'][i]:.8g} \t {gas.f['H2O'][i]:.6g} \t {gas.f['CO2'][i]:.6g} \t {gas.f['CO'][i]:.6g} \t {gas.f['CH4'][i]:.6g} \t {gas.f['SO2'][i]:.8g} \t {gas.f['H2S'][i]:.8g} \t {gas.f['S2'][i]:.8g} \t {gas.f['N2'][i]:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'h', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'c', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o_tot', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 's', i)*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'n', i)*1000000:.8g} \n"
+                    f"{P[i]} \t "
+                    f"{cnvt.generate_fo2_buffer(sys, np.exp(gas.fo2[i]), P[i]):+.3} \t "
+                    f"{np.exp(gas.fo2[i]):.3e} \t {melt.F[i+1]:.3} \t {sys.rho[i]:.3} "
+                    f"\t {melt.rho_store[i]:.3} \t {sys.GvF[i] * 100:} \t "
+                    f"{sys.WgT[i+1] * 100:.5g} \t {gas.M[i]} \t {gas.mH2O[i+1]:.8g} \t "
+                    f"{gas.mH2[i+1]:.8g} \t {gas.mO2[i+1]:.6g} \t {gas.mCO2[i+1]:.6g} "
+                    f"\t {gas.mCO[i+1]:.6g} \t {gas.mCH4[i+1]:.6g} \t "
+                    f"{gas.mSO2[i+1]:.6g} \t {gas.mH2S[i+1]:.6g} \t {gas.mS2[i+1]:.6g} "
+                    f"\t {gas.mN2[i+1]:.6g} \t {gas.Wt['H2O'][i]:.6g} \t "
+                    f"{gas.Wt['H2'][i]:.6g} \t {gas.Wt['O2'][i]:.6g} \t "
+                    f"{gas.Wt['CO2'][i]:.6g} \t {gas.Wt['CO'][i]:.6g} \t "
+                    f"{gas.Wt['CH4'][i]:.6g} \t {gas.Wt['SO2'][i]:.6g} \t "
+                    f"{gas.Wt['H2S'][i]:.6g} \t {gas.Wt['S2'][i]:.6g} \t "
+                    f"{gas.Wt['N2'][i]:.6g} \t {melt.h2o[i]*100:.6g} \t "
+                    f"{melt.h2[i]*100:.6g} \t {melt.co2[i]*100:.6g} \t "
+                    f"{melt.co[i]*100:.6g} \t {melt.ch4[i]*100:.6g} \t "
+                    f"{melt.graphite[i]*100:.6g} \t {melt.sulfide[i]*100:.6g} \t "
+                    f"{melt.sulfate[i]*100:.6g} \t {melt.s[i]*100:.6g} \t "
+                    f"{melt.n[i]*100:.6g} \t {gas.mCO2[i+1]/gas.mCO[i+1]:.6g} \t "
+                    f"{gas.mCO2[i+1]/gas.mH2O[i+1]:.6g} \t "
+                    f"{gas.mCO2[i+1]/gas.mSO2[i+1]:.6g} \t "
+                    f"{gas.mH2S[i+1]/gas.mSO2[i+1]:.6g} \t {gas.f['H2'][i]:.8g} \t "
+                    f"{gas.f['H2O'][i]:.6g} \t {gas.f['CO2'][i]:.6g} \t "
+                    f"{gas.f['CO'][i]:.6g} \t {gas.f['CH4'][i]:.6g} \t "
+                    f"{gas.f['SO2'][i]:.8g} \t {gas.f['H2S'][i]:.8g} \t "
+                    f"{gas.f['S2'][i]:.8g} \t {gas.f['N2'][i]:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'h', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'c', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'o', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'o_tot', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 's', i)*1000000:.8g} \t "
+                    f"{cnvt.atomicM_calc(sys, melt, gas, 'n', i)*1000000:.8g} \n"
                 )
                 i += 1
         else:
             output.write(
-                f"{P[- 1]} \t {cnvt.generate_fo2_buffer(sys, np.exp(gas.fo2[-1]), P[-1]):+.3} \t {np.exp(gas.fo2[-1]):.3e} \t {melt.F[-1]:.3} \t {sys.rho[-1]:.3} \t {melt.rho_store[-1]:.3} \t {sys.GvF[-1] * 100} \t {sys.WgT[-1] * 100:.6g} \t {gas.M[-1]} \t {gas.mH2O[-1]:.6g} \t {gas.mH2[-1]:.6g} \t {gas.mO2[-1]:.6g} \t {gas.mCO2[-1]:.6g} \t {gas.mCO[-1]:.6g} \t {gas.mCH4[-1]:.6g} \t {gas.mSO2[-1]:.6g} \t {gas.mH2S[-1]:.6g} \t {gas.mS2[-1]:.6g} \t {gas.mN2[-1]:.6g} \t {gas.Wt['H2O'][-1]:.6g} \t {gas.Wt['H2'][-1]:.6g} \t {gas.Wt['O2'][-1]:.6g} \t {gas.Wt['CO2'][-1]:.6g} \t {gas.Wt['CO'][-1]:.6g} \t {gas.Wt['CH4'][-1]:.6g} \t {gas.Wt['SO2'][-1]:.6g} \t {gas.Wt['H2S'][-1]:.6g} \t {gas.Wt['S2'][-1]:.6g} \t {gas.Wt['N2'][-1]:.6g} \t {melt.h2o[-1]*100:.6g} \t {melt.h2[-1]*100:.6g} \t {melt.co2[-1]*100:.6g} \t {melt.co[-1]*100:.6g} \t {melt.ch4[-1]*100:.6g} \t {melt.graphite[-1]*100:.6g} \t {melt.sulfide[-1]*100:.6g} \t {melt.sulfate[-1]*100:.6g} \t {melt.s[-1]*100:.6g} \t {melt.n[-1]*100:.6g} \t {gas.mCO2[-1]/gas.mCO[-1]:.6g} \t {gas.mCO2[-1]/gas.mH2O[-1]:.6g} \t {gas.mCO2[-1]/gas.mSO2[-1]:.6g} \t {gas.mH2S[-1]/gas.mSO2[-1]:.6g} \t {gas.f['H2'][-1]:.8g} \t {gas.f['H2O'][-1]:.6g} \t {gas.f['CO2'][-1]:.8g} \t {gas.f['CO'][-1]:.8g} \t {gas.f['CH4'][-1]:.6g} \t {gas.f['SO2'][-1]:.8g} \t {gas.f['H2S'][-1]:.8g} \t {gas.f['S2'][-1]:.8g} \t {gas.f['N2'][-1]:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'h', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'c', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'o_tot', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 's', -1, WgT=sys.WgT[-1])*1000000:.8g} \t {cnvt.atomicM_calc(sys, melt, gas, 'n', -1, WgT=sys.WgT[-1])*1000000:.8g} \n"
+                f"{P[-1]} \t "
+                f"{cnvt.generate_fo2_buffer(sys, np.exp(gas.fo2[-1]), P[-1]):+.3} \t "
+                f"{np.exp(gas.fo2[-1]):.3e} \t {melt.F[-1]:.3} \t {sys.rho[-1]:.3} \t "
+                f"{melt.rho_store[-1]:.3} \t {sys.GvF[-1] * 100} \t "
+                f"{sys.WgT[-1] * 100:.5g} \t {gas.M[-1]} \t {gas.mH2O[-1]:.8g} \t "
+                f"{gas.mH2[-1]:.8g} \t {gas.mO2[-1]:.6g} \t {gas.mCO2[-1]:.6g} \t "
+                f"{gas.mCO[-1]:.6g} \t {gas.mCH4[-1]:.6g} \t {gas.mSO2[-1]:.6g} \t "
+                f"{gas.mH2S[-1]:.6g} \t {gas.mS2[-1]:.6g} \t {gas.mN2[-1]:.6g} \t "
+                f"{gas.Wt['H2O'][-1]:.6g} \t {gas.Wt['H2'][-1]:.6g} \t "
+                f"{gas.Wt['O2'][-1]:.6g} \t {gas.Wt['CO2'][-1]:.6g} \t "
+                f"{gas.Wt['CO'][-1]:.6g} \t {gas.Wt['CH4'][-1]:.6g} \t "
+                f"{gas.Wt['SO2'][-1]:.6g} \t {gas.Wt['H2S'][-1]:.6g} \t "
+                f"{gas.Wt['S2'][-1]:.6g} \t {gas.Wt['N2'][-1]:.6g} \t "
+                f"{melt.h2o[-1]*100:.6g} \t {melt.h2[-1]*100:.6g} \t "
+                f"{melt.co2[-1]*100:.6g} \t {melt.co[-1]*100:.6g} \t "
+                f"{melt.ch4[-1]*100:.6g} \t {melt.graphite[-1]*100:.6g} \t "
+                f"{melt.sulfide[-1]*100:.6g} \t {melt.sulfate[-1]*100:.6g} \t "
+                f"{melt.s[-1]*100:.6g} \t {melt.n[-1]*100:.6g} \t "
+                f"{gas.mCO2[-1]/gas.mCO[-1]:.6g} \t {gas.mCO2[-1]/gas.mH2O[-1]:.6g} \t "
+                f"{gas.mCO2[-1]/gas.mSO2[-1]:.6g} \t {gas.mH2S[-1]/gas.mSO2[-1]:.6g} \t"
+                f" {gas.f['H2'][-1]:.8g} \t {gas.f['H2O'][-1]:.6g} \t "
+                f"{gas.f['CO2'][-1]:.8g} \t {gas.f['CO'][-1]:.8g} \t "
+                f"{gas.f['CH4'][-1]:.6g} \t {gas.f['SO2'][-1]:.8g} \t "
+                f"{gas.f['H2S'][-1]:.8g} \t {gas.f['S2'][-1]:.8g} \t "
+                f"{gas.f['N2'][-1]:.8g} \t "
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'h', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'c', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'o', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'o_tot', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 's', -1, WgT=sys.WgT[-1])*1000000:.8g} \t "  # noqa:E501
+                f"{cnvt.atomicM_calc(sys, melt, gas, 'n', -1, WgT=sys.WgT[-1])*1000000:.8g} \n"  # noqa:E501
             )
 
     output.close()
@@ -167,11 +314,11 @@ def writeout_figs(sys, melt, gas, out, P):
     """
 
     filelist = glob.glob("Output/*.png")
-    for file in filelist:
-        os.remove(
-            file
-        )  # Removes previous files so if output specification is changed there is no confusion as to up to date files.
+    # Removes previous files so if output specification is changed
+    # there is no confusion as to up to date files.
 
+    for file in filelist:
+        os.remove(file)
     if (
         out is not None
     ):  # If an output file listing requested figures has been included:

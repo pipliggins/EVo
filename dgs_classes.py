@@ -1147,7 +1147,7 @@ class Melt:
             elif x == "fe2o3":
                 cation_formula["fe3"] = formula[x]
             else:
-                no_num = re.sub("\d", "", x)
+                no_num = re.sub("\d", "", x)  # noqa:W605
                 new_name = re.sub("o", "", no_num)
                 cation_formula[new_name] = formula[x]
 
@@ -1180,7 +1180,7 @@ class Melt:
 
         # strip down to cation name
         for x in formula.keys():
-            no_num = re.sub("\d", "", x)
+            no_num = re.sub("\d", "", x)  # noqa:W605
             new_name = re.sub("o", "", no_num)
 
             fwm += cnst.m[new_name] * formula[x]

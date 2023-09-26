@@ -340,7 +340,7 @@ def sat_pressure(run, sys, gas, melt, mols):
             )
 
     # store the saturation pressure
-    P_sat = float(re.sub("[\[\]]", "", np.array_str(P_sat)))
+    P_sat = float(re.sub("[\[\]]", "", np.array_str(P_sat)))  # noqa:W605
     sys.P = P_sat
     gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
     fugacities = get_f(P_sat, sys, melt, gamma)
@@ -1127,4 +1127,28 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
 
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore")
-        return f"{P:.4f} \t {cnvs.generate_fo2_buffer(sys, (o2y * mO2 * P), P):+.3} \t {fo2:.3e} \t {F:.3} \t {rho_bulk:.3} \t {rho_melt:.3} \t {GvF * 100:.3g} \t {sys.WgT[0] * 100:.3g} \t {M:.3g} \t {gas.mH2O[0]:.5g} \t {gas.mH2[0]:.5g} \t {gas.mO2[0]:.5g} \t {gas.mCO2[0]:.5g} \t {gas.mCO[0]:.5g} \t {gas.mCH4[0]:.5g} \t {gas.mSO2[0]:.5g} \t {gas.mH2S[0]:.5g} \t {gas.mS2[0]:.5g} \t {gas.mN2[0]:.5g} \t {wts['H2O']:.5g} \t {wts['H2']:.5g} \t {wts['O2']:.5g} \t {wts['CO2']:.5g} \t {wts['CO']:.5g} \t {wts['CH4']:.5g} \t {wts['SO2']:.5g} \t {wts['H2S']:.5g} \t {wts['S2']:.5g} \t {wts['N2']:.5g} \t {melt_h2o*100:.5g} \t {melt_h2*100:.5g} \t {melt_co2*100:.5g} \t {melt_co*100:.5g} \t {melt_ch4*100:.5g} \t {graphite*100:.5g} \t {s2_melt*100:.5g} \t {s6_melt*100:.5g} \t {melt_s*100:.5g} \t {melt_n*100:.5g} \t {gas.mCO2[0]/gas.mCO[0]:.5g} \t {gas.mCO2[0]/gas.mH2O[0]:.5g} \t {gas.mCO2[0]/gas.mSO2[0]:.5g} \t {gas.mH2S[0]/gas.mSO2[0]:.5g} \t {(h2y * mH2 * P):.8g} \t {(h2oy * mH2O * P):.6g} \t {(co2y * mCO2 * P):.6g} \t {(coy * mCO * P):.6g} \t {(ch4y * mCH4 * P):.6g} \t {(so2y * mSO2 * P):.8g} \t {(h2sy * mH2S * P):.8g} \t {(s2y * mS2 * P):.8g} \t {(n2y * mN2 * P):.8g} \t {sys.atomicM['h']*1000000:.8g} \t {sys.atomicM['c']*1000000:.8g} \t {atomico*1000000:.8g} \t {cnvs.atomicM_calc(sys, melt, gas, 'o_tot', 0)*1000000:.8g} \t {sys.atomicM['s']*1000000:.8g} \t {sys.atomicM['n']*1000000:.8g} \n"
+        return (
+            f"{P:.4f} \t {cnvs.generate_fo2_buffer(sys, (o2y * mO2 * P), P):+.3} \t "
+            f"{fo2:.3e} \t {F:.3} \t {rho_bulk:.3} \t {rho_melt:.3} \t {GvF * 100:.3g}"
+            f" \t {sys.WgT[0] * 100:.3g} \t {M:.3g} \t {gas.mH2O[0]:.5g} \t "
+            f"{gas.mH2[0]:.5g} \t {gas.mO2[0]:.5g} \t {gas.mCO2[0]:.5g} \t "
+            f"{gas.mCO[0]:.5g} \t {gas.mCH4[0]:.5g} \t {gas.mSO2[0]:.5g} \t "
+            f"{gas.mH2S[0]:.5g} \t {gas.mS2[0]:.5g} \t {gas.mN2[0]:.5g} \t "
+            f"{wts['H2O']:.5g} \t {wts['H2']:.5g} \t {wts['O2']:.5g} \t "
+            f"{wts['CO2']:.5g} \t {wts['CO']:.5g} \t {wts['CH4']:.5g} \t "
+            f"{wts['SO2']:.5g} \t {wts['H2S']:.5g} \t {wts['S2']:.5g} \t "
+            f"{wts['N2']:.5g} \t {melt_h2o*100:.5g} \t {melt_h2*100:.5g} \t "
+            f"{melt_co2*100:.5g} \t {melt_co*100:.5g} \t {melt_ch4*100:.5g} \t "
+            f"{graphite*100:.5g} \t {s2_melt*100:.5g} \t {s6_melt*100:.5g} \t "
+            f"{melt_s*100:.5g} \t {melt_n*100:.5g} \t {gas.mCO2[0]/gas.mCO[0]:.5g} \t "
+            f"{gas.mCO2[0]/gas.mH2O[0]:.5g} \t {gas.mCO2[0]/gas.mSO2[0]:.5g} \t "
+            f"{gas.mH2S[0]/gas.mSO2[0]:.5g} \t {(h2y * mH2 * P):.8g} \t "
+            f"{(h2oy * mH2O * P):.6g} \t {(co2y * mCO2 * P):.6g} \t "
+            f"{(coy * mCO * P):.6g} \t {(ch4y * mCH4 * P):.6g} \t "
+            f"{(so2y * mSO2 * P):.8g} \t {(h2sy * mH2S * P):.8g} \t "
+            f"{(s2y * mS2 * P):.8g} \t {(n2y * mN2 * P):.8g} \t "
+            f"{sys.atomicM['h']*1000000:.8g} \t {sys.atomicM['c']*1000000:.8g} \t "
+            f"{atomico*1000000:.8g} \t "
+            f"{cnvs.atomicM_calc(sys, melt, gas, 'o_tot', 0)*1000000:.8g} \t "
+            f"{sys.atomicM['s']*1000000:.8g} \t {sys.atomicM['n']*1000000:.8g} \n"
+        )
