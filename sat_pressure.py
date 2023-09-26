@@ -334,7 +334,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         warnings.filterwarnings("error")
         try:
             P_sat = fsolve(find_p, 1.0, args=(sys, melt))
-        except:
+        except RuntimeWarning:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
             )

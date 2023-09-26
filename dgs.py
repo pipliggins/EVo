@@ -128,16 +128,16 @@ def main(f_chem, f_env, f_out):
         print(
             f"The gas phase at {sys.P:.0f} bar is partitioned according to molar "
             "fraction as: \n "
-            f"O2: {gas.mO2:s} \n "
-            f"H2: {gas.mH2:s} \n "
-            f"H2O: {gas.mH2O:s} \n "
-            f"CO2: {gas.mCO2:s} \n "
-            f"CO: {gas.mCO:s} \n "
-            f"CH4: {gas.mCH4:s} \n "
-            f"S2: {gas.mS2:s} \n "
-            f"SO2: {gas.mSO2:s} \n "
-            f"H2S: {gas.mH2S:s} \n "
-            f"N2: {gas.mN2:s} \n"
+            f"O2: {gas.mO2} \n "
+            f"H2: {gas.mH2} \n "
+            f"H2O: {gas.mH2O} \n "
+            f"CO2: {gas.mCO2} \n "
+            f"CO: {gas.mCO} \n "
+            f"CH4: {gas.mCH4} \n "
+            f"S2: {gas.mS2} \n "
+            f"SO2: {gas.mSO2} \n "
+            f"H2S: {gas.mH2S} \n "
+            f"N2: {gas.mN2} \n"
         )
         writeout_file(sys, gas, melt, sys.P_track)
 
@@ -187,16 +187,16 @@ def main(f_chem, f_env, f_out):
 
         print(
             "The first, middle, last gas molar fractions are: \n "
-            f"O2: {gas.mO2[0]:s}   {gas.mO2[(len(gas.mO2) // 2)]:s}   {gas.mO2[-1]:s}\n"
-            f"H2: {gas.mH2[0]:s}   {gas.mH2[(len(gas.mH2) // 2)]:s}   {gas.mH2[-1]:s}\n"
-            f"H2O: {gas.mH2O[0]:s}   {gas.mH2O[(len(gas.mH2O) // 2)]:s}   {gas.mH2O[-1]:s}\n"
-            f"CO2: {gas.mCO2[0]:s}   {gas.mCO2[(len(gas.mCO2) // 2)]:s}   {gas.mCO2[-1]:s}\n"
-            f"CO: {gas.mCO[0]:s}   {gas.mCO[(len(gas.mCO) // 2)]:s}   {gas.mCO[-1]:s}\n"
-            f"CH4: {gas.mCH4[0]:s}   {gas.mCH4[(len(gas.mCH4) // 2)]:s}   {gas.mCH4[-1]:s}\n"
-            f"S2: {gas.mS2[0]:s}   {gas.mS2[(len(gas.mS2) // 2)]:s}   {gas.mS2[-1]:s}\n"
-            f"SO2: {gas.mSO2[0]:s}   {gas.mSO2[(len(gas.mSO2) // 2)]:s}   {gas.mSO2[-1]:s}\n"
-            f"H2S: {gas.mH2S[0]:s}   {gas.mH2S[(len(gas.mH2S) // 2)]:s}   {gas.mH2S[-1]:s}\n"
-            f"N2: {gas.mN2[0]:s}   {gas.mN2[(len(gas.mN2) // 2)]:s}   {gas.mN2[-1]:s}\n"
+            f"O2: {gas.mO2[0]}   {gas.mO2[(len(gas.mO2) // 2)]}   {gas.mO2[-1]}\n"
+            f"H2: {gas.mH2[0]}   {gas.mH2[(len(gas.mH2) // 2)]}   {gas.mH2[-1]}\n"
+            f"H2O: {gas.mH2O[0]}   {gas.mH2O[(len(gas.mH2O) // 2)]}   {gas.mH2O[-1]}\n"
+            f"CO2: {gas.mCO2[0]}   {gas.mCO2[(len(gas.mCO2) // 2)]}   {gas.mCO2[-1]}\n"
+            f"CO: {gas.mCO[0]}   {gas.mCO[(len(gas.mCO) // 2)]}   {gas.mCO[-1]}\n"
+            f"CH4: {gas.mCH4[0]}   {gas.mCH4[(len(gas.mCH4) // 2)]}   {gas.mCH4[-1]}\n"
+            f"S2: {gas.mS2[0]}   {gas.mS2[(len(gas.mS2) // 2)]}   {gas.mS2[-1]}\n"
+            f"SO2: {gas.mSO2[0]}   {gas.mSO2[(len(gas.mSO2) // 2)]}   {gas.mSO2[-1]}\n"
+            f"H2S: {gas.mH2S[0]}   {gas.mH2S[(len(gas.mH2S) // 2)]}   {gas.mH2S[-1]}\n"
+            f"N2: {gas.mN2[0]}   {gas.mN2[(len(gas.mN2) // 2)]}   {gas.mN2[-1]}\n"
         )
 
         end = time.time()

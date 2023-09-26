@@ -659,10 +659,10 @@ def libourel2003_fugacity(n_melt, nY, fO2, P):
             warnings.filterwarnings("error")
             try:
                 PN2 = fsolve(f0, 1)[0]
-            except:
+            except RuntimeWarning:
                 try:
                     PN2 = fsolve(f0, 1e-10)[0]
-                except:
+                except RuntimeWarning:
                     raise RuntimeError("Failed to find N2 partial pressure.")
 
         return PN2

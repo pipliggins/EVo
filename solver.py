@@ -156,7 +156,7 @@ def decompress(run, sys, melt, gas, system):
         mh2o = [x for x in np.roots([a, b, c]) if x > 0]
         try:
             mH2O = mh2o[0]
-        except:
+        except IndexError:
             mH2O = float("nan")
 
         mH2 = H2O.Y * mH2O / (sys.K["K1"] * H2.Y * (O2.Y * x * sys.P) ** 0.5)
@@ -405,7 +405,7 @@ def decompress(run, sys, melt, gas, system):
         mh2o = [x for x in np.roots([a, b, c]) if x > 0]
         try:
             mH2O = mh2o[0]
-        except:
+        except IndexError:
             mH2O = float("nan")
 
         mH2 = (H2O.Y * mH2O) / (sys.K["K1"] * H2.Y * (O2.Y * z * sys.P) ** 0.5)
@@ -603,7 +603,7 @@ def decompress(run, sys, melt, gas, system):
         mh2o = [x for x in np.roots([a, b, c]) if x > 0]
         try:
             mH2O = mh2o[0]
-        except:
+        except IndexError:
             mH2O = float("nan")
 
         mH2 = (H2O.Y * mH2O) / (sys.K["K1"] * H2.Y * (O2.Y * z * sys.P) ** 0.5)

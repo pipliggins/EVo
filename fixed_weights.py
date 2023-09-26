@@ -372,7 +372,7 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except:
+        except RuntimeWarning:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
             )
@@ -432,7 +432,7 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except:
+        except RuntimeWarning:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
             )
@@ -532,7 +532,7 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except:
+        except RuntimeWarning:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
             )
@@ -613,7 +613,7 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except:
+        except RuntimeWarning:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
             )
@@ -750,7 +750,7 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except:
+        except RuntimeWarning:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
             )
@@ -928,7 +928,7 @@ def sat_pressure(run, sys, gas, melt, mols):
                 melt_h2o, melt_co2, melt_s, melt_n = fsolve(
                     fixed_weights_cohsn, [guess_h2o, guess_co2, guess_s, guess_n]
                 )
-            except:
+            except Exception:
                 print("Convergence struggling; trying Levenberg-Marquardt method")
                 sol = root(
                     fixed_weights_cohsn,
