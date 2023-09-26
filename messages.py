@@ -25,8 +25,11 @@ def open_earlyexit(sys, gas, melt):
     melt : Melt class
         The active instance of the Melt class
     """
-    wt.writeout_crash(
-        sys, gas, melt, np.arange(sys.run.P_START, sys.P, sys.run.DP_MAX * -1.0)
+    wt.writeout_file(
+        sys,
+        gas,
+        melt,
+        np.arange(sys.run.P_START, sys.P, sys.run.DP_MAX * -1.0, crashed=True),
     )
     print(
         (
@@ -34,7 +37,7 @@ def open_earlyexit(sys, gas, melt):
             "as one or more volatile element is now present in too low "
             "an amount to solve the system with the specified pressure step."
             "\nPlease try reducing the stepsize for a complete run."
-            "\nThe run so far has been written out in Output/dgs_output.csv"
+            "\nThe run so far has been written out in Output/dgs_output_CRASHED*.csv"
         )
     )
 
@@ -52,12 +55,12 @@ def closed_earlyexit(sys, gas, melt):
     melt : Melt class
         The active instance of the Melt class
     """
-    wt.writeout_crash(sys, gas, melt, sys.P_track)
+    wt.writeout_file(sys, gas, melt, sys.P_track, crashed=True)
 
     print(
         (
             "Error: This run has finished before the assigned P_STOP."
-            "\n The run so far has been written out in Output/dgs_output.csv"
+            "\n The run so far has been written out in Output/dgs_output_CRASHED_*.csv"
         )
     )
 

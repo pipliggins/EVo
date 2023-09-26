@@ -1125,30 +1125,67 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         + (2 * (sys.WgT[0] * wts["SO2"])) / cnst.m["so2"]
     )
 
-    with warnings.catch_warnings():
-        warnings.filterwarnings("ignore")
-        return (
-            f"{P:.4f} \t {cnvs.generate_fo2_buffer(sys, (o2y * mO2 * P), P):+.3} \t "
-            f"{fo2:.3e} \t {F:.3} \t {rho_bulk:.3} \t {rho_melt:.3} \t {GvF * 100:.3g}"
-            f" \t {sys.WgT[0] * 100:.3g} \t {M:.3g} \t {gas.mH2O[0]:.5g} \t "
-            f"{gas.mH2[0]:.5g} \t {gas.mO2[0]:.5g} \t {gas.mCO2[0]:.5g} \t "
-            f"{gas.mCO[0]:.5g} \t {gas.mCH4[0]:.5g} \t {gas.mSO2[0]:.5g} \t "
-            f"{gas.mH2S[0]:.5g} \t {gas.mS2[0]:.5g} \t {gas.mN2[0]:.5g} \t "
-            f"{wts['H2O']:.5g} \t {wts['H2']:.5g} \t {wts['O2']:.5g} \t "
-            f"{wts['CO2']:.5g} \t {wts['CO']:.5g} \t {wts['CH4']:.5g} \t "
-            f"{wts['SO2']:.5g} \t {wts['H2S']:.5g} \t {wts['S2']:.5g} \t "
-            f"{wts['N2']:.5g} \t {melt_h2o*100:.5g} \t {melt_h2*100:.5g} \t "
-            f"{melt_co2*100:.5g} \t {melt_co*100:.5g} \t {melt_ch4*100:.5g} \t "
-            f"{graphite*100:.5g} \t {s2_melt*100:.5g} \t {s6_melt*100:.5g} \t "
-            f"{melt_s*100:.5g} \t {melt_n*100:.5g} \t {gas.mCO2[0]/gas.mCO[0]:.5g} \t "
-            f"{gas.mCO2[0]/gas.mH2O[0]:.5g} \t {gas.mCO2[0]/gas.mSO2[0]:.5g} \t "
-            f"{gas.mH2S[0]/gas.mSO2[0]:.5g} \t {(h2y * mH2 * P):.8g} \t "
-            f"{(h2oy * mH2O * P):.6g} \t {(co2y * mCO2 * P):.6g} \t "
-            f"{(coy * mCO * P):.6g} \t {(ch4y * mCH4 * P):.6g} \t "
-            f"{(so2y * mSO2 * P):.8g} \t {(h2sy * mH2S * P):.8g} \t "
-            f"{(s2y * mS2 * P):.8g} \t {(n2y * mN2 * P):.8g} \t "
-            f"{sys.atomicM['h']*1000000:.8g} \t {sys.atomicM['c']*1000000:.8g} \t "
-            f"{atomico*1000000:.8g} \t "
-            f"{cnvs.atomicM_calc(sys, melt, gas, 'o_tot', 0)*1000000:.8g} \t "
-            f"{sys.atomicM['s']*1000000:.8g} \t {sys.atomicM['n']*1000000:.8g} \n"
-        )
+    fo2_buffer = sys.run.FO2_buffer
+
+    data = {
+        "P": P,
+        fo2_buffer: cnvs.generate_fo2_buffer(sys, (o2y * mO2 * P), P),
+        "fo2": fo2,
+        "F": F,
+        "rho_bulk": rho_bulk,
+        "rho_melt": rho_melt,
+        "Exsol_vol%": GvF * 100,
+        "Gas_wt": sys.WgT[0] * 100,
+        "mol_mass": M,
+        "mH2O": gas.mH2O[0],
+        "mH2": gas.mH2[0],
+        "mO2": gas.mO2[0],
+        "mCO2": gas.mCO2[0],
+        "mCO": gas.mCO[0],
+        "mCH4": gas.mCH4[0],
+        "mSO2": gas.mSO2[0],
+        "mH2S": gas.mH2S[0],
+        "mS2": gas.mS2[0],
+        "mN2": gas.mN2[0],
+        "wH2O": wts["H2O"],
+        "wH2": wts["H2"],
+        "wO2": wts["O2"],
+        "wCO2": wts["CO2"],
+        "wCO": wts["CO"],
+        "wCH4": wts["CH4"],
+        "wSO2": wts["SO2"],
+        "wH2S": wts["H2S"],
+        "wS2": wts["S2"],
+        "wN2": wts["N2"],
+        "fH2O": (h2oy * mH2O * P),
+        "fH2": (h2y * mH2 * P),
+        "fCO2": (co2y * mCO2 * P),
+        "fCO": (coy * mCO * P),
+        "fCH4": (ch4y * mCH4 * P),
+        "fSO2": (so2y * mSO2 * P),
+        "fH2S": (h2sy * mH2S * P),
+        "fS2": (s2y * mS2 * P),
+        "fN2": (n2y * mN2 * P),
+        "mCO2/CO": gas.mCO2[0] / gas.mCO[0],
+        "mCO2/H2O": gas.mCO2[0] / gas.mH2O[0],
+        "mCO2/SO2": gas.mCO2[0] / gas.mSO2[0],
+        "mH2S/SO2": gas.mH2S[0] / gas.mSO2[0],
+        "H2O_melt": melt_h2o * 100,
+        "H2_melt": melt_h2 * 100,
+        "CO2_melt": melt_co2 * 100,
+        "CO_melt": melt_co * 100,
+        "CH4_melt": melt_ch4 * 100,
+        "graph_melt": graphite * 100,
+        "S2-_melt": s2_melt * 100,
+        "S6+_melt": s6_melt * 100,
+        "Stot_melt": melt_s * 100,
+        "N_melt": melt_n * 100,
+        "tot_H": sys.atomicM["h"] * 1000000,
+        "tot_C": sys.atomicM["c"] * 1000000,
+        "tot_O_gas": atomico * 1000000,
+        "tot_O": cnvs.atomicM_calc(sys, melt, gas, "o_tot", 0) * 1000000,
+        "tot_S": sys.atomicM["s"] * 1000000,
+        "tot_N": sys.atomicM["n"] * 1000000,
+    }
+
+    return data

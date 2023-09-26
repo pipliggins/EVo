@@ -28,7 +28,7 @@ Then inside a terminal (and inside the virtual environment if you use one):
 python3 dgs.py chem.yaml env.yaml --output output.yaml
 ```
 
-The model should run and produce an output file Outputs/dgs_output.csv, and a set of graphs in the Output folder, if a decompression run has been selected.
+The model should run and produce an output file Outputs/dgs_output_*.csv, and a set of graphs in the Output folder, if a decompression run has been selected.
 
 ### Choosing run options in the env.yaml file
 
@@ -120,22 +120,24 @@ The following HAVE NOT been implemented yet and so will not work, even if no err
 
 ## Reading the Output file
 
-This table summarises the headers and meanings in the output file. The output file is a table-delimited CSV, best opened by importing the csv data into a reader for easiest reading.
+This table summarises the headers and meanings in the output CSV file.
 
 | Name in output file  | Symbol | Units    | Description                                                                                      |
 |----------------------|--------|----------|--------------------------------------------------------------------------------------------------|
 | P              |    P    | bar      | Pressure                                                                                         |
 | NNO/FMQ/IW           |        |          | Oxygen fugacity relative to the chosen buffer, Ni-NiO, Fayalite-Magnetite-Quartz or Iron-Wursite |
-| fO2, fH2O...         |        | bar      | Species fugacities                                                                               |
+| fO2            |        | bar      | Raw oxygen fugacity                                                                               |
+| F              |        | ratio      | mole fraction ratio of Fe2O3/FeO                                                                     |
 | rho_bulk           |        | kg/m^3   | Density of the system (melt+gas)                                                                 |
 | rho_melt           |        | kg/m^3   | Density of the silicate melt                                                                     |
 | Exsol_vol%          |        | % | Gas volume fraction (of system)                                                                  |
 | Gas_wt              |    WgT    | % | Gas weight fraction (of system)                                                                  |
 | mol_mass      |        | kg/mol   | Mean molecular mass of gas phase                                                                 |
-| mH2O, mH2, mO2...    |        | fraction | Species molar fraction in gas                                                                    |
+| mH2O, mH2, mO2...    |        | fraction | Species mole fraction in gas                                                                    |
 | WH2O, WH2, WO2...    |        | fraction | Species weight fraction in gas                                                                   |
-| H2O_melt, H2_melt...   |        | % | Weight percent of species in the melt                                                            |
-| S_melt                |        | % | Weight percent of S in the melt (sum of S dissolved as SO2 and H2S)                              |
+| fH2O, fH2...         |        | bar      | Species fugacities                                                                               |
 | mCO2/CO, mCO2/H2O... |        |          | Molar ratios of gas species                                                                      |
+| H2O_melt, H2_melt...   |        | % | Weight percent of species in the melt                                                            |
+| S_melt                |        | % | Weight percent of S in the melt (sum of S dissolved as S2- and S6+)                              |
 | tot_H, tot_C...      |        | ppm      | Total weight fraction of elements                                                                |
 | tot_O_gas      |        | ppm      | Total weight fraction of elemental O in the volatile phases only, i.e. not counting O stored as FeO or Fe2O3                                                                |

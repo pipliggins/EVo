@@ -1407,7 +1407,10 @@ class Melt:
         ):
             fo2 = O2.Y * gas.mO2[-1] * self.sys.P
             self.cm_dry, F = self.iron_fraction(np.log(fo2))
-            self.F.append(F)
+
+            if self.run.FE_SYSTEM is False:
+                # otherwise this is done in fe_save
+                self.F.append(F)
 
             self.sulfide.append(
                 sl.sulfide_melt(
@@ -1435,9 +1438,11 @@ class Melt:
             self.s.append(self.sulfide[-1] + self.sulfate[-1])
 
         else:
-            fo2 = O2.Y * gas.mO2[-1] * self.sys.P
-            self.cm_dry, F = self.iron_fraction(np.log(fo2))
-            self.F.append(F)
+            if self.run.FE_SYSTEM is False:
+                # otherwise this is done in self.fe_save
+                fo2 = O2.Y * gas.mO2[-1] * self.sys.P
+                self.cm_dry, F = self.iron_fraction(np.log(fo2))
+                self.F.append(F)
 
             self.sulfide.append(0.0)
             self.sulfate.append(0.0)
