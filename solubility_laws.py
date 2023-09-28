@@ -684,8 +684,6 @@ def dasgupta2022(mN2, fO2, P, T, melt):
         mole fraction of N2 in the gas phase
     fO2 : float
         absolute oxygen fugacity
-    O2 : Molecule class
-        O2 instance of the Molecule class
     P : float
         Pressure (bars)
     T : float
@@ -701,28 +699,33 @@ def dasgupta2022(mN2, fO2, P, T, melt):
 
     References
     ----------
-    The fate of nitrogen during parent body partial melting and accretion of the inner solar
-        system bodies at reducing conditions
+    The fate of nitrogen during parent body partial melting and accretion of the inner
+        solar system bodies at reducing conditions
         Rajdeep Dasgupta, Emily Falksen, Aindrila Pal, Chenguang Sun
         GCA, 2022, https://doi.org/10.1016/j.gca.2022.09.012
     """
 
-    oxides = melt.iron_fraction(np.log(fO2), ppa=P * 1e5)[
-        0
-    ]  # dry melt as oxide mol fractions
-    
+    # dry melt as oxide mol fractions
+    oxides = melt.iron_fraction(np.log(fO2), ppa=P * 1e5)[0]
+
     # need to convert to GPa for Dasgupta equation
     pn2 = P * mN2 * 1e-4
-    
+
     # convert absolute fO2 to Delta-IW
     #   Use Frost 1991, RevMin
-    diw = np.log10(fO2) - (-27489/T + 6.702 + 0.055*(P-1)/T)
-    
+    # diw = np.log10(fO2) - (-27489 / T + 6.702 + 0.055 * (P - 1) / T)
+    diw = cnvs.fo2_2iw(np.log10(fO2), T, P, melt.run.FMQ_MODEL)
+
     # equation below needs all pressures in GPa
-    return (
-        1e-6 * \
-            ( pn2**0.5 * np.exp(5908 * (P*1e-4)**0.5/T - 1.6*diw) +\
-             pn2 * np.exp(4.67 + 7.11*oxides['sio2'] - 13.06*oxides['al2o3'] - 120.67*oxides['tio2']) )
+    return 1e-6 * (
+        pn2**0.5 * np.exp(5908 * (P * 1e-4) ** 0.5 / T - 1.6 * diw)
+        + pn2
+        * np.exp(
+            4.67
+            + 7.11 * oxides["sio2"]
+            - 13.06 * oxides["al2o3"]
+            - 120.67 * oxides["tio2"]
+        )
     )
 
 
@@ -752,27 +755,34 @@ def dasgupta2022_fugacity(n_melt, nY, fO2, P, T, melt):
 
     References
     ----------
-    The fate of nitrogen during parent body partial melting and accretion of the inner solar
-        system bodies at reducing conditions
+    The fate of nitrogen during parent body partial melting and accretion of the inner
+        solar system bodies at reducing conditions
         Rajdeep Dasgupta, Emily Falksen, Aindrila Pal, Chenguang Sun
         GCA, 2022, https://doi.org/10.1016/j.gca.2022.09.012.
     """
 
     def n_quadratic(n_melt, P, T, diw, oxides):
-
         # solves for partial pressure of N2 in GPa
         def f0(x):
-            return x**0.5 * np.exp(5908 * (P*1e-4)**0.5/T - 1.6*diw) +\
-                                   x * np.exp(4.67 + 7.11*oxides['sio2'] - 13.06*oxides['al2o3'] - 120.67*oxides['tio2']) -\
-                                   n_melt*1e6
+            return (
+                x**0.5 * np.exp(5908 * (P * 1e-4) ** 0.5 / T - 1.6 * diw)
+                + x
+                * np.exp(
+                    4.67
+                    + 7.11 * oxides["sio2"]
+                    - 13.06 * oxides["al2o3"]
+                    - 120.67 * oxides["tio2"]
+                )
+                - n_melt * 1e6
+            )
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
             try:
-                PN2 = root(f0, 1e-11, method='lm', options={'maxiter': 100}).x[0]
+                PN2 = root(f0, 1e-11, method="lm", options={"maxiter": 100}).x[0]
             except RuntimeWarning:
                 try:
-                    PN2 = root(f0, 1e-10, method='lm', options={'maxiter': 100}).x[0]
+                    PN2 = root(f0, 1e-10, method="lm", options={"maxiter": 100}).x[0]
                 except RuntimeWarning:
                     raise RuntimeError("Failed to find N2 partial pressure.")
 
@@ -787,14 +797,14 @@ def dasgupta2022_fugacity(n_melt, nY, fO2, P, T, melt):
 
     # convert absolute fO2 to Delta-IW
     #   Use Frost 1991, RevMin
-    diw = np.log10(fO2) - (-27489/T + 6.702 + 0.055*(P-1)/T)
-    
+    # diw = np.log10(fO2) - (-27489 / T + 6.702 + 0.055 * (P - 1) / T)
+    diw = cnvs.fo2_2iw(np.log10(fO2), T, P, melt.run.FMQ_MODEL)
+
     PN2 = n_quadratic(n_melt, P, T, diw, oxides)
-    mN2 = PN2 / P # pressure in atmospheres
+    mN2 = PN2 / P
     fn2 = nY * mN2 * P
 
     return fn2
-
 
 
 def nash2019(fO2, P, T, melt, run):
@@ -1102,7 +1112,8 @@ def h2o_melt(mH2O, H2O, P, name="burguisser2015", Y=None):
         return burguisser2015_h2o(mH2O, H2O, P, H2OY=Y) / cnst.m["h2o"]
 
 
-# this function controls which solubility law will get used.  So new function needs to go in here
+# this function controls which solubility law will get used.
+#  So new function needs to go in here
 #   go through whole code and add argument for passing melt composition
 #   e.g., H2 melt for how to do this
 def n_melt(mN2, fO2, P, T, melt, name="libourel2003"):
@@ -1119,7 +1130,9 @@ def n_melt(mN2, fO2, P, T, melt, name="libourel2003"):
         Absolute oxygen fugacity
     P : float
         Pressure (bars)
-    name : {'libourel2003'}
+    T: float
+        Temperature (K)
+    name : {'libourel2003', 'dasgupta2022'}
         The name of the solubility law to be used.
 
     Returns
@@ -1372,7 +1385,11 @@ def n2_fugacity(melt_n, N2Y, fO2, P, T, melt, name="libourel2003"):
         Absolute oxygen fugacity
     P : float
         Pressure (bars)
-    name : {'libourel2003'}
+    T : float
+        Temperature (K)
+    melt : class
+        Active instace of Melt class
+    name : {'libourel2003', 'dasgupta2022'}
         The name of the solubility law to be used.
 
     Returns

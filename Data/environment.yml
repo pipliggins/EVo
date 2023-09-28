@@ -10,3 +10,4 @@ dependencies:
   - mpmath>=1.2.1
   - pyyaml
   - pandas>=2.1.0
+  - black

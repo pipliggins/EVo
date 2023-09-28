@@ -621,6 +621,7 @@ class ThermoSystem:
             melt.n,
             melt.F,
             melt.ofe,
+            melt.rho_store,
         ]
         gas_wts_f = ["H2O", "O2", "H2", "CO", "CO2", "CH4", "S2", "SO2", "H2S", "N2"]
 
