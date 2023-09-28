@@ -305,7 +305,7 @@ def sat_pressure(run, sys, gas, melt, mols):
 
         if melt_n != 0.0:
             n2_y = gamma[-1]
-            fn2 = sl.n2_fugacity(melt_n, n2_y, fo2, P, name=run.N_MODEL)
+            fn2 = sl.n2_fugacity(melt_n, n2_y, fo2, P, sys.T, melt, name=run.N_MODEL)
         else:
             fn2 = 0
 
@@ -813,7 +813,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         return [
             (
                 N * (2 * mN2)
-                + sl.n_melt(mN2, (o2_y * mO2 * P_sat), P_sat, name=run.N_MODEL)
+                + sl.n_melt(mN2, (o2_y * mO2 * P_sat), P_sat, sys.T, melt, name=run.N_MODEL)
             )
             - (sys.atomicM["n"] / cnst.m["n"]),
             (
@@ -933,7 +933,7 @@ def sat_pressure(run, sys, gas, melt, mols):
                 sol = root(
                     fixed_weights_cohsn,
                     [guess_h2o, guess_co2, guess_s, guess_n],
-                    method="lm",
+                    method="lm", options = {'maxiter':100}
                 )
                 melt_h2o, melt_co2, melt_s, melt_n = sol["x"]
 

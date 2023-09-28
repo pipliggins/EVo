@@ -359,7 +359,7 @@ def vol_setup_standard(run, sys):
             answer = query_yes_no(
                 (
                     "Would you like to proceed with the atomic mass set, setting all "
-                    "fugacities and melt contents to False?",
+                    "fugacities and melt contents to False?"
                 ),
                 default="yes",
             )
@@ -595,6 +595,8 @@ def vol_setup_saturation(run, sys):
     elif run.GAS_SYS == "COHS" or run.GAS_SYS == "COHSN":
         if run.WTCO2_SET is True or run.GRAPHITE_SATURATED is True:
             C = True
+        else :
+            C = False
 
         lst = [run.WTH2O_SET, C, run.SULFUR_SET, sys.FO2]
 

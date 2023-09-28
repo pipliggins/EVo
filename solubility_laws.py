@@ -6,7 +6,7 @@ using the method specified in the run.yaml file.
 import numpy as np
 from scipy.special import erf
 import warnings
-from scipy.optimize import fsolve
+from scipy.optimize import fsolve, root
 
 import conversions as cnvs
 import constants as cnst
@@ -591,15 +591,6 @@ def graphite_fco2(T, P, fO2):
     return graph_fco2
 
 
-# find the inverse: melt -> gas phase
-# the functions that find the saturation need to know the fugacity in the gas phase given melt, hence two functions
-# - update environment file for new solubility law name
-# - for running model, make all decisions through the environment file
-# - there is a readme and a read the docs that should explain most of it
-# - for testing: basalt, closed system, 'find saturation = true', 
-# - for system composition: set atomic mass fraction of volatiles, use 'atomic mass set', which will find speciation at fO2
-#   and the pressure
-
 def libourel2003(mN2, fO2, P):
     """
     Returns the weight fraction of N in the melt.
@@ -681,6 +672,129 @@ def libourel2003_fugacity(n_melt, nY, fO2, P):
     fn2 = nY * mN2 * P
 
     return fn2
+
+
+def dasgupta2022(mN2, fO2, P, T, melt):
+    """
+    Returns the weight fraction of N in the melt.
+
+    Parameters
+    ----------
+    mN2 : float
+        mole fraction of N2 in the gas phase
+    fO2 : float
+        absolute oxygen fugacity
+    O2 : Molecule class
+        O2 instance of the Molecule class
+    P : float
+        Pressure (bars)
+    T : float
+        Temperature (Kelvin)
+    melt : Melt class
+        The active instance of the Melt class
+
+
+    Returns
+    -------
+    float
+        The weight fraction of N in the melt
+
+    References
+    ----------
+    The fate of nitrogen during parent body partial melting and accretion of the inner solar
+        system bodies at reducing conditions
+        Rajdeep Dasgupta, Emily Falksen, Aindrila Pal, Chenguang Sun
+        GCA, 2022, https://doi.org/10.1016/j.gca.2022.09.012
+    """
+
+    oxides = melt.iron_fraction(np.log(fO2), ppa=P * 1e5)[
+        0
+    ]  # dry melt as oxide mol fractions
+    
+    # need to convert to GPa for Dasgupta equation
+    pn2 = P * mN2 * 1e-4
+    
+    # convert absolute fO2 to Delta-IW
+    #   Use Frost 1991, RevMin
+    diw = np.log10(fO2) - (-27489/T + 6.702 + 0.055*(P-1)/T)
+    
+    # equation below needs all pressures in GPa
+    return (
+        1e-6 * \
+            ( pn2**0.5 * np.exp(5908 * (P*1e-4)**0.5/T - 1.6*diw) +\
+             pn2 * np.exp(4.67 + 7.11*oxides['sio2'] - 13.06*oxides['al2o3'] - 120.67*oxides['tio2']) )
+    )
+
+
+def dasgupta2022_fugacity(n_melt, nY, fO2, P, T, melt):
+    """
+    Returns the fugacity of N2 in the gas phase.
+
+    Parameters
+    ----------
+    n_melt : float
+        Weight fraction of N2 in the melt
+    nY : float
+        Fugacity coefficient of N2
+    fO2 : float
+        Oxygen fugacity
+    P : float
+        Pressure (bars)
+    T : float
+        Temperature (Kelvin)
+    melt : Melt class
+        The active instance of the Melt class
+
+    Returns
+    -------
+    fn2 : float
+        The fugacity of N2
+
+    References
+    ----------
+    The fate of nitrogen during parent body partial melting and accretion of the inner solar
+        system bodies at reducing conditions
+        Rajdeep Dasgupta, Emily Falksen, Aindrila Pal, Chenguang Sun
+        GCA, 2022, https://doi.org/10.1016/j.gca.2022.09.012.
+    """
+
+    def n_quadratic(n_melt, P, T, diw, oxides):
+
+        # solves for partial pressure of N2 in GPa
+        def f0(x):
+            return x**0.5 * np.exp(5908 * (P*1e-4)**0.5/T - 1.6*diw) +\
+                                   x * np.exp(4.67 + 7.11*oxides['sio2'] - 13.06*oxides['al2o3'] - 120.67*oxides['tio2']) -\
+                                   n_melt*1e6
+
+        with warnings.catch_warnings():
+            warnings.filterwarnings("error")
+            try:
+                PN2 = root(f0, 1e-11, method='lm', options={'maxiter': 100}).x[0]
+            except RuntimeWarning:
+                try:
+                    PN2 = root(f0, 1e-10, method='lm', options={'maxiter': 100}).x[0]
+                except RuntimeWarning:
+                    raise RuntimeError("Failed to find N2 partial pressure.")
+
+        # factor 1e4 to bring GPa (native format of eqs) back up to bar
+        # return : PN2 (bar)
+        return PN2 * 1e4
+
+    # pressure needs to be in Pa, so 1e5 conversion
+    oxides = melt.iron_fraction(np.log(fO2), ppa=P * 1e5)[
+        0
+    ]  # dry melt as oxide mol fractions
+
+    # convert absolute fO2 to Delta-IW
+    #   Use Frost 1991, RevMin
+    diw = np.log10(fO2) - (-27489/T + 6.702 + 0.055*(P-1)/T)
+    
+    PN2 = n_quadratic(n_melt, P, T, diw, oxides)
+    mN2 = PN2 / P # pressure in atmospheres
+    fn2 = nY * mN2 * P
+
+    return fn2
+
 
 
 def nash2019(fO2, P, T, melt, run):
@@ -991,7 +1105,7 @@ def h2o_melt(mH2O, H2O, P, name="burguisser2015", Y=None):
 # this function controls which solubility law will get used.  So new function needs to go in here
 #   go through whole code and add argument for passing melt composition
 #   e.g., H2 melt for how to do this
-def n_melt(mN2, fO2, P, name="libourel2003"):
+def n_melt(mN2, fO2, P, T, melt, name="libourel2003"):
     """
     Returns the number of moles of N in the melt.
 
@@ -1015,6 +1129,9 @@ def n_melt(mN2, fO2, P, name="libourel2003"):
     """
     if name == "libourel2003":
         return libourel2003(mN2, fO2, P) / cnst.m["n"]
+
+    if name == "dasgupta2022":
+        return dasgupta2022(mN2, fO2, P, T, melt) / cnst.m["n"]
 
 
 def sulfate_melt(fS2, fO2, P, T, melt, run, name="nash2019"):
@@ -1239,7 +1356,7 @@ def h2o_fugacity(melt_h2o, H2O, name="burguisser2015"):
         return burguisser2015_h2o_fugacity(melt_h2o, H2O)
 
 
-def n2_fugacity(melt_n, N2Y, fO2, P, name="libourel2003"):
+def n2_fugacity(melt_n, N2Y, fO2, P, T, melt, name="libourel2003"):
     """
     Returns the fugacity of N2 in the gas.
 
@@ -1266,6 +1383,9 @@ def n2_fugacity(melt_n, N2Y, fO2, P, name="libourel2003"):
 
     if name == "libourel2003":
         return libourel2003_fugacity(melt_n, N2Y, fO2, P)
+
+    if name == "dasgupta2022":
+        return dasgupta2022_fugacity(melt_n, N2Y, fO2, P, T, melt)
 
 
 def S2_fugacity(

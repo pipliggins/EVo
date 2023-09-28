@@ -618,7 +618,7 @@ def decompress(run, sys, melt, gas, system):
 
         N = (
             (sys.atomicM["n"] / cnst.m["n"])
-            - sl.n_melt(w, (O2.Y * z * sys.P), sys.P, name=run.N_MODEL)
+            - sl.n_melt(w, (O2.Y * z * sys.P), sys.P, sys.T, melt, name=run.N_MODEL)
         ) / (2 * w)
 
         if fe is True:

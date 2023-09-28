@@ -285,7 +285,7 @@ def sat_pressure(run, sys, gas, melt, mols):
 
         if run.NITROGEN_SET:
             n2_y = gamma[-1]
-            fn2 = sl.n2_fugacity(run.NITROGEN_START, n2_y, fo2, P, name=run.N_MODEL)
+            fn2 = sl.n2_fugacity(run.NITROGEN_START, n2_y, fo2, P, sys.T, melt, name=run.N_MODEL)
         else:
             fn2 = 0
 
@@ -827,7 +827,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         # WtN
         sys.atomicM["n"] = cnst.m["n"] * (
             (sys.WgT[0] / sum(mjMj)) * (2 * mN2)
-            + sl.n_melt(mN2, (O2.Y * mO2 * sys.P), sys.P, name=run.N_MODEL)
+            + sl.n_melt(mN2, (O2.Y * mO2 * sys.P), sys.P, sys.T, melt, name=run.N_MODEL)
         )
 
         lists = [
@@ -1111,7 +1111,7 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
             melt_n = sys.run.NITROGEN_START
         else:
             melt_n = (
-                sl.n_melt(mN2, (o2y * mO2 * P), P, name=sys.run.N_MODEL) * cnst.m["n"]
+                sl.n_melt(mN2, (o2y * mO2 * P), P, sys.T, melt, name=sys.run.N_MODEL) * cnst.m["n"]
             )
 
     else:

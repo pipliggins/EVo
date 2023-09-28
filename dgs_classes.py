@@ -98,7 +98,7 @@ class RunDef:
     SCSS : {'liu2007'}
         Select the model to calculate the sulfide capacity at sulfide
         saturation
-    N_MODEL : {'libourel2003'}
+    N_MODEL : {'libourel2003', 'dasgupta2022'}
         Select the N2 solubility model
     FO2_buffer : {'FMQ', 'IW', 'NNO'}
         Mineral buffer to cite fO2 relative to
@@ -1454,6 +1454,8 @@ class Melt:
                     gas.mN2[-1],
                     (O2.Y * gas.mO2[-1] * self.sys.P),
                     self.sys.P,
+                    self.sys.T,
+                    self,
                     name=self.sys.run.N_MODEL,
                 )
                 * cnst.m["n"]

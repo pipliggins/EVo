@@ -11,7 +11,8 @@ import messages as msgs
 import solubility_laws as sl
 
 
-def get_inputs(sys, run, melt, gas, mols) -> tuple[float, ...]:
+#  -> tuple[float, ...]
+def get_inputs(sys, run, melt, gas, mols):
     """
     Calculates a subset of gas mole fractions based on the provided
     input parameters.
@@ -839,7 +840,7 @@ def cohsn(sys, run, melt, gas, mols):
         gas.mCH4.append(mCH4)
 
         mN2 = sl.n2_fugacity(
-            run.NITROGEN_START, N2.Y, (O2.Y * mO2 * sys.P), sys.P, name=run.N_MODEL
+            run.NITROGEN_START, N2.Y, (O2.Y * mO2 * sys.P), sys.P, sys.T, melt, name=run.N_MODEL
         ) / (N2.Y * sys.P)
 
         if mN2 > 1:
@@ -893,7 +894,7 @@ def cohsn(sys, run, melt, gas, mols):
         gas.mH2S.append(mH2S)
 
         mN2 = sl.n2_fugacity(
-            run.NITROGEN_START, N2.Y, (O2.Y * mO2 * sys.P), sys.P, name=run.N_MODEL
+            run.NITROGEN_START, N2.Y, (O2.Y * mO2 * sys.P), sys.P, sys.T, melt, name=run.N_MODEL
         ) / (N2.Y * sys.P)
 
         if mN2 > 1:
@@ -1024,6 +1025,6 @@ def cohsn(sys, run, melt, gas, mols):
     # WtN
     sys.atomicM["n"] = cnst.m["n"] * (
         (sys.WgT[0] / sum(mjMj)) * (2 * mN2)
-        + sl.n_melt(mN2, (O2.Y * mO2 * sys.P), sys.P, name=run.N_MODEL)
+        + sl.n_melt(mN2, (O2.Y * mO2 * sys.P), sys.P, sys.T, melt, name=run.N_MODEL)
     )
     return sys.atomicM
