@@ -237,10 +237,8 @@ class RunDef:
             and self.COMPOSITION.lower() != "rhyolite"
         ):
             exit(
-                (
-                    f"Error: The composition '{self.COMPOSITION}' is invalid. "
-                    "Please enter 'basalt', 'phonolite', or 'rhyolite'."
-                )
+                f"Error: The composition '{self.COMPOSITION}' is invalid. "
+                "Please enter 'basalt', 'phonolite', or 'rhyolite'."
             )
         else:
             self.COMPOSITION = self.COMPOSITION.lower()
@@ -249,11 +247,9 @@ class RunDef:
             self.RUN_TYPE == self.RUN_TYPE.lower()
         else:
             exit(
-                (
-                    f"RUN_TYPE '{self.RUN_TYPE}'' is not recognised. "
-                    "Please select either 'closed' or 'open'; "
-                    "gas-only is not available in this release."
-                )
+                f"RUN_TYPE '{self.RUN_TYPE}'' is not recognised. "
+                "Please select either 'closed' or 'open'; "
+                "gas-only is not available in this release."
             )
 
         if self.MASS <= 0:
@@ -265,10 +261,8 @@ class RunDef:
             and self.ATOMIC_MASS_SET is False
         ):
             raise ValueError(
-                (
-                    "A gas weight fraction of greater than 0 must be entered "
-                    "if the saturation pressure is not being calculated."
-                )
+                "A gas weight fraction of greater than 0 must be entered "
+                "if the saturation pressure is not being calculated."
             )
 
     def zTest_Params(
@@ -650,11 +644,9 @@ class ThermoSystem:
             del self.P_track[-1]
             msgs.closed_earlyexit(self, gas, melt)
             exit(
-                (
-                    "Error: Mass is no longer being conserved. "
-                    "Please reduce the minimum pressure stepsize and try again."
-                    "\nExiting..."
-                )
+                "Error: Mass is no longer being conserved. "
+                "Please reduce the minimum pressure stepsize and try again."
+                "\nExiting..."
             )
 
     def pressure_step(self):
@@ -847,29 +839,24 @@ class Molecule:
             Gibbs free energy of formation
         """
 
-        path = open(
-            "Data/" + self.Mol + ".txt", "r"
-        )  # Opens the file for data for the molecule
+        # Open the file for data for the molecule
+        path = open("Data/" + self.Mol + ".txt", "r")
+
         Temp_ref = []  # To store temperatures which need to be interpolated
         del_G_ref = []  # To store values of G which need to be interpolated
         inter_count = 0
-        for (
-            aRow
-        ) in (
-            path
-        ):  # iterates through file to find correct values according to T provided.
+
+        # iterate through file to find correct values according to T provided.
+        for aRow in path:
             values = aRow.split("\t")
             if not aRow.startswith("#"):  # takes out descriptive headers
-                if (
-                    T - float(values[0]) == 0
-                ):  # can find K with values in table, no interpolation needed
-                    self.delG = float(
-                        values[6]
-                    )  # adds name of mol. and delG. of form. to the del_G dictionary
+                if T - float(values[0]) == 0:
+                    # can find K with values in table, no interpolation needed
+                    # adds name of mol. and delG. of form. to the del_G dictionary
+                    self.delG = float(values[6])
                     break
-                elif (
-                    inter_count == 1
-                ):  # adds in the upper table values for interpolation
+                elif inter_count == 1:
+                    # adds in the upper table values for interpolation
                     Temp_ref.append(float(values[0]))
                     del_G_ref.append(float(values[6]))
                     break
@@ -878,9 +865,8 @@ class Molecule:
                     del_G_ref.append(float(values[6]))
                     inter_count += 1
         if len(Temp_ref) == 2:
-            self.delG = np.interp(
-                T, Temp_ref, del_G_ref
-            )  # interpolates between 2 and returns value for Gf.
+            # interpolate between 2 and returns value for Gf.
+            self.delG = np.interp(T, Temp_ref, del_G_ref)
         path.close()
         return self.delG
 
