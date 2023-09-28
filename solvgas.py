@@ -572,9 +572,8 @@ def get_K(sys, molecules):
     R = cnst.R
 
     for mol in molecules:
-        del_Gf_dict[mol.Mol] = mol.get_G(
-            sys.T
-        )  # Stores the Gibbs energy in a dictionary with names not object identifiers.
+        # Stores the Gibbs energy in a dictionary with names not object identifiers.
+        del_Gf_dict[mol.Mol] = mol.get_G(sys.T)
 
     # K1: H2 + 1/2 O2 -> H2O
     K1_Gf = (
