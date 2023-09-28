@@ -391,12 +391,10 @@ def coh(sys, run, melt, gas, mols):
         graph_fCO2 = sl.graphite_fco2(sys.T, sys.P, (O2.Y * mO2 * sys.P))
         if (CO2.Y * mCO2 * sys.P) > graph_fCO2:
             exit(
-                (
-                    "Error: Melt is graphite saturated. "
-                    "System is overconstrained; please rerun by setting the melt "
-                    "graphite content and finding the saturation pressure, "
-                    "or stop using eguchi2018 in C_MODEL."
-                )
+                "Error: Melt is graphite saturated. "
+                "System is overconstrained; please rerun by setting the melt "
+                "graphite content and finding the saturation pressure, "
+                "or stop using eguchi2018 in C_MODEL."
             )
 
     mCO = 1 - mH2O - mH2 - mO2 - mCH4 - mCO2
@@ -692,12 +690,10 @@ def cohs(sys, run, melt, gas, mols):
             graph_fCO2 = sl.graphite_fco2(sys.T, sys.P, (O2.Y * mO2 * sys.P))
             if (CO2.Y * mCO2 * sys.P) > graph_fCO2:
                 exit(
-                    (
-                        "Error: Melt is graphite saturated. "
-                        "System is overconstrained; please rerun by setting the melt "
-                        "graphite content and finding the saturation pressure, "
-                        "or stop using eguchi2018 in C_MODEL."
-                    )
+                    "Error: Melt is graphite saturated. "
+                    "System is overconstrained; please rerun by setting the melt "
+                    "graphite content and finding the saturation pressure, "
+                    "or stop using eguchi2018 in C_MODEL."
                 )
 
         mCO = CO2.Y * mCO2 / (sys.K["K2"] * CO.Y * (O2.Y * mO2 * sys.P) ** 0.5)
@@ -929,12 +925,10 @@ def cohsn(sys, run, melt, gas, mols):
             graph_fCO2 = sl.graphite_fco2(sys.T, sys.P, (O2.Y * mO2 * sys.P))
             if (CO2.Y * mCO2 * sys.P) > graph_fCO2:
                 exit(
-                    (
-                        "Error: Melt is graphite saturated. "
-                        "System is overconstrained; please rerun by setting the melt "
-                        "graphite content and finding the saturation pressure, "
-                        "or stop using eguchi2018 in C_MODEL."
-                    )
+                    "Error: Melt is graphite saturated. "
+                    "System is overconstrained; please rerun by setting the melt "
+                    "graphite content and finding the saturation pressure, "
+                    "or stop using eguchi2018 in C_MODEL."
                 )
 
         mCO = CO2.Y * mCO2 / (sys.K["K2"] * CO.Y * (O2.Y * mO2 * sys.P) ** 0.5)

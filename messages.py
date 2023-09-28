@@ -32,13 +32,11 @@ def open_earlyexit(sys, gas, melt):
         np.arange(sys.run.P_START, sys.P, sys.run.DP_MAX * -1.0, crashed=True),
     )
     print(
-        (
-            "Error: This run has finished before the assigned P_STOP, "
-            "as one or more volatile element is now present in too low "
-            "an amount to solve the system with the specified pressure step."
-            "\nPlease try reducing the stepsize for a complete run."
-            "\nThe run so far has been written out in Output/dgs_output_CRASHED*.csv"
-        )
+        "Error: This run has finished before the assigned P_STOP, "
+        "as one or more volatile element is now present in too low "
+        "an amount to solve the system with the specified pressure step.\n"
+        "Please try reducing the stepsize for a complete run.\n"
+        "The run so far has been written out in Output/dgs_output_CRASHED*.csv"
     )
 
 
@@ -58,10 +56,8 @@ def closed_earlyexit(sys, gas, melt):
     wt.writeout_file(sys, gas, melt, sys.P_track, crashed=True)
 
     print(
-        (
-            "Error: This run has finished before the assigned P_STOP."
-            "\n The run so far has been written out in Output/dgs_output_CRASHED_*.csv"
-        )
+        "Error: This run has finished before the assigned P_STOP. \n"
+        "The run so far has been written out in Output/dgs_output_CRASHED_*.csv"
     )
 
 
@@ -145,20 +141,16 @@ def run_chem_mismatch(mtype, lims, sio2):
     """
     if sio2 < lims[0]:
         print(
-            (
-                f"Warning: You specified {mtype.upper()} in the env.yaml file, "
-                "but the SiO2 content of your melt specified in the chem.yaml "
-                f"file is LESS THAN {lims[0]} wt%.\n"
-            )
+            f"Warning: You specified {mtype.upper()} in the env.yaml file, "
+            "but the SiO2 content of your melt specified in the chem.yaml "
+            f"file is LESS THAN {lims[0]} wt%.\n"
         )
         answer = query_yes_no("Are you sure you want to continue?", default="no")
     elif sio2 > lims[1]:
         print(
-            (
-                f"Warning: You specified {mtype.upper()} in the env.yaml file, "
-                "but the SiO2 content of your melt specified in the chem.yaml file "
-                f"is GREATER THAN {lims[1]} wt%.\n"
-            )
+            f"Warning: You specified {mtype.upper()} in the env.yaml file, "
+            "but the SiO2 content of your melt specified in the chem.yaml file "
+            f"is GREATER THAN {lims[1]} wt%.\n"
         )
         answer = query_yes_no("Are you sure you want to continue?", default="no")
 
@@ -179,10 +171,8 @@ def solubility_temp(T, limits):
         Upper and lower temperature limits
     """
     print(
-        (
-            f"Warning: The set temperature of {T:3Ng} K is outside the T-dependent "
-            f"solubility limits of {limits[0]} to {limits[1]} K.\n"
-        )
+        f"Warning: The set temperature of {T:3Ng} K is outside the T-dependent "
+        f"solubility limits of {limits[0]} to {limits[1]} K.\n"
     )
     answer = query_yes_no(
         "Would you like to proceed with fixed solubility coefficients?", default="yes"
@@ -230,22 +220,19 @@ def sulfate_warn(s6, sys, gas, melt):
         )
     )
 
-    if (
-        not sys.P_track
-    ):  # If sys.P hasn't been initiated yet, fill with the starting pressure
+    # If sys.P hasn't been initiated yet, fill with the starting pressure
+    if not sys.P_track:
         sys.P_track.append(sys.P)
 
     # Writeout results
     closed_earlyexit(sys, gas, melt)
 
     raise ValueError(
-        (
-            f"The sulfate (S6+ speciated as SO4) content of the melt is {s6*100:.1f}% "
-            "of the total melt S content.\n"
-            "As sulfate currently does not exsolve, gas phase sulphur-bearing species "
-            "will now be significantly underestimated.\n"
-            "Run is terminated, results up to this point have been exported to CSV."
-        )
+        f"The sulfate (S6+ speciated as SO4) content of the melt is {s6*100:.1f}% "
+        "of the total melt S content.\n"
+        "As sulfate currently does not exsolve, gas phase sulphur-bearing species "
+        "will now be significantly underestimated.\n"
+        "Run is terminated, results up to this point have been exported to CSV."
     )
 
 
@@ -285,9 +272,8 @@ def scss_warn(scss, s, sys, gas, melt):
         )
     )
 
-    if (
-        not sys.P_track
-    ):  # If sys.P hasn't been initiated yet, fill with the starting pressure
+    # If sys.P hasn't been initiated yet, fill with the starting pressure
+    if not sys.P_track:
         sys.P_track.append(sys.P)
 
     # Writeout results
@@ -295,11 +281,9 @@ def scss_warn(scss, s, sys, gas, melt):
     closed_earlyexit(sys, gas, melt)
 
     exit(
-        (
-            "You have reached sulphide saturation, this code is no longer valid. "
-            f"SCSS: {scss:.1g} ppm, Sulfide in melt: {s:.1g} ppm"
-            "\nRun is terminated, results up to this point have been exported to CSV."
-        )
+        "You have reached sulphide saturation, this code is no longer valid. "
+        f"SCSS: {scss:.1g} ppm, Sulfide in melt: {s:.1g} ppm\n"
+        "Run is terminated, results up to this point have been exported to CSV."
     )
 
 
@@ -321,20 +305,16 @@ def vol_setup_standard(run, sys):
         run.FCO2_SET is True and run.WTCO2_SET is True
     ):
         exit(
-            (
-                "Warning: Please only use one option to set H2O or CO2. "
-                "Set either the Wt% or fugacity value to False."
-            )
+            "Warning: Please only use one option to set H2O or CO2. "
+            "Set either the Wt% or fugacity value to False."
         )
 
     if (run.WTCO2_SET is True and run.GRAPHITE_SATURATED is True) or (
         run.FCO2_SET is True and run.GRAPHITE_SATURATED is True
     ):
         exit(
-            (
-                "Warning: Please only use one setting for CO2. "
-                "Set two from fCO2, WTCO2 and graphite_saturated to False."
-            )
+            "Warning: Please only use one setting for CO2. "
+            "Set two from fCO2, WTCO2 and graphite_saturated to False."
         )
 
     if run.ATOMIC_MASS_SET is True:
@@ -350,17 +330,13 @@ def vol_setup_standard(run, sys):
         }
         if any(setting is True for setting in lst.values()):
             print(
-                (
-                    "Warning: Volatile contents are being set as fugacities/melt "
-                    "contents while ATOMIC_MASS_SET is true.\n"
-                )
+                "Warning: Volatile contents are being set as fugacities/melt "
+                "contents while ATOMIC_MASS_SET is true.\n"
             )
 
             answer = query_yes_no(
-                (
-                    "Would you like to proceed with the atomic mass set, setting all "
-                    "fugacities and melt contents to False?"
-                ),
+                "Would you like to proceed with the atomic mass set, "
+                "setting all fugacities and melt contents to False?",
                 default="yes",
             )
 
@@ -370,10 +346,8 @@ def vol_setup_standard(run, sys):
 
             if answer is False:
                 answer = query_yes_no(
-                    (
-                        "Would you like to set ATOMIC_MASS_SET to False and continue "
-                        "with the fugacities/melt contents already set?"
-                    ),
+                    "Would you like to set ATOMIC_MASS_SET to False and continue "
+                    "with the fugacities/melt contents already set?",
                     default="yes",
                 )
 
@@ -394,28 +368,22 @@ def vol_setup_standard(run, sys):
         for opt in lst:
             if opt is True:
                 exit(
-                    (
-                        "Error: This OH system setup cannot run with H2O, CO2 or "
-                        "sulphur contents. To run with H2O and find the saturation "
-                        "point of the system, set run.FIND_SATURATION to True."
-                    )
+                    "Error: This OH system setup cannot run with H2O, CO2 or "
+                    "sulphur contents. To run with H2O and find the saturation "
+                    "point of the system, set run.FIND_SATURATION to True."
                 )
 
         if run.FH2_SET is True and sys.FO2:
             exit(
-                (
-                    "Warning: Please only set one of either fH2, fO2, or the "
-                    "properties of FeO and Fe2O3 for the OH system."
-                )
+                "Warning: Please only set one of either fH2, fO2, or the "
+                "properties of FeO and Fe2O3 for the OH system."
             )
 
         elif run.FH2_SET is False and sys.FO2 is None:
             exit(
-                (
-                    "Error: For the OH system, please set either the initial fH2 or "
-                    "fO2 in the env.yaml file, or provide proportions of FeO and Fe2O3 "
-                    "via the chem.yaml file."
-                )
+                "Error: For the OH system, please set either the initial fH2 or "
+                "fO2 in the env.yaml file, or provide proportions of FeO and Fe2O3 "
+                "via the chem.yaml file."
             )
 
     elif run.GAS_SYS == "COH" or run.GAS_SYS == "SOH":
@@ -482,10 +450,8 @@ def vol_setup_standard(run, sys):
             )
 
             answer = query_yes_no(
-                (
-                    "Would you like to proceed with the COHS system, "
-                    "ignoring the melt nitrogen content?"
-                ),
+                "Would you like to proceed with the COHS system, "
+                "ignoring the melt nitrogen content?",
                 default="yes",
             )
 
@@ -595,7 +561,7 @@ def vol_setup_saturation(run, sys):
     elif run.GAS_SYS == "COHS" or run.GAS_SYS == "COHSN":
         if run.WTCO2_SET is True or run.GRAPHITE_SATURATED is True:
             C = True
-        else :
+        else:
             C = False
 
         lst = [run.WTH2O_SET, C, run.SULFUR_SET, sys.FO2]

@@ -80,10 +80,8 @@ def readin_env(f):
             pass
         else:
             exit(
-                (
-                    "Error: If melt is graphite saturated, "
-                    "please use the eguchi2018 model as the C_MODEL setting."
-                )
+                "Error: If melt is graphite saturated, "
+                "please use the eguchi2018 model as the C_MODEL setting."
             )
 
     sys.gas_system(run)  # creates the molecule list (self.SC)
@@ -144,10 +142,8 @@ def readin_chem(f, run, sys):
             chems.append(frac)
         else:
             exit(
-                (
-                    f"{chem} does not match an element in the allowed list "
-                    "(case insensitive):\n{allowed_names}"
-                )
+                f"{chem} does not match an element in the allowed list "
+                "(case insensitive):\n{allowed_names}"
             )
 
     # test for iron/ fO2 definition
@@ -275,12 +271,10 @@ def readin(f_chem, f_env, *args):
 
     if run.RUN_TYPE == "open" and run.DP_MAX != run.DP_MIN:
         raise ValueError(
-            (
-                "Open system degassing is path dependent."
-                "\nFor internal consistency, please set the DP_MAX and DP_MIN "
-                "pressure steps to be equal (we suggest <1 bar for the run to complete;"
-                " 0.5 bar is usually sufficient)"
-            )
+            "Open system degassing is path dependent.\n"
+            "For internal consistency, please set the DP_MAX and DP_MIN "
+            "pressure steps to be equal (we suggest <1 bar for the run to complete; "
+            "0.5 bar is usually sufficient)"
         )
 
     # chemistry
