@@ -148,7 +148,9 @@ def readin_chem(f, run, sys):
 
     # test for iron/ fO2 definition
     if "feo" in ele_names and "fe2o3" not in ele_names and run.FO2_SET is not True:
-        if run.GAS_SYS == "OH" and (run.FH2_SET):
+        if run.FE3_FET_SET is True:
+            pass
+        elif run.GAS_SYS == "OH" and (run.FH2_SET):
             pass
         elif run.FH2_SET and (run.FH2O_SET or run.WTH2O_SET):
             pass

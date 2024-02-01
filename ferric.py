@@ -77,7 +77,7 @@ def kc91_fo2(C, T, P, lnfo2):
     return F
 
 
-def kc91_fe3(Cm, T, P):
+def kc91_fe3(Cm, T, P, F=None):
     """
     Calculates the oxygen fugacity (fO2) of a melt given where the ferric/
     ferrous ratio is known.
@@ -86,11 +86,13 @@ def kc91_fe3(Cm, T, P):
     ----------
     C : dictionary
         Major element composition of the silicate melt as mole fractions
-        Required species: Al2O3, FeO, Fe2O3, CaO,  Na2O, K2O
+        Required species: Al2O3, FeO, (Fe2O3), CaO,  Na2O, K2O
     T : float
         Temperature in degrees K
     P : float
         Pressure in pascals (Pa)
+    F : float, optional
+        If provided, the fe2o3/feo ratio to use instead of the composition
 
     Returns
     -------
@@ -121,13 +123,21 @@ def kc91_fe3(Cm, T, P):
 
     T0 = 1673.0  # K
 
+    if not F:
+        assert Cm["fe2o3"] != 0.0
+        F = Cm["fe2o3"] / Cm["feo"]
+        Cm_feo = Cm["feo"] + Cm["fe2o3"] * 0.8998
+    else:
+        assert ("fe2o3" not in Cm) or (Cm["fe2o3"] == 0.0)
+        Cm_feo = Cm["feo"]
+
     FO2 = np.exp(
         (
-            np.log(Cm["fe2o3"] / Cm["feo"])
+            np.log(F)
             - b / T
             - c
             - dal2o3 * Cm["al2o3"]
-            - dfeo * (Cm["feo"] + Cm["fe2o3"] * 0.8998)
+            - dfeo * (Cm_feo)
             - dcao * Cm["cao"]
             - dna2o * Cm["na2o"]
             - dk2o * Cm["k2o"]
