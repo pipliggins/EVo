@@ -11,7 +11,7 @@ Single pressure and decompression can be run for OH, COH, SOH, COHS and COHSN sy
 
 EVo can be set up using either melt volatile contents, or for a set amount of atomic volatile which is preferable for conducting experiments over a wide range of fO2 values.
 
-**Note: In very rare cases, this version of EVo may result in a run failure if low pressure conditions are being used. If these low pressure runs are needed, an alternative EVo version which contains a multipoint precision module (GMPY2) is available upon emailing me at pkl28@cam.ac.uk. However, for the vast majority of scenarios, this version is preferable, as it runs faster.**
+**Note: In very rare cases, this version of EVo may result in a run failure if low pressure conditions are being used. If these low pressure runs are needed, an alternative EVo version which contains a multipoint precision module (GMPY2) is available upon emailing me at philippa.liggins@dtc.ox.ac.uk. However, for the vast majority of scenarios, this version is preferable, as it runs faster.**
 
 ### Prerequisites
 
