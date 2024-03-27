@@ -92,7 +92,8 @@ with title_col:
         "This is a web interface for the EVo volcanic degassing model.\n"
         + "Use the input options below to select setup options and load your "
         + "input options by clicking 'Load data'.\n"
-        + "Then click 'Run EVo' to generate a dataframe of results and example plots."
+        + "Then click 'Run EVo' to generate a downloadable dataframe of results "
+        + "and example plots."
     )
 
 col1, _, col2, col3 = st.columns([2, 0.5, 3, 3], gap="large")
