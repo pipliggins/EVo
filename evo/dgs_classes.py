@@ -1,37 +1,21 @@
 # dgs_classes
 
-# ------------------------------------------------------------------------
-# IMPORT
-# ------------------------------------------------------------------------
-
-# python
-import sys
 import copy
+import inspect
 import itertools
 import re
+import sys
+from pathlib import Path
+
 import numpy as np
 
-# local
-import inspect
-import density
-import conversions as cnvs
-import constants as cnst
-import solvgas as sg
-import init_cons as ic
-import messages as msgs
-import solubility_laws as sl
-
-
-# ------------------------------------------------------------------------
-# CLASSES
-# ------------------------------------------------------------------------
-
-#  -------------------------------------------------------------------------
-#
-""" Creates an object defining the parameters of the degassing run.
-Contains system properties, start and stop T/P, FO2 and buffering.
-fo2 - Delta FMQ (Frost 1991, Rev. Min.)
-"""
+import evo.constants as cnst
+import evo.conversions as cnvs
+import evo.density as density
+import evo.init_cons as ic
+import evo.messages as msgs
+import evo.solubility_laws as sl
+import evo.solvgas as sg
 
 
 class RunDef:
@@ -130,7 +114,7 @@ class RunDef:
     """
 
     # keep track of number of possible parameters (mainly for output purposes)
-    n_par = int(40)
+    n_par = 40
 
     # setup DEFAULT run parameters
     # will be overwritten by anything set in the environment file
@@ -160,18 +144,18 @@ class RunDef:
         self.LOSS_FRAC = 0.99
 
         # Select physical property and chemical solubility models
-        self.DENSITY_MODEL = str("spera2000")
-        self.FO2_MODEL = str("kc1991")
-        self.FMQ_MODEL = str("frost1991")
-        self.H2O_MODEL = str("burguisser2015")
-        self.H2_MODEL = str("gaillard2003")
-        self.C_MODEL = str("burguisser2015")
-        self.CO_MODEL = str("None")
-        self.CH4_MODEL = str("None")
-        self.SULFIDE_CAPACITY = str("oneill2020")
-        self.SULFATE_CAPACITY = str("nash2019")
-        self.SCSS = str("liu2007")
-        self.N_MODEL = str("libourel2003")
+        self.DENSITY_MODEL = "spera2000"
+        self.FO2_MODEL = "kc1991"
+        self.FMQ_MODEL = "frost1991"
+        self.H2O_MODEL = "burguisser2015"
+        self.H2_MODEL = "gaillard2003"
+        self.C_MODEL = "burguisser2015"
+        self.CO_MODEL = "None"
+        self.CH4_MODEL = "None"
+        self.SULFIDE_CAPACITY = "oneill2020"
+        self.SULFATE_CAPACITY = "nash2019"
+        self.SCSS = "liu2007"
+        self.N_MODEL = "libourel2003"
 
         # initial gas fugacities
         self.FO2_buffer_SET = False
@@ -244,7 +228,7 @@ class RunDef:
             self.COMPOSITION = self.COMPOSITION.lower()
 
         if self.RUN_TYPE.lower() == "closed" or self.RUN_TYPE.lower() == "open":
-            self.RUN_TYPE == self.RUN_TYPE.lower()
+            self.RUN_TYPE = self.RUN_TYPE.lower()
         else:
             exit(
                 f"RUN_TYPE '{self.RUN_TYPE}'' is not recognised. "
@@ -840,7 +824,9 @@ class Molecule:
         """
 
         # Open the file for data for the molecule
-        path = open("Data/" + self.Mol + ".txt", "r")
+        file_path = Path(__file__).parent / f"Data/{self.Mol}.txt"
+
+        path = open(file_path)  # Opens the file for data for the molecule
 
         Temp_ref = []  # To store temperatures which need to be interpolated
         del_G_ref = []  # To store values of G which need to be interpolated
@@ -1133,7 +1119,7 @@ class Melt:
             elif x == "fe2o3":
                 cation_formula["fe3"] = formula[x]
             else:
-                no_num = re.sub("\d", "", x)  # noqa:W605
+                no_num = re.sub(r"\d", "", x)
                 new_name = re.sub("o", "", no_num)
                 cation_formula[new_name] = formula[x]
 
@@ -1166,7 +1152,7 @@ class Melt:
 
         # strip down to cation name
         for x in formula.keys():
-            no_num = re.sub("\d", "", x)  # noqa:W605
+            no_num = re.sub(r"\d", "", x)
             new_name = re.sub("o", "", no_num)
 
             fwm += cnst.m[new_name] * formula[x]
@@ -2072,7 +2058,7 @@ class Output:
         If True, fO2 relative to FMQ will be plotted against pressure
     """
 
-    n_par = int(5)
+    n_par = 5
 
     def __init__(self):
         # Graphical outputs

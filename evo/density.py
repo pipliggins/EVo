@@ -4,7 +4,7 @@ Calculates density of melt according to changing temp, pressure and compositions
 From Sperra(2000) Physical properties of magmas, Encyclopedia of Volcanology
 """
 
-import constants as cnst
+from evo import constants as cnst
 
 # ------------------------------------------------------------------------
 # FUNCTIONS

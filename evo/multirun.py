@@ -1,9 +1,11 @@
 import os
-from dgs import main
-import yaml
-import numpy as np
 from itertools import product
 from shutil import copyfile
+
+import numpy as np
+import yaml
+
+from evo.dgs import main
 
 
 def amend_env(file, **kwargs):
@@ -22,11 +24,11 @@ def amend_env(file, **kwargs):
         str:any pairs corresponding to items in the env.yaml file
     """
 
-    with open(file, "r") as f:
+    with open(file) as f:
         env_doc = yaml.full_load(f)
 
     for param, val in kwargs.items():
-        if type(val) == np.float64:
+        if isinstance(val, np.float64):
             env_doc[param] = float(val)
         else:
             env_doc[param] = val
@@ -76,4 +78,4 @@ def multirun(**kwargs):
         copyfile("Output/dgs_output.csv", f"Output/output_{run_name}.csv")
 
 
-multirun(FO2_buffer_START=[1, -2], ATOMIC_C=[150, 550], ATOMIC_H=[200, 500])
+# multirun(FO2_buffer_START=[1, -2], ATOMIC_C=[150, 550], ATOMIC_H=[200, 500])

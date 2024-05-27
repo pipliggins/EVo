@@ -5,17 +5,18 @@
 # ------------------------------------------------------------------------
 
 import numpy as np
-from numpy import log as ln
-from numpy import exp, log10
 import yaml
+from numpy import exp, log10
+from numpy import log as ln
+
+import evo.conversions as cnvs
+import evo.fixed_weights as fw
+import evo.messages as msgs
+import evo.sat_pressure as sat
+import evo.solvgas as sg
 
 # bundled scripts
-from dgs_classes import RunDef, ThermoSystem, Gas, Melt, Molecule, Output
-import conversions as cnvs
-import solvgas as sg
-import messages as msgs
-import sat_pressure as sat
-import fixed_weights as fw
+from evo.dgs_classes import Gas, Melt, Molecule, Output, RunDef, ThermoSystem
 
 # ------------------------------------------------------------------------
 # FUNCTION DEFINTIONS
@@ -260,7 +261,7 @@ def readin(f_chem, f_env, *args):
     """
 
     # environment
-    with open(f_env, "r") as f:
+    with open(f_env) as f:
         run, sys = readin_env(f)
 
     # check stepsize requirements
@@ -278,7 +279,7 @@ def readin(f_chem, f_env, *args):
         )
 
     # chemistry
-    with open(f_chem, "r") as f:
+    with open(f_chem) as f:
         melt = readin_chem(f, run, sys)
 
     # check the melt SiO2 content matches the run composition definition
@@ -292,7 +293,7 @@ def readin(f_chem, f_env, *args):
     # outputs
     for arg in args:
         if arg:
-            with open(arg, "r") as f:
+            with open(arg) as f:
                 out = readin_output(f)
         else:
             out = None

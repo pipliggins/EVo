@@ -13,15 +13,17 @@ Using this method, the first and second values in mol fraction lists etc WILL NO
 (recalculate) as they are for different pressures.
 """
 
-from scipy.optimize import fsolve
-import solvgas as sg
-import constants as cnst
-import conversions as cnvs
-import solubility_laws as sl
-import messages as msgs
 import re
-import numpy as np
 import warnings
+
+import numpy as np
+from scipy.optimize import fsolve
+
+import evo.constants as cnst
+import evo.conversions as cnvs
+import evo.messages as msgs
+import evo.solubility_laws as sl
+import evo.solvgas as sg
 
 
 def get_molfrac(P, fugacities, gamma):
@@ -334,13 +336,13 @@ def sat_pressure(run, sys, gas, melt, mols):
         warnings.filterwarnings("error")
         try:
             P_sat = fsolve(find_p, 1.0, args=(sys, melt))
-        except RuntimeWarning:
+        except RuntimeWarning as err:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
-            )
+            ) from err
 
     # store the saturation pressure
-    P_sat = float(re.sub("[\[\]]", "", np.array_str(P_sat)))  # noqa:W605
+    P_sat = float(re.sub(r"[\[\]]", "", np.array_str(P_sat)))
     sys.P = P_sat
     gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
     fugacities = get_f(P_sat, sys, melt, gamma)
@@ -1166,10 +1168,10 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         "fH2S": (h2sy * mH2S * P),
         "fS2": (s2y * mS2 * P),
         "fN2": (n2y * mN2 * P),
-        "mCO2/CO": gas.mCO2[0] / gas.mCO[0],
-        "mCO2/H2O": gas.mCO2[0] / gas.mH2O[0],
-        "mCO2/SO2": gas.mCO2[0] / gas.mSO2[0],
-        "mH2S/SO2": gas.mH2S[0] / gas.mSO2[0],
+        "mCO2/CO": gas.mCO2[0] / gas.mCO[0] if "C" in sys.run.GAS_SYS else np.nan,
+        "mCO2/H2O": gas.mCO2[0] / gas.mH2O[0] if "C" in sys.run.GAS_SYS else np.nan,
+        "mCO2/SO2": gas.mCO2[0] / gas.mSO2[0] if "S" in sys.run.GAS_SYS else np.nan,
+        "mH2S/SO2": gas.mH2S[0] / gas.mSO2[0] if "S" in sys.run.GAS_SYS else np.nan,
         "H2O_melt": melt_h2o * 100,
         "H2_melt": melt_h2 * 100,
         "CO2_melt": melt_co2 * 100,

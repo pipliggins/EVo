@@ -6,14 +6,15 @@ Sets WgT to 1e-6 wt% and solves to find the speciation of both the gas phase and
 the speciation within the melt.
 """
 
-from scipy.optimize import fsolve, root
-import numpy as np
 import warnings
 
-import constants as cnst
-import conversions as cnvs
-import solubility_laws as sl
-import solvgas as sg
+import numpy as np
+from scipy.optimize import fsolve, root
+
+import evo.constants as cnst
+import evo.conversions as cnvs
+import evo.solubility_laws as sl
+import evo.solvgas as sg
 
 
 def get_molfrac(P, fugacities, gamma):
@@ -345,7 +346,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         dP = p_tot(P, fugacity, gamma)
         return dP
 
-    def fixed_weights_oh(guesses=[0.0]):
+    def fixed_weights_oh(guesses: list[float]):
         """
         Returns the difference between calc'd element masses and fixed values
 
@@ -372,10 +373,10 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except RuntimeWarning:
+        except RuntimeWarning as err:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
-            )
+            ) from err
 
         # Check p_sat hasn't returned 1.0
         if P_sat == 1.0:
@@ -405,7 +406,7 @@ def sat_pressure(run, sys, gas, melt, mols):
             - (sys.atomicM["h"] / (2 * cnst.m["h"]))
         ]
 
-    def fixed_weights_coh(guesses=[0.0, 0.0]):
+    def fixed_weights_coh(guesses: list[float]):
         """
         Returns the difference between calc'd element masses and fixed values
 
@@ -432,10 +433,10 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except RuntimeWarning:
+        except RuntimeWarning as err:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
-            )
+            ) from err
 
         # Check p_sat hasn't returned 1.0
         if P_sat == 1.0:
@@ -505,7 +506,7 @@ def sat_pressure(run, sys, gas, melt, mols):
             - (sys.atomicM["c"] / cnst.m["c"]),
         ]
 
-    def fixed_weights_soh(guesses=[0.0, 0.0]):
+    def fixed_weights_soh(guesses: list[float]):
         """
         Returns the difference between calc'd element masses and fixed values
 
@@ -532,10 +533,10 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except RuntimeWarning:
+        except RuntimeWarning as err:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
-            )
+            ) from err
 
         # Check p_sat hasn't returned 1.0
         if P_sat == 1.0:
@@ -586,7 +587,7 @@ def sat_pressure(run, sys, gas, melt, mols):
             - (sys.atomicM["s"] / cnst.m["s"]),
         ]
 
-    def fixed_weights_cohs(guesses=[0.0, 0.0, 0.0]):
+    def fixed_weights_cohs(guesses: list[float]):
         """
         Returns the difference between calc'd element masses and fixed values
 
@@ -613,10 +614,10 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except RuntimeWarning:
+        except RuntimeWarning as err:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
-            )
+            ) from err
 
         # Check p_sat hasn't returned 1.0
         if P_sat == 1.0:
@@ -719,7 +720,7 @@ def sat_pressure(run, sys, gas, melt, mols):
             - (sys.atomicM["c"] / cnst.m["c"]),
         ]
 
-    def fixed_weights_cohsn(guesses=[0.0, 0.0, 0.0, 0.0]):
+    def fixed_weights_cohsn(guesses: list[float]):
         """
         Returns the difference between calc'd element masses and fixed values
 
@@ -750,10 +751,10 @@ def sat_pressure(run, sys, gas, melt, mols):
                 P_sat = fsolve(
                     find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
                 )
-        except RuntimeWarning:
+        except RuntimeWarning as err:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
-            )
+            ) from err
 
         # Check p_sat hasn't returned 1.0
         if P_sat == 1.0:
@@ -892,7 +893,7 @@ def sat_pressure(run, sys, gas, melt, mols):
             < -1.5
         ):
             guess_co2 = 1e-5
-            melt.graphite_sat is True
+            melt.graphite_sat = True
         elif run.CO_MODEL != "None" and run.CH4_MODEL != "None":
             guess_co2 = ((run.ATOMIC_C / 1e6) / cnst.m["c"]) * cnst.m["co2"] * 0.2
         else:
@@ -937,8 +938,10 @@ def sat_pressure(run, sys, gas, melt, mols):
                 )
                 melt_h2o, melt_co2, melt_s, melt_n = sol["x"]
 
-    except Exception:
-        raise RuntimeError("Failed to find saturation pressure; solver not converging.")
+    except Exception as err:
+        raise RuntimeError(
+            "Failed to find saturation pressure; solver not converging."
+        ) from err
 
     P_sat = sys.P
     gamma = sg.find_Y(sys.P, sys.T, sys.SC)[:10]
