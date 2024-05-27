@@ -5,11 +5,11 @@ using the method specified in the run.yaml file.
 
 import numpy as np
 from scipy.special import erf
-import warnings
 from scipy.optimize import fsolve
+import warnings
 
-import conversions as cnvs
-import constants as cnst
+import evo.conversions as cnvs
+import evo.constants as cnst
 
 # ------------------------------------------------------------------------------
 # MODEL DEFINITIONS (Melt from gas & fugacity from melt)
@@ -539,10 +539,7 @@ def eguchi2018_fugacity(melt_co2, fO2, T, P, melt):
 
     # Check for graphite saturation
     logK1 = (
-        40.07639
-        - 2.53932 * 10**-2 * T
-        + 5.27096 * 10**-6 * T**2
-        + 0.0267 * (P - 1) / T
+        40.07639 - 2.53932 * 10**-2 * T + 5.27096 * 10**-6 * T**2 + 0.0267 * (P - 1) / T
     )
     graph_fco2 = 10**logK1 * 10 ** np.log10(fO2)
 
@@ -581,10 +578,7 @@ def graphite_fco2(T, P, fO2):
     """
 
     logK1 = (
-        40.07639
-        - 2.53932 * 10**-2 * T
-        + 5.27096 * 10**-6 * T**2
-        + 0.0267 * (P - 1) / T
+        40.07639 - 2.53932 * 10**-2 * T + 5.27096 * 10**-6 * T**2 + 0.0267 * (P - 1) / T
     )
     graph_fco2 = 10**logK1 * 10 ** np.log10(fO2)
 

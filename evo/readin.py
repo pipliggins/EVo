@@ -10,12 +10,12 @@ from numpy import exp, log10
 import yaml
 
 # bundled scripts
-from dgs_classes import RunDef, ThermoSystem, Gas, Melt, Molecule, Output
-import conversions as cnvs
-import solvgas as sg
-import messages as msgs
-import sat_pressure as sat
-import fixed_weights as fw
+from evo.dgs_classes import RunDef, ThermoSystem, Gas, Melt, Molecule, Output
+import evo.conversions as cnvs
+import evo.solvgas as sg
+import evo.messages as msgs
+import evo.sat_pressure as sat
+import evo.fixed_weights as fw
 
 # ------------------------------------------------------------------------
 # FUNCTION DEFINTIONS

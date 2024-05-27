@@ -19,13 +19,29 @@ This programme requires Python 3 to run.
 
 If you use python virtual environments, or Anaconda, requirements files (requirements.txt and environment.yml for virtualenv and conda, respectively) can be found in the Data file.
 
-## Running EVo
+Installation/Usage:
+*******************
 
-The model is set up using the env.yaml file. Open the file and edit the parameters to match what you want.
+To install locally, EVo must be downloaded from GitHub using
 
-Then inside a terminal (and inside the virtual environment if you use one):
+`git clone git@github.com:pipliggins/EVo.git`
+
+into the project directory where you wish to use EVo. EVo must then be locally pip-installed:
 ```
-python3 dgs.py chem.yaml env.yaml --output output.yaml
+cd EVO
+python -m pip install -e evo/
+```
+
+From this point, EVo can either be imported into your python scripts as a regular module using
+`install evo`
+
+and run using
+`evo.main('chem_file', 'env_file', 'output_options_file')`
+
+Or EVo can be run directly from the terminal from inside the `evo` directory:
+```
+cd EVO/evo
+python dgs.py input/chem.yaml input/env.yaml --output input/output.yaml
 ```
 
 The model should run and produce an output file Outputs/dgs_output_*.csv, and a set of graphs in the Output folder, if a decompression run has been selected.

@@ -13,15 +13,16 @@ Using this method, the first and second values in mol fraction lists etc WILL NO
 (recalculate) as they are for different pressures.
 """
 
-from scipy.optimize import fsolve
-import solvgas as sg
-import constants as cnst
-import conversions as cnvs
-import solubility_laws as sl
-import messages as msgs
-import re
 import numpy as np
+from scipy.optimize import fsolve
+import re
 import warnings
+
+import evo.solvgas as sg
+import evo.constants as cnst
+import evo.conversions as cnvs
+import evo.solubility_laws as sl
+import evo.messages as msgs
 
 
 def get_molfrac(P, fugacities, gamma):

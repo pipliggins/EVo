@@ -9,17 +9,18 @@ import sys
 import copy
 import itertools
 import re
+import inspect
 import numpy as np
+from pathlib import Path
 
 # local
-import inspect
-import density
-import conversions as cnvs
-import constants as cnst
-import solvgas as sg
-import init_cons as ic
-import messages as msgs
-import solubility_laws as sl
+from evo import density
+import evo.conversions as cnvs
+import evo.constants as cnst
+import evo.solvgas as sg
+import evo.init_cons as ic
+import evo.messages as msgs
+import evo.solubility_laws as sl
 
 
 # ------------------------------------------------------------------------
@@ -840,7 +841,9 @@ class Molecule:
         """
 
         # Open the file for data for the molecule
-        path = open("Data/" + self.Mol + ".txt", "r")
+        file_path = Path(__file__).parent / f"Data/{self.Mol}.txt"
+
+        path = open(file_path, "r")  # Opens the file for data for the molecule
 
         Temp_ref = []  # To store temperatures which need to be interpolated
         del_G_ref = []  # To store values of G which need to be interpolated

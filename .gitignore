@@ -9,6 +9,7 @@ syntax: glob
 .idea/dictionaries
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
+*.egg-info
 
 __pycache__/
 

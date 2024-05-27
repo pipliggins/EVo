@@ -1,10 +1,11 @@
 # ------------------------------------------------------------------------
 # solvgas.py
 
-import constants as cnst
+import numpy as np
 from scipy.optimize import newton
 from math import exp
-import numpy as np
+
+import evo.constants as cnst
 
 
 # ------------------------------------------------------------------------

@@ -3,12 +3,13 @@ Finds the atomic mass fraction of the system if they haven't already been set
 (ATOMIC_MASS_SET = True)
 and the saturation pressure hasn't been asked for (FIND_SATURATION=TRUE).
 """
+
 import numpy as np
 from numpy import sqrt
 
-import constants as cnst
-import messages as msgs
-import solubility_laws as sl
+import evo.constants as cnst
+import evo.messages as msgs
+import evo.solubility_laws as sl
 
 
 def get_inputs(sys, run, melt, gas, mols) -> tuple[float, ...]:

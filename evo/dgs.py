@@ -58,14 +58,14 @@ solve homogenoud and heterogeneous equilibria simultaneously at each step
 
 # python main [ ensure these are on your system ]
 import argparse
-import time
 import numpy as np
+import time
 
 # bundled scripts
-from readin import readin, set_init_chem
-from writeout import writeout_file, writeout_figs
-import solver
-import conversions as cnvs
+from evo.readin import readin, set_init_chem
+from evo.writeout import writeout_file, writeout_figs
+import evo.solver as solver
+import evo.conversions as cnvs
 
 # ------------------------------------------------------------------------
 # MAIN
@@ -202,8 +202,10 @@ def main(f_chem, f_env, f_out):
         end = time.time()
         print("Run time is ", end - start)
 
-        writeout_file(sys, gas, melt, sys.P_track)
+        df = writeout_file(sys, gas, melt, sys.P_track)
         writeout_figs(sys, melt, gas, out, sys.P_track)
+
+        return df
 
 
 if __name__ == "__main__":

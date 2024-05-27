@@ -1,14 +1,15 @@
 # solver.py
 """STORES THE SOLVING EQUATIONS AND SOLVE ROUTINE"""
 
-import constants as cnst
-import conversions as cnvs
-import solvgas as sg
-from scipy import optimize
 import numpy as np
+from scipy import optimize
 import warnings
-import messages as msgs
-import solubility_laws as sl
+
+import evo.constants as cnst
+import evo.conversions as cnvs
+import evo.solvgas as sg
+import evo.messages as msgs
+import evo.solubility_laws as sl
 
 
 def decompress(run, sys, melt, gas, system):
