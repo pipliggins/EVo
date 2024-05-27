@@ -2,6 +2,7 @@
 Writes the results of the run to a file and
 contains options to produce a graph of the results.
 """
+
 import conversions as cnvt
 import numpy as np
 import pandas as pd
@@ -71,18 +72,42 @@ def get_data(sys, gas, melt, P):
         "fH2S": gas.f["H2S"],
         "fS2": gas.f["S2"],
         "fN2": gas.f["N2"],
-        "mCO2/CO": [gas.mCO2[i + 1] / gas.mCO[i + 1] for i in range(len(P))]
-        if not sys.run.SINGLE_STEP
-        else [gas.mCO2[-1] / gas.mCO[-1]],
-        "mCO2/H2O": [gas.mCO2[i + 1] / gas.mH2O[i + 1] for i in range(len(P))]
-        if not sys.run.SINGLE_STEP
-        else [gas.mCO2[-1] / gas.mH2O[-1]],
-        "mCO2/SO2": [gas.mCO2[i + 1] / gas.mSO2[i + 1] for i in range(len(P))]
-        if not sys.run.SINGLE_STEP
-        else [gas.mCO2[-1] / gas.mSO2[-1]],
-        "mH2S/SO2": [gas.mH2S[i + 1] / gas.mSO2[i + 1] for i in range(len(P))]
-        if not sys.run.SINGLE_STEP
-        else [gas.mH2S[-1] / gas.mSO2[-1]],
+        "mCO2/CO": (
+            np.nan
+            if "C" not in sys.run.GAS_SYS
+            else (
+                [gas.mCO2[i + 1] / gas.mCO[i + 1] for i in range(len(P))]
+                if not sys.run.SINGLE_STEP
+                else [gas.mCO2[-1] / gas.mCO[-1]]
+            )
+        ),
+        "mCO2/H2O": (
+            np.nan
+            if "C" not in sys.run.GAS_SYS
+            else (
+                [gas.mCO2[i + 1] / gas.mH2O[i + 1] for i in range(len(P))]
+                if not sys.run.SINGLE_STEP
+                else [gas.mCO2[-1] / gas.mH2O[-1]]
+            )
+        ),
+        "mCO2/SO2": (
+            np.nan
+            if "S" not in sys.run.GAS_SYS
+            else (
+                [gas.mCO2[i + 1] / gas.mSO2[i + 1] for i in range(len(P))]
+                if not sys.run.SINGLE_STEP
+                else [gas.mCO2[-1] / gas.mSO2[-1]]
+            )
+        ),
+        "mH2S/SO2": (
+            np.nan
+            if "S" not in sys.run.GAS_SYS
+            else (
+                [gas.mH2S[i + 1] / gas.mSO2[i + 1] for i in range(len(P))]
+                if not sys.run.SINGLE_STEP
+                else [gas.mH2S[-1] / gas.mSO2[-1]]
+            )
+        ),
         "H2O_melt": [melt.h2o[i] * 100 for i in range(len(P))],
         "H2_melt": [melt.h2[i] * 100 for i in range(len(P))],
         "CO2_melt": [melt.co2[i] * 100 for i in range(len(P))],
