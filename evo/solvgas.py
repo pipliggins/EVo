@@ -307,7 +307,7 @@ def find_Y(P, T, species_list):
 
                 return Z(A, B, C, D, Pr, P0r)  # noqa: B023
 
-            def find_Z0(Pr, Tr, species):
+            def find_Z0(Tr, species):
                 # Returns the A, B, C and D parameters for Z, and Z0
 
                 if species != "H2S":
@@ -470,7 +470,7 @@ def find_Y(P, T, species_list):
                 Tr = T / cnst.PTcrit[species][0]
                 Pr = P / cnst.PTcrit[species][1]
 
-                A, B, C, D, P0r, Z0 = find_Z0(Pr, Tr, species)
+                A, B, C, D, P0r, Z0 = find_Z0(Tr, species)
 
                 intZ = Z(A, B, C, D, Pr, P0r)  # noqa: B023
 
