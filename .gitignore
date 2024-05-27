@@ -1,5 +1,7 @@
 #use glob syntax
 
+#use glob syntax
+
 syntax: glob
 
 .idea/workspace.xml
@@ -8,15 +10,16 @@ syntax: glob
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
 
-*.png
-
 __pycache__/
 
-.vscode/*
-
-.venv
 .vscode
 
+.venv
+
 Output/*
+evo/Output/*
+
+# sphinx docs
+docs/_build/
 
 .DS_Store
