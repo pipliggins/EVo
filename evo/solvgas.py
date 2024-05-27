@@ -312,7 +312,7 @@ def find_Y(P, T, species_list):
 
                 if species != "H2S":
                     if P < 1000.0:
-                        P0r = 1.0 / Pr
+                        P0r = 1.0 / cnst.PTcrit[species][1]
 
                         A = q_less(1, 0, 0, 0, 0, Tr)
                         B = q_less(0, 0.09827, 0, -0.2709, 0, Tr)
@@ -321,44 +321,48 @@ def find_Y(P, T, species_list):
                         Z0 = np.log(1.0)
 
                     elif P == 1000.0:
-                        P0r = 1.0 / Pr
+                        P0r = 1.0 / cnst.PTcrit[species][1]
 
                         A = 0
                         B = 0
                         C = 0
                         D = 0
-                        Z0 = Z1000(Pr, Tr)
+                        Z0 = Z1000(cnst.PTcrit[species][1], Tr)
 
                     elif P > 1000.0 and P < 5000.0:
-                        P0r = 1000.0 / Pr
+                        P0r = 1000.0 / cnst.PTcrit[species][1]
 
                         A = q_geq(1, 0, 0, 0, -0.5917, 0, 0, 0, Tr)
                         B = q_geq(0, 0, 0.09122, 0, 0, 0, 0, 0, Tr)
                         C = q_geq(0, 0, 0, 0, -0.0001416, 0, 0, -2.835e-06, Tr)
                         D = 0
-                        Z0 = Z1000(Pr, Tr)
+                        Z0 = Z1000(cnst.PTcrit[species][1], Tr)
 
                     elif P == 5000.0:
-                        P0r = 1000.0 / Pr
+                        P0r = 1000.0 / cnst.PTcrit[species][1]
 
                         A = 0
                         B = 0
                         C = 0
                         D = 0
-                        Z0 = Z5000(Pr, Tr) + Z1000(Pr, Tr)
+                        Z0 = Z5000(cnst.PTcrit[species][1], Tr) + Z1000(
+                            cnst.PTcrit[species][1], Tr
+                        )
 
                     else:  # P > 5000 bar
-                        P0r = 5000.0 / Pr
+                        P0r = 5000.0 / cnst.PTcrit[species][1]
 
                         A = q_geq(2.0614, 0, 0, 0, -2.235, 0, 0, -0.3941, Tr)
                         B = q_geq(0, 0, 0.05513, 0, 0.03934, 0, 0, 0, Tr)
                         C = q_geq(0, 0, -1.894e-06, 0, -1.109e-05, 0, -2.189e-05, 0, Tr)
                         D = q_geq(0, 0, 5.053e-11, 0, 0, -6.303e-21, 0, 0, Tr)
-                        Z0 = Z5000(Pr, Tr) + Z1000(Pr, Tr)
+                        Z0 = Z5000(cnst.PTcrit[species][1], Tr) + Z1000(
+                            cnst.PTcrit[species][1], Tr
+                        )
 
                 elif species == "H2S":
                     if P < 500.0:
-                        P0r = 1.0 / Pr
+                        P0r = 1.0 / cnst.PTcrit[species][1]
 
                         A = q_geq(
                             1.4721, 1.1177, 3.9657, 0, -10.028, 0, 4.5484, -3.8200, Tr
@@ -389,16 +393,16 @@ def find_Y(P, T, species_list):
                         Z0 = np.log(1.0)
 
                     elif P == 500.0:
-                        P0r = 1.0 / Pr
+                        P0r = 1.0 / cnst.PTcrit[species][1]
 
                         A = 0.0
                         B = 0.0
                         C = 0.0
                         D = 0.0
-                        Z0 = H2S500(Pr, Tr)
+                        Z0 = H2S500(cnst.PTcrit["H2S"][1], Tr)
 
                     elif P > 500.0:
-                        P0r = 500.0 / Pr
+                        P0r = 500.0 / cnst.PTcrit["H2S"][1]
 
                         A = q_geq(
                             0.59941,
@@ -434,7 +438,7 @@ def find_Y(P, T, species_list):
                             Tr,
                         )
                         D = 0.0
-                        Z0 = H2S500(Pr, Tr)
+                        Z0 = H2S500(cnst.PTcrit["H2S"][1], Tr)
 
                 return A, B, C, D, P0r, Z0
 

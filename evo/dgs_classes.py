@@ -1,10 +1,5 @@
 # dgs_classes
 
-# ------------------------------------------------------------------------
-# IMPORT
-# ------------------------------------------------------------------------
-
-# python
 import copy
 import inspect
 import itertools
@@ -21,17 +16,6 @@ import evo.init_cons as ic
 import evo.messages as msgs
 import evo.solubility_laws as sl
 import evo.solvgas as sg
-
-# ------------------------------------------------------------------------
-# CLASSES
-# ------------------------------------------------------------------------
-
-#  -------------------------------------------------------------------------
-#
-""" Creates an object defining the parameters of the degassing run.
-Contains system properties, start and stop T/P, FO2 and buffering.
-fo2 - Delta FMQ (Frost 1991, Rev. Min.)
-"""
 
 
 class RunDef:
