@@ -117,7 +117,7 @@ def wt2mol(c, *args):
 
 def fo2_2F(cm, t, p, lnfo2, model="kc1991"):
     """
-    Generate the fe3/fe2 ratio based on the set fO2 and fO2 model.
+    Generate the Fe2O3/FeO ratio based on the set fO2 and fO2 model.
 
     Parameters
     ----------
@@ -146,7 +146,7 @@ def fo2_2F(cm, t, p, lnfo2, model="kc1991"):
 
 def c2fo2(cm, t, p, model):
     """
-    Calculates fO2 based on Fe3/Fe2 ratio from the melt major element
+    Calculates fO2 based on Fe2O3/FeO mole ratio from the melt major element
     composition and the fO2 model.
 
     Parameters
@@ -173,13 +173,13 @@ def c2fo2(cm, t, p, model):
 
 
 def single_cat(c):
-    """Convert dry weight fraction to single cation mol fraction. All iron as FeOt"""
+    """Convert dry weight fraction to single cation mol fraction."""
 
     mol = {}
     sm = 0
 
     for x in c:
-        if x in ["al2o3", "na2o", "k2o"]:
+        if x in ["al2o3", "na2o", "k2o", "fe2o3"]:
             mol[x] = c[x] / (cnst.m[x] * 0.5)
             sm += c[x] / (cnst.m[x] * 0.5)
         elif x in ["mgo", "sio2", "cao", "tio2", "mno", "feo"]:
@@ -334,6 +334,33 @@ def generate_fo2_buffer(sys, fo2, P, buffer_choice=None):
 
     elif buffer == "NNO":
         return fo2_2nno(np.log10(fo2), sys.T, P, sys.run.FMQ_MODEL)
+
+
+def generate_fo2_fe3fet(sys, melt, P, Fe3_fet):
+    """
+    Returns fO2 according to the fe3/fet ratio
+
+    Parameters
+    ----------
+    sys : ThermoSystem class
+        Active instance of the ThermoSystem class
+    melt : Melt class
+        Active instance of the Melt class
+    P : float
+        Pressure (pascal)
+    F : float
+        The mFe2O3/mFeO ratio
+
+    Returns
+    -------
+    float
+        Absolute fO2
+    """
+    fe3_fe2 = Fe3_fet / (1 - Fe3_fet)
+    # F = Xfe2o3/Xfeo
+    F = fe3_fe2 / 2
+
+    return ferric.kc91_fe3(melt.Cm(), sys.T, P, F=F)
 
 
 # ------------------------------------------------------------------------

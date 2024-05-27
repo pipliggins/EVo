@@ -239,6 +239,8 @@ def sat_pressure(run, sys, gas, melt, mols):
             fo2 = np.exp(
                 cnvs.generate_fo2(sys, sys.run.FO2_buffer_START, sys.run.FO2_buffer, P)
             )
+        elif run.FE3_FET_SET:
+            fo2 = cnvs.generate_fo2_fe3fet(sys, melt, P * 1e5, run.FE3_FET_START)
 
         else:
             fo2 = cnvs.c2fo2(melt.Cm(), sys.T, P * 1e5, sys.run.FO2_MODEL)
@@ -349,6 +351,11 @@ def sat_pressure(run, sys, gas, melt, mols):
     if run.FO2_buffer_SET:
         sys.FO2 = cnvs.generate_fo2(
             sys, sys.run.FO2_buffer_START, sys.run.FO2_buffer, sys.P
+        )
+
+    elif run.FE3_FET_SET:
+        sys.FO2 = np.log(
+            cnvs.generate_fo2_fe3fet(sys, melt, sys.Ppa, run.FE3_FET_START)
         )
 
     else:
@@ -1065,9 +1072,9 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         or sys.run.GAS_SYS == "COHSN"
     ):
         fo2 = o2y * mO2 * P
-        melt.cm_dry, F = melt.iron_fraction(
-            np.log(fo2), ppa=P * 1e5
-        )  # Set the Fe2/Fe3 ratio and dry melt chemistry for the sulfide capacity
+        # Set the Fe2/Fe3 ratio and dry melt chemistry for the sulfide capacity
+        cm_dry, F = melt.iron_fraction(np.log(fo2), ppa=P * 1e5)
+        melt.cm_dry.update(cm_dry)
 
         # use mS2 to work back and find amount of S2- in melt
         s2_melt = (
@@ -1132,6 +1139,9 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         fo2_buffer: cnvs.generate_fo2_buffer(sys, (o2y * mO2 * P), P),
         "fo2": fo2,
         "F": F,
+        "Fe3FeT": melt.cm_dry["fe2o3"]
+        * 2
+        / (melt.cm_dry["fe2o3"] * 2 + melt.cm_dry["feo"]),
         "rho_bulk": rho_bulk,
         "rho_melt": rho_melt,
         "Exsol_vol%": GvF * 100,
@@ -1166,10 +1176,10 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         "fH2S": (h2sy * mH2S * P),
         "fS2": (s2y * mS2 * P),
         "fN2": (n2y * mN2 * P),
-        "mCO2/CO": gas.mCO2[0] / gas.mCO[0],
-        "mCO2/H2O": gas.mCO2[0] / gas.mH2O[0],
-        "mCO2/SO2": gas.mCO2[0] / gas.mSO2[0],
-        "mH2S/SO2": gas.mH2S[0] / gas.mSO2[0],
+        "mCO2/CO": gas.mCO2[0] / gas.mCO[0] if "C" in sys.run.GAS_SYS else np.nan,
+        "mCO2/H2O": gas.mCO2[0] / gas.mH2O[0] if "C" in sys.run.GAS_SYS else np.nan,
+        "mCO2/SO2": gas.mCO2[0] / gas.mSO2[0] if "S" in sys.run.GAS_SYS else np.nan,
+        "mH2S/SO2": gas.mH2S[0] / gas.mSO2[0] if "S" in sys.run.GAS_SYS else np.nan,
         "H2O_melt": melt_h2o * 100,
         "H2_melt": melt_h2 * 100,
         "CO2_melt": melt_co2 * 100,
