@@ -23,8 +23,31 @@ dependencies = ["numpy>=1.21.0",
   "ruamel.yaml",
   "pandas>=2.1.0",]
 
+[project.optional-dependencies]
+dev = ["ruff", "pre-commit"]
+
 [project.urls]
 Home = "https://github.com/pipliggins/EVo"
 
 [tool.black]
 line-length = 88
+
+[tool.ruff]
+exclude = [".venv", ".vscode", ".git",  "docs", "tests"]
+# Same as Black.
+line-length = 88
+indent-width = 4
+
+[tool.ruff.lint]
+extend-select = [
+    "E",        # pycodestyle errors (settings from FastAPI, thanks, @tiangolo!)
+    "W",        # pycodestyle warnings
+    "F",        # pyflakes
+    "I",        # isort
+    "C",        # flake8-comprehensions
+    "B",        # flake8-bugbear
+    "ARG",      # flake8-unused-arguments
+    "RUF",      # Ruff-specific
+    "YTT",      # flake8-2020
+]
+ignore = ["C901", "W605"]

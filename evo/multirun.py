@@ -1,7 +1,8 @@
-from itertools import product
-import numpy as np
 import os
+from itertools import product
 from shutil import copyfile
+
+import numpy as np
 import yaml
 
 from evo.dgs import main
@@ -23,7 +24,7 @@ def amend_env(file, **kwargs):
         str:any pairs corresponding to items in the env.yaml file
     """
 
-    with open(file, "r") as f:
+    with open(file) as f:
         env_doc = yaml.full_load(f)
 
     for param, val in kwargs.items():

@@ -4,11 +4,12 @@ contains options to produce a graph of the results.
 """
 
 import glob
-import numpy as np
 import os
-import matplotlib.pyplot as plt
-import pandas as pd
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 import evo.conversions as cnvt
 import evo.sat_pressure as sat

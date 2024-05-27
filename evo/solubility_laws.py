@@ -3,13 +3,14 @@ Module to store the solubility laws of each species present in the melt,
 using the method specified in the run.yaml file.
 """
 
-import numpy as np
-from scipy.special import erf
-from scipy.optimize import fsolve
 import warnings
 
-import evo.conversions as cnvs
+import numpy as np
+from scipy.optimize import fsolve
+from scipy.special import erf
+
 import evo.constants as cnst
+import evo.conversions as cnvs
 
 # ------------------------------------------------------------------------------
 # MODEL DEFINITIONS (Melt from gas & fugacity from melt)
@@ -35,7 +36,7 @@ def ardia2013(fCH4, P):
     References
     ----------
     Ardia et al.(2013) Solubility of CH4 in a synthetic basaltic melt,
-    with applications to atmosphere–magma ocean–core partitioning of
+    with applications to atmosphere-magma ocean-core partitioning of
     volatiles and to the evolution of the Martian atmosphere. GCA.
     """
     P = P * 1e-4  # Convert to GPa
@@ -65,7 +66,7 @@ def ardia2013_fugacity(melt_CH4, P):
     References
     ----------
     Ardia et al.(2013) Solubility of CH4 in a synthetic basaltic melt,
-    with applications to atmosphere–magma ocean–core partitioning of
+    with applications to atmosphere-magma ocean-core partitioning of
     volatiles and to the evolution of the Martian atmosphere. GCA.
     """
     P = P * 1e-4  # Convert to GPa
@@ -95,7 +96,7 @@ def armstrong2015(fCO, P):
 
     References
     ----------
-    Armstrong et al. (2015) Speciation and solubility of reduced C–O–H–N
+    Armstrong et al. (2015) Speciation and solubility of reduced C-O-H-N
     volatiles in mafic melt: Implications for volcanism, atmospheric
     evolution, and deep volatile cycles in the terrestrial planets. GCA.
     """
@@ -124,7 +125,7 @@ def armstrong2015_fugacity(melt_CO, P):
 
     References
     ----------
-    Armstrong et al. (2015) Speciation and solubility of reduced C–O–H–N
+    Armstrong et al. (2015) Speciation and solubility of reduced C-O-H-N
     volatiles in mafic melt: Implications for volcanism, atmospheric
     evolution, and deep volatile cycles in the terrestrial planets. GCA.
     """
@@ -156,7 +157,7 @@ def burguisser2015_co2(fCO2, CO2):
     References
     ----------
     Burguisser et al., (2015) Simulating the behaviour of volatiles
-    belonging to the C–O–H–S system in silicate melts under magmatic
+    belonging to the C-O-H-S system in silicate melts under magmatic
     conditions with the software D-Compress. Computers & Geosciences.
     """
     return CO2.solCon["a"] * (fCO2) ** CO2.solCon["b"]
@@ -182,7 +183,7 @@ def burguisser2015_co2_fugacity(melt_co2, CO2):
     References
     ----------
     Burguisser et al., (2015) Simulating the behaviour of volatiles
-    belonging to the C–O–H–S system in silicate melts under magmatic
+    belonging to the C-O-H-S system in silicate melts under magmatic
     conditions with the software D-Compress. Computers & Geosciences.
     """
     return (melt_co2 / CO2.solCon["a"]) ** (1 / CO2.solCon["b"])
@@ -252,7 +253,7 @@ def burguisser2015_h2_fugacity(melt_h2, H2):
     References
     ----------
     Burguisser et al., (2015) Simulating the behaviour of volatiles
-    belonging to the C–O–H–S system in silicate melts under magmatic
+    belonging to the C-O-H-S system in silicate melts under magmatic
     conditions with the software D-Compress. Computers & Geosciences.
     """
     return (melt_h2 / H2.solCon["a"]) ** (1 / H2.solCon["b"])
@@ -326,7 +327,7 @@ def burguisser2015_h2o(mH2O, H2O, P, H2OY=None):
     References
     ----------
     Burguisser et al., (2015) Simulating the behaviour of volatiles
-    belonging to the C–O–H–S system in silicate melts under magmatic
+    belonging to the C-O-H-S system in silicate melts under magmatic
     conditions with the software D-Compress. Computers & Geosciences.
     """
 
@@ -356,7 +357,7 @@ def burguisser2015_h2o_fugacity(melt_h2o, H2O):
     References
     ----------
     Burguisser et al., (2015) Simulating the behaviour of volatiles
-    belonging to the C–O–H–S system in silicate melts under magmatic
+    belonging to the C-O-H-S system in silicate melts under magmatic
     conditions with the software D-Compress. Computers & Geosciences.
     """
 
@@ -539,7 +540,10 @@ def eguchi2018_fugacity(melt_co2, fO2, T, P, melt):
 
     # Check for graphite saturation
     logK1 = (
-        40.07639 - 2.53932 * 10**-2 * T + 5.27096 * 10**-6 * T**2 + 0.0267 * (P - 1) / T
+        40.07639
+        - 2.53932 * 10**-2 * T
+        + 5.27096 * 10**-6 * T**2
+        + 0.0267 * (P - 1) / T
     )
     graph_fco2 = 10**logK1 * 10 ** np.log10(fO2)
 
@@ -578,7 +582,10 @@ def graphite_fco2(T, P, fO2):
     """
 
     logK1 = (
-        40.07639 - 2.53932 * 10**-2 * T + 5.27096 * 10**-6 * T**2 + 0.0267 * (P - 1) / T
+        40.07639
+        - 2.53932 * 10**-2 * T
+        + 5.27096 * 10**-6 * T**2
+        + 0.0267 * (P - 1) / T
     )
     graph_fco2 = 10**logK1 * 10 ** np.log10(fO2)
 
@@ -656,8 +663,8 @@ def libourel2003_fugacity(n_melt, nY, fO2, P):
             except RuntimeWarning:
                 try:
                     PN2 = fsolve(f0, 1e-10)[0]
-                except RuntimeWarning:
-                    raise RuntimeError("Failed to find N2 partial pressure.")
+                except RuntimeWarning as err:
+                    raise RuntimeError("Failed to find N2 partial pressure.") from err
 
         return PN2
 

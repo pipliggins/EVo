@@ -24,3 +24,4 @@ evo/Output/*
 docs/_build/
 
 .DS_Store
+.ruff_cache

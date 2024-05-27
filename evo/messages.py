@@ -3,13 +3,14 @@ Stores warning messages used thought the system to alert the user of an input er
 or failure to run to completion, and an explanation.
 """
 
-import numpy as np
 import sys
 
-import evo.writeout as wt
-import evo.conversions as cnvs
+import numpy as np
+
 import evo.constants as cnst
+import evo.conversions as cnvs
 import evo.solubility_laws as sl
+import evo.writeout as wt
 
 
 def open_earlyexit(sys, gas, melt):

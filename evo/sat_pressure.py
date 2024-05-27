@@ -13,16 +13,17 @@ Using this method, the first and second values in mol fraction lists etc WILL NO
 (recalculate) as they are for different pressures.
 """
 
-import numpy as np
-from scipy.optimize import fsolve
 import re
 import warnings
 
-import evo.solvgas as sg
+import numpy as np
+from scipy.optimize import fsolve
+
 import evo.constants as cnst
 import evo.conversions as cnvs
-import evo.solubility_laws as sl
 import evo.messages as msgs
+import evo.solubility_laws as sl
+import evo.solvgas as sg
 
 
 def get_molfrac(P, fugacities, gamma):
@@ -335,13 +336,13 @@ def sat_pressure(run, sys, gas, melt, mols):
         warnings.filterwarnings("error")
         try:
             P_sat = fsolve(find_p, 1.0, args=(sys, melt))
-        except RuntimeWarning:
+        except RuntimeWarning as err:
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
-            )
+            ) from err
 
     # store the saturation pressure
-    P_sat = float(re.sub("[\[\]]", "", np.array_str(P_sat)))  # noqa:W605
+    P_sat = float(re.sub(r"[\[\]]", "", np.array_str(P_sat)))
     sys.P = P_sat
     gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
     fugacities = get_f(P_sat, sys, melt, gamma)
