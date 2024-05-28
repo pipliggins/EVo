@@ -233,7 +233,7 @@ def iw2fo2(FO2, t, p, name):
 def iw_2fmq(diw, t, p, name):
     """Converts IW to FMQ"""
     fo2 = iw2fo2(diw, t, p, name)
-    return fo2_2iw(fo2, t, p, name)
+    return fo2_2fmq(fo2, t, p, name)
 
 
 def fo2_2iw(FO2, t, p, name):

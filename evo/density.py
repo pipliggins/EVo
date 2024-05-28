@@ -1,7 +1,7 @@
 # density.py
 """
 Calculates density of melt according to changing temp, pressure and compositions.
-From Sperra(2000) Physical properties of magmas, Encyclopedia of Volcanology
+From Spera(2000) Physical properties of magmas, Encyclopedia of Volcanology
 """
 
 from evo import constants as cnst
