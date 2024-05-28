@@ -13,6 +13,14 @@ import evo.solubility_laws as sl
 import evo.writeout as wt
 
 
+class InvalidSetupError(Exception):
+    """
+    Raise when the combined options used to set up EVo are invalid.
+    """
+
+    pass
+
+
 def open_earlyexit(sys, gas, melt):
     """
     Saves the current run information and prints an error to be used in other functions
@@ -307,16 +315,16 @@ def vol_setup_standard(run, sys):
     if (run.FH2O_SET is True and run.WTH2O_SET is True) or (
         run.FCO2_SET is True and run.WTCO2_SET is True
     ):
-        exit(
-            "Warning: Please only use one option to set H2O or CO2. "
+        raise InvalidSetupError(
+            "Only use one option to set H2O or CO2. "
             "Set either the Wt% or fugacity value to False."
         )
 
     if (run.WTCO2_SET is True and run.GRAPHITE_SATURATED is True) or (
         run.FCO2_SET is True and run.GRAPHITE_SATURATED is True
     ):
-        exit(
-            "Warning: Please only use one setting for CO2. "
+        raise InvalidSetupError(
+            "Only use one setting for CO2. "
             "Set two from fCO2, WTCO2 and graphite_saturated to False."
         )
 
@@ -367,33 +375,43 @@ def vol_setup_standard(run, sys):
             run.WTCO2_SET,
             run.FCO2_SET,
             run.SULFUR_SET,
+            run.NITROGEN_SET,
+            run.GRAPHITE_SATURATED,
         ]  # PL: Make this a yes/no option to change setup to sat point finder with H2O.
-        for opt in lst:
-            if opt is True:
-                exit(
-                    "Error: This OH system setup cannot run with H2O, CO2 or "
-                    "sulphur contents. To run with H2O and find the saturation "
-                    "point of the system, set run.FIND_SATURATION to True."
-                )
+        if any(lst):
+            raise InvalidSetupError(
+                "The OH system cannot be set up with H2O, CO2, S, N or graphite "
+                "when the starting pressure is fixed. \n"
+                "To run with H2O and find the saturation "
+                "point of the system, set run.FIND_SATURATION to True."
+            )
 
         if run.FH2_SET is True and sys.FO2:
-            exit(
-                "Warning: Please only set one of either fH2, fO2, or the "
+            raise InvalidSetupError(
+                "Set only one of either fH2, fO2, or the "
                 "properties of FeO and Fe2O3 for the OH system."
             )
 
         elif run.FH2_SET is False and sys.FO2 is None:
-            exit(
+            raise InvalidSetupError(
                 "Error: For the OH system, please set either the initial fH2 or "
                 "fO2 in the env.yaml file, or provide proportions of FeO and Fe2O3 "
                 "via the chem.yaml file."
             )
 
     elif run.GAS_SYS == "COH" or run.GAS_SYS == "SOH":
-        if run.FCO2_SET is True or run.WTCO2_SET is True or run.SULFUR_SET is True:
-            exit(
-                "Warning: CO2 and S cannot be used as an initial condition for "
-                f"the {run.GAS_SYS} system. \n"
+        if any(
+            [
+                run.FCO2_SET,
+                run.WTCO2_SET,
+                run.SULFUR_SET,
+                run.NITROGEN_SET,
+                run.GRAPHITE_SATURATED,
+            ],
+        ):
+            raise InvalidSetupError(
+                "C, S and N species cannot be used as an initial condition for "
+                f"the {run.GAS_SYS} system when the starting pressure is fixed. \n"
                 "Please set 2 initial conditions from either fH2, H2O (as fH2O or "
                 "wt% H2O) or fO2 (either directly or via FeO/Fe2O3 proportions).\n"
                 "To run with the complete melt volatile content and find the "
@@ -401,15 +419,12 @@ def vol_setup_standard(run, sys):
             )
 
         lst = [run.FH2O_SET, run.WTH2O_SET, run.FH2_SET]  # Allowable setup conditions
-        true = 0
+        true = len([x for x in lst if x])
         if sys.FO2:  # final allowable condition, but present as a boolean value
             true += 1
-        for ele in lst:
-            if ele is True:
-                true += 1
         if true > 2 or true <= 1:
-            exit(
-                "Error: Please set 2 initial conditions from either fH2, H2O "
+            raise InvalidSetupError(
+                "Set exactly 2 initial conditions from either fH2, H2O "
                 "(as fH2O or wt% H2O) or fO2 (either directly or via FeO/Fe2O3 "
                 "proportions).\n"
                 f"There are currently {true} values set."
@@ -425,15 +440,12 @@ def vol_setup_standard(run, sys):
             run.SULFUR_SET,
             run.GRAPHITE_SATURATED,
         ]
-        true = 0
+        true = len([x for x in lst if x])
         if sys.FO2:
             true += 1
-        for ele in lst:
-            if ele is True:
-                true += 1
         if true > 3 or true <= 2:
-            exit(
-                "Error: Please set 3 initial conditions from either fH2, H2O (as fH2O "
+            raise InvalidSetupError(
+                "Set exactly 3 initial conditions from either fH2, H2O (as fH2O "
                 "or wt% H2O), CO2 (as fCO2, wt% CO2 or graphite), S (as wt% S) or fO2 "
                 "(either directly or via FeO/Fe2O3 proportions).\n"
                 f"There are currently {true} values set."
@@ -441,8 +453,8 @@ def vol_setup_standard(run, sys):
 
         if run.GAS_SYS == "COHSN":
             if run.NITROGEN_SET is False:
-                exit(
-                    "Error: Please set a value for the melt nitrogen content using "
+                raise InvalidSetupError(
+                    "Set a value for the melt nitrogen content using "
                     "NITROGEN_SET/START."
                 )
 
@@ -479,16 +491,16 @@ def vol_setup_saturation(run, sys):
     if (run.FH2O_SET is True and run.WTH2O_SET is True) or (
         run.FCO2_SET is True and run.WTCO2_SET is True
     ):
-        exit(
-            "Warning: Please only use one option to set H2O or CO2. "
+        raise InvalidSetupError(
+            "Only use one option to set H2O or CO2. "
             "Set either the Wt% or fugacity value to False."
         )
 
     if (run.WTCO2_SET is True and run.GRAPHITE_SATURATED is True) or (
         run.FCO2_SET is True and run.GRAPHITE_SATURATED is True
     ):
-        exit(
-            "Warning: Please only use one setting for CO2. Set two from fCO2, "
+        raise InvalidSetupError(
+            "Only use one setting for CO2. Set two from fCO2, "
             "WTCO2 and graphite_saturated to False."
         )
 
@@ -497,24 +509,26 @@ def vol_setup_saturation(run, sys):
             run.WTCO2_SET,
             run.FCO2_SET,
             run.SULFUR_SET,
+            run.GRAPHITE_SATURATED,
+            run.NITROGEN_SET,
         ]  # PL: Make this a yes/no option to change setup to sat point finder with H2O.
         for opt in lst:
             if opt is True:
-                exit(
-                    "Error: This OH system setup cannot run with CO2 or sulphur "
+                raise InvalidSetupError(
+                    "OH system setup cannot run with CO2 or sulphur "
                     "contents. Set all CO2 and S values to False."
                 )
 
         if run.FH2_SET is True or run.FH2O_SET is True:
-            exit(
-                "Error: Please only set fO2 and melt volatile contents to find the "
+            raise InvalidSetupError(
+                "Only set fO2 and melt volatile contents to find the "
                 "volatile saturation point. "
                 "Turn all fugacities to False in the env.yaml file."
             )
 
         if not (run.WTH2O_SET is True and sys.FO2):
-            exit(
-                "Error: To find the saturation point for the OH system, "
+            raise InvalidSetupError(
+                "To find the saturation point for the OH system, "
                 "please set both the melt water content, "
                 "and either fO2 in the env.yaml file, "
                 "or provide proportions of FeO and Fe2O3 via the chem.yaml file."
@@ -524,8 +538,8 @@ def vol_setup_saturation(run, sys):
         lst = [run.FH2O_SET, run.FCO2_SET, run.FH2_SET, run.SULFUR_SET]
         for opt in lst:
             if opt is True:
-                exit(
-                    "Error: Please only set fO2 and melt H2O & CO2 contents to find "
+                raise InvalidSetupError(
+                    "Only set fO2 and melt H2O & CO2 contents to find "
                     "the volatile saturation point. "
                     "Turn all fugacities and sulfur contents to False."
                 )
@@ -536,8 +550,8 @@ def vol_setup_saturation(run, sys):
             C = False
 
         if not (run.WTH2O_SET is True and C is True and sys.FO2):
-            exit(
-                "Error: To find the saturation point for the COH system, "
+            raise InvalidSetupError(
+                "To find the saturation point for the COH system, "
                 "please set both water and CO2 contents in the melt, "
                 "and either fO2 in the env.yaml file, "
                 "or provide proportions of FeO and Fe2O3 via the chem.yaml file."
@@ -547,15 +561,15 @@ def vol_setup_saturation(run, sys):
         lst = [run.FH2O_SET, run.FCO2_SET, run.WTCO2_SET, run.FH2_SET]
         for opt in lst:
             if opt is True:
-                exit(
-                    "Error: Please only set fO2 and melt H2O & sulphur contents to "
+                raise InvalidSetupError(
+                    "Only set fO2 and melt H2O & sulphur contents to "
                     "find the volatile saturation point. Turn all fugacities and CO2 "
                     "contents to False."
                 )
 
         if not (run.WTH2O_SET is True and run.SULFUR_SET is True and sys.FO2):
-            exit(
-                "Error: To find the saturation point for the SOH system, "
+            raise InvalidSetupError(
+                "To find the saturation point for the SOH system, "
                 "please set both water and sulphur contents in the melt, "
                 "and either fO2 in the env.yaml file, "
                 "or provide proportions of FeO and Fe2O3 via the chem.yaml file."
@@ -568,21 +582,21 @@ def vol_setup_saturation(run, sys):
         lst = [run.WTH2O_SET, C, run.SULFUR_SET, sys.FO2]
 
         if not all(lst):  # if any are false
-            exit(
-                "Error: To find the volatile saturation point please make sure the melt"
+            raise InvalidSetupError(
+                "To find the volatile saturation point please make sure the melt"
                 " H2O, CO2 and sulfur contents are set and 'True' in env.yaml."
             )
 
         if any([run.FH2O_SET, run.FH2_SET, run.FCO2_SET]):  # if any are true
-            exit(
-                "Error: Please only set melt weight fractions, not gas phase "
+            raise InvalidSetupError(
+                "Only set melt weight fractions, not gas phase "
                 "fugacities, when searching for the saturation point."
             )
 
         if run.GAS_SYS == "COHSN":
             if run.NITROGEN_SET is False:
-                exit(
-                    "Error: Please set a value for the melt nitrogen content "
+                raise InvalidSetupError(
+                    "Set a value for the melt nitrogen content "
                     "using NITROGEN_SET/START."
                 )
 
