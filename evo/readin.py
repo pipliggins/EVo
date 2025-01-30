@@ -5,7 +5,7 @@
 # ------------------------------------------------------------------------
 
 import numpy as np
-import yaml
+import ruamel.yaml
 from numpy import exp, log10
 from numpy import log as ln
 
@@ -17,6 +17,8 @@ import evo.solvgas as sg
 
 # bundled scripts
 from evo.dgs_classes import Gas, Melt, Molecule, Output, RunDef, ThermoSystem
+
+ryaml = ruamel.yaml.YAML()
 
 # ------------------------------------------------------------------------
 # FUNCTION DEFINTIONS
@@ -44,7 +46,7 @@ def readin_env(f):
     """
 
     # creates a dictionary of the environment parameters from env.yaml
-    x = yaml.full_load(f)
+    x = ryaml.load(f)
 
     # setup run definitions
     run = RunDef()
@@ -115,7 +117,7 @@ def readin_chem(f, run, sys):
         The instantiated Melt class
     """
 
-    data = yaml.full_load(f)
+    data = ryaml.load(f)
 
     ele_names = []
     chems = []
@@ -194,7 +196,7 @@ def readin_output(f):
         The instantiated Output class
     """
 
-    x = yaml.full_load(f)
+    x = ryaml.load(f)
 
     out = Output()
     out.set_outputs(x)

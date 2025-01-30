@@ -3,9 +3,11 @@ from itertools import product
 from shutil import copyfile
 
 import numpy as np
-import yaml
+import ruamel.yaml
 
 from evo.dgs import main
+
+ryaml = ruamel.yaml.YAML()
 
 
 def amend_env(file, **kwargs):
@@ -25,7 +27,7 @@ def amend_env(file, **kwargs):
     """
 
     with open(file) as f:
-        env_doc = yaml.full_load(f)
+        env_doc = ryaml.load(f)
 
     for param, val in kwargs.items():
         if isinstance(val, np.float64):
@@ -34,7 +36,7 @@ def amend_env(file, **kwargs):
             env_doc[param] = val
 
     with open("multirun.yaml", "w") as f:
-        yaml.dump(env_doc, f)
+        ryaml.dump(env_doc, f)
 
 
 def multirun(**kwargs):

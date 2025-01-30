@@ -1,30 +1,25 @@
-.. evo-outgas documentation master file, created by
-   sphinx-quickstart on Mon Dec  5 10:50:53 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to EVo's documentation!
 =======================================
 
 EVo is a volcanic outgassing model for COHSN elements.
 
-The current implementation has been developed in Python 3 and tested on Windows and Linux.
+The current implementation has been developed in Python 3 and tested on Windows, Linux and macOS.
 
 Installation/Usage:
 *******************
 
-EVo can be used either through local installation, or using a web-app at `<https://evo.pipliggins.co.uk>`_.
+EVo can be used through local installation, either through a CLI or a webapp.
 
 To install locally, EVo must be downloaded from GitHub using
 ::
-   
-   git clone -b streamlit-restructure --single-branch git@github.com:pipliggins/EVo.git
+
+   git clone git@github.com:pipliggins/EVo.git
 
 into the project directory where you wish to use EVo. EVo must then be locally pip-installed:
 ::
 
    cd EVO
-   python -m pip install -e evo/
+   python -m pip install ".[streamlit]"
 
 From this point, EVo can either be imported into your python scripts as a regular module using
 ::
@@ -33,15 +28,20 @@ From this point, EVo can either be imported into your python scripts as a regula
 
 and run using
 ::
-   
+
    evo.main('chem_file', 'env_file', 'output_options_file')
 
 Or EVo can be run directly from the terminal from inside the `evo` directory:
 ::
-   
+
    cd EVO/evo
    python dgs.py input/chem.yaml input/env.yaml --output input/output.yaml
 
+Alternatively you can interact with EVo using the webapp interface, by running:
+::
+
+   cd EVO/webapp
+   streamlit run streamlit-app.py
 
 
 .. toctree::
