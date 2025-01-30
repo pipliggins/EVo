@@ -11,7 +11,7 @@ Single pressure and decompression can be run for OH, COH, SOH, COHS and COHSN sy
 
 EVo can be set up using either melt volatile contents, or for a set amount of atomic volatile which is preferable for conducting experiments over a wide range of fO2 values.
 
-**Note: In very rare cases, this version of EVo may result in a run failure if low pressure conditions are being used. If these low pressure runs are needed, an alternative EVo version which contains a multipoint precision module (GMPY2) is available upon emailing me at pkl28@cam.ac.uk. However, for the vast majority of scenarios, this version is preferable, as it runs faster.**
+**Note: In very rare cases, this version of EVo may result in a run failure if low pressure conditions are being used. If these low pressure runs are needed, an alternative EVo version which contains a multipoint precision module (GMPY2) is available upon emailing me at philippa.liggins@dtc.ox.ac.uk. However, for the vast majority of scenarios, this version is preferable, as it runs faster.**
 
 ### Prerequisites
 
@@ -19,16 +19,32 @@ This programme requires Python 3 to run.
 
 If you use python virtual environments, or Anaconda, requirements files (requirements.txt and environment.yml for virtualenv and conda, respectively) can be found in the Data file.
 
-## Running EVo
+Installation/Usage:
+*******************
 
-The model is set up using the env.yaml file. Open the file and edit the parameters to match what you want.
+To install locally, EVo must be downloaded from GitHub using
 
-Then inside a terminal (and inside the virtual environment if you use one):
+`git clone git@github.com:pipliggins/EVo.git`
+
+into the project directory where you wish to use EVo. EVo must then be locally pip-installed:
 ```
-python3 dgs.py chem.yaml env.yaml --output output.yaml
+cd EVO
+python -m pip install -e evo/
 ```
 
-The model should run and produce an output file Outputs/dgs_output.csv, and a set of graphs in the Output folder, if a decompression run has been selected.
+From this point, EVo can either be imported into your python scripts as a regular module using
+`install evo`
+
+and run using
+`evo.main('chem_file', 'env_file', 'output_options_file')`
+
+Or EVo can be run directly from the terminal from inside the `evo` directory:
+```
+cd EVO/evo
+python dgs.py input/chem.yaml input/env.yaml --output input/output.yaml
+```
+
+The model should run and produce an output file Outputs/dgs_output_*.csv, and a set of graphs in the Output folder, if a decompression run has been selected.
 
 ### Choosing run options in the env.yaml file
 
@@ -120,22 +136,24 @@ The following HAVE NOT been implemented yet and so will not work, even if no err
 
 ## Reading the Output file
 
-This table summarises the headers and meanings in the output file. The output file is a table-delimited CSV, best opened by importing the csv data into a reader for easiest reading.
+This table summarises the headers and meanings in the output CSV file.
 
 | Name in output file  | Symbol | Units    | Description                                                                                      |
 |----------------------|--------|----------|--------------------------------------------------------------------------------------------------|
 | P              |    P    | bar      | Pressure                                                                                         |
 | NNO/FMQ/IW           |        |          | Oxygen fugacity relative to the chosen buffer, Ni-NiO, Fayalite-Magnetite-Quartz or Iron-Wursite |
-| fO2, fH2O...         |        | bar      | Species fugacities                                                                               |
+| fO2            |        | bar      | Raw oxygen fugacity                                                                               |
+| F              |        | ratio      | mole fraction ratio of Fe2O3/FeO                                                                     |
 | rho_bulk           |        | kg/m^3   | Density of the system (melt+gas)                                                                 |
 | rho_melt           |        | kg/m^3   | Density of the silicate melt                                                                     |
 | Exsol_vol%          |        | % | Gas volume fraction (of system)                                                                  |
 | Gas_wt              |    WgT    | % | Gas weight fraction (of system)                                                                  |
 | mol_mass      |        | kg/mol   | Mean molecular mass of gas phase                                                                 |
-| mH2O, mH2, mO2...    |        | fraction | Species molar fraction in gas                                                                    |
+| mH2O, mH2, mO2...    |        | fraction | Species mole fraction in gas                                                                    |
 | WH2O, WH2, WO2...    |        | fraction | Species weight fraction in gas                                                                   |
-| H2O_melt, H2_melt...   |        | % | Weight percent of species in the melt                                                            |
-| S_melt                |        | % | Weight percent of S in the melt (sum of S dissolved as SO2 and H2S)                              |
+| fH2O, fH2...         |        | bar      | Species fugacities                                                                               |
 | mCO2/CO, mCO2/H2O... |        |          | Molar ratios of gas species                                                                      |
+| H2O_melt, H2_melt...   |        | % | Weight percent of species in the melt                                                            |
+| S_melt                |        | % | Weight percent of S in the melt (sum of S dissolved as S2- and S6+)                              |
 | tot_H, tot_C...      |        | ppm      | Total weight fraction of elements                                                                |
 | tot_O_gas      |        | ppm      | Total weight fraction of elemental O in the volatile phases only, i.e. not counting O stored as FeO or Fe2O3                                                                |

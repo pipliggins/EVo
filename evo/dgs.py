@@ -3,19 +3,19 @@ dgs.py  PL: UPDATE THESE DESCRIPTIONS
 
 --- SPECIES LIST ---
 
-C    CO   CO_2 CH_4 [OCS]               | carbon, carbon monoxide, carbon dioxide, methane
-H_2  H_2O H_2S      [CH4]               | hydrogen, water, hydrogen sulfide
-SO_2 S_2            [H_2S OCS]          | sulfur dioxide, sulfur
-O_2  OCS            [CO CO_2 H_2O SO_2 FeO Fe_2O_3]   | oxygen, carbonyl sulfide
-FeO  Fe_2O_3                            | ferrous iron, ferric iron
-N2                                      | nitrogen
+C    CO   CO_2 CH_4    | carbon, carbon monoxide, carbon dioxide, methane
+H_2  H_2O H_2S         | hydrogen, water, hydrogen sulfide
+SO_2 S_2               | sulfur dioxide, sulfur
+O_2  OCS               | oxygen, carbonyl sulfide
+FeO  Fe_2O_3           | ferrous iron, ferric iron
+N2                     | nitrogen
 
 -- MODULES ---
 
 density - calculate density of the melt
 ferric - calculate fo2 from ferric iron proportions
-fixed_weights - calculate the saturation point of a melt from it's volatile content given
-        as atomic weights of species in the melt
+fixed_weights - calculate the saturation point of a melt from it's volatile content
+        given as atomic weights of species in the melt
 init_cons - calculates the initial conditions in a standard run, given gas weight
              fraction and some subset of gas or melt properties
 messages - stores warnings and error messages
@@ -23,7 +23,8 @@ multirun - a template for running parameters sweeps with EVo
 sat_pressure - calculates the pressure of volatile saturation
 solubility_laws - stores the solubility laws for all species
 solver - calculates the final system composition at every pressure step
-solvgas - calculate fugacity coefficients and equilibrium coefficients for gas phase equilibria
+solvgas - calculate fugacity coefficients and equilibrium coefficients for gas phase
+            equilibria
 
 --- LITERATURE SOURCES ---
 
@@ -51,135 +52,195 @@ solve homogenoud and heterogeneous equilibria simultaneously at each step
 
 """
 
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 # IMPORTS
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
 
+# python main [ ensure these are on your system ]
 import argparse
 import time
-import pandas as pd
 
-from evo.dgs_classes import *
-from evo.readin import *
-from evo import solver
-from evo.writeout import *
+import numpy as np
 
-#------------------------------------------------------------------------
+import evo.conversions as cnvs
+import evo.solver as solver
+
+# bundled scripts
+from evo.readin import readin, set_init_chem
+from evo.writeout import writeout_figs, writeout_file
+
+# ------------------------------------------------------------------------
 # MAIN
-#------------------------------------------------------------------------
+# ------------------------------------------------------------------------
+
 
 def main(f_chem, f_env, f_out):
+    """Main function for EVo.
+
+    Call to run the model.
+
+    Parameters
+    ----------
+    f_chem : str
+        Path to the chemistry input file
+    f_env : str
+        Path to the environment input file
+    f_out : str or NoneType
+        Path to the file describing the required outputs, None if not used
+    """
     start = time.time()
-    
+
     print("Reading in from:")
     print("Chemistry file:", f_chem)
     print("Environment file:", f_env)
-    print("Output file:", f_out,"\n")
+    print("Output file:", f_out, "\n")
 
-    # Instantiate the run, thermosystem, melt and output objects using the readin.py scripts
-    run, sys, melt, out = readin(f_chem, f_env, f_out)  
+    # Instantiate the run, thermosystem, melt and output objects
+    run, sys, melt, out = readin(f_chem, f_env, f_out)
 
     print("Set parameters:")
     run.print_conditions()
 
     # Setup the initial gas + melt chemistry, calculate the atomic masses of elements
     run, sys, melt, gas, molecules = set_init_chem(run, sys, melt)
-    
+
     print("\nSystem chemistry (wt%)")
-    sm = 0.   
+    sm = 0.0
     for k, v in cnvs.mol2wt(melt.cm_dry).items():
-        print(k, ':', "{0:0.3g}".format(v*100))
-        sm += v*100    
+        print(k, ":", f"{v * 100:0.3g}")
+        sm += v * 100
     print("Total =", round(sm, 2), "\n")
 
     # print output specifications if made
     if f_out:
-        out.print_conditions()  
-
-    if run.FO2_SET == True:
-        print(f"Mass of system following buffering to log {sys.FO2:.3}, FMQ {cnvt.fo2_2fmq(log10(exp(sys.FO2)),sys.T,sys.P,run.FMQ_MODEL):+.3} = \n{sys.M} g (We no longer update this - assume the user specified system mass is what they want for the entire system, with proper feo/fe2o3 partitioning and volatiles added in, not just the melt)")
-
-    else:
-        print(f"System mass = {sys.M} g")
+        out.print_conditions()
 
     # -------------------------------------------------------------------
     # CALCULATION LOOP --------------------------------------------------
     # -------------------------------------------------------------------
 
-    if run.SINGLE_STEP == True:
+    if run.SINGLE_STEP is True:
         solver.decompress(run, sys, melt, gas, molecules)
         sys.P_track.append(sys.P)
 
-        print("The total gas weight percent is %.2f %% and the gas volume fraction is %.2f %% "
-            % ((sys.WgT[-1] * 100), (sys.GvF[-1] * 100)))
-        print("The gas phase at %.0f bar is partitioned according to molar fraction as: \n O2: %s \n H2: %s \n H2O: %s \n CO2: %s \n CO: %s \n CH4: %s \n S2: %s \n SO2: %s \n H2S: %s \n N2: %s \n"
-            % (sys.P, gas.mO2, gas.mH2, gas.mH2O, gas.mCO2, gas.mCO, gas.mCH4, gas.mS2, gas.mSO2, gas.mH2S, gas.mN2))
+        print(
+            f"The total gas weight percent is {sys.WgT[-1] * 100:.2f}% and "
+            f"the gas volume fraction is {sys.GvF[-1] * 100:.2f}%"
+        )
+        print(
+            f"The gas phase at {sys.P:.0f} bar is partitioned according to molar "
+            "fraction as: \n "
+            f"O2: {gas.mO2} \n "
+            f"H2: {gas.mH2} \n "
+            f"H2O: {gas.mH2O} \n "
+            f"CO2: {gas.mCO2} \n "
+            f"CO: {gas.mCO} \n "
+            f"CH4: {gas.mCH4} \n "
+            f"S2: {gas.mS2} \n "
+            f"SO2: {gas.mSO2} \n "
+            f"H2S: {gas.mH2S} \n "
+            f"N2: {gas.mN2} \n"
+        )
         writeout_file(sys, gas, melt, sys.P_track)
 
-    elif run.SINGLE_STEP == False:
-        dp = int(abs(np.floor(np.log10(np.abs(run.P_STOP)))))+1 if run.P_STOP < 1e-4 else 5
+    elif run.SINGLE_STEP is False:
+        dp = (
+            int(abs(np.floor(np.log10(np.abs(run.P_STOP))))) + 1
+            if run.P_STOP < 1e-4
+            else 5
+        )
         while np.round(sys.P, decimals=dp) >= run.P_STOP:
             sys.P = np.round(sys.P, decimals=dp)
             sys.P_track.append(sys.P)
             solver.decompress(run, sys, melt, gas, molecules)  # does one pressure step
             sys.pressure_step()
-            
-                
-        if (run.FIND_SATURATION == True or run.ATOMIC_MASS_SET == True) and sys.sat_conditions[0] < run.P_STOP:
-            exit(f'Error: The saturation pressure ({sys.sat_conditions[0]:.3} bar) is lower than P_STOP ({run.P_STOP:.3} bar).\nPlease either lower P_STOP or change the melt initial fo2/melt volatile content.\nExiting...')
-        
-        print("The pressure is %.2f bar, the total gas weight percent is %.2f %% and the gas volume fraction is %.2f %% "
-            "\nThe run has finished." % (run.P_STOP, (sys.WgT[-1] * 100), (sys.GvF[-1] * 100)))
 
-        print("The gas is partitioned as (mol %%): \n O2: %.4e %% \n H2: %.4f %% \n H2O: %.4f %% \n CO2: %.4f %% \n CO: %.4f %% \n CH4: %.4e %% \n SO2: %.4f %% \n S2: %.4f %% \n H2S: %.4f %% \n" % (
-        gas.mO2[-1]*100, gas.mH2[-1]*100, gas.mH2O[-1]*100, gas.mCO2[-1]*100, gas.mCO[-1]*100, gas.mCH4[-1]*100, gas.mSO2[-1]*100, gas.mS2[-1]*100, gas.mH2S[-1]*100))
+        if (
+            run.FIND_SATURATION is True or run.ATOMIC_MASS_SET is True
+        ) and sys.sat_conditions[0] < run.P_STOP:
+            exit(
+                f"Error: The saturation pressure ({sys.sat_conditions[0]:.3} bar) is "
+                f"lower than P_STOP ({run.P_STOP:.3} bar).\n"
+                "Please either lower P_STOP or change the melt initial fo2/melt "
+                "volatile content.\n"
+                "Exiting..."
+            )
 
-        print("The first, middle, last gas molar fractions are: \n O2: %s   %s   %s \n H2: %s   %s   %s \n H2O: %s   %s   %s \n CO2: %s   %s   %s \n CO: %s   %s   %s \n CH4: %s   %s   %s \n SO2: %s   %s   %s \n S2: %s   %s   %s \n H2S: %s   %s   %s \n" % (
-        gas.mO2[0],gas.mO2[(len(gas.mO2)//2)],gas.mO2[-1], gas.mH2[0],gas.mH2[(len(gas.mO2)//2)],gas.mH2[-1], gas.mH2O[0],gas.mH2O[(len(gas.mH2O)//2)],gas.mH2O[-1],
-        gas.mCO2[0],gas.mCO2[(len(gas.mO2)//2)],gas.mCO2[-1], gas.mCO[0],gas.mCO[(len(gas.mO2)//2)],gas.mCO[-1], gas.mCH4[0],gas.mCH4[(len(gas.mH2O)//2)],gas.mCH4[-1],
-        gas.mSO2[0],gas.mSO2[(len(gas.mO2)//2)],gas.mSO2[-1], gas.mS2[0],gas.mS2[(len(gas.mO2)//2)],gas.mS2[-1], gas.mH2S[0],gas.mH2S[(len(gas.mH2O)//2)],gas.mH2S[-1]))
-        
+        print(
+            f"The pressure is {run.P_STOP:.2f} bar, "
+            f"the total gas weight percent is {sys.WgT[-1] * 100:.2f}% "
+            f"and the gas volume fraction is {sys.GvF[-1] * 100:.2f}% "
+            "\nThe run has finished."
+        )
+
+        print(
+            "The gas is partitioned as (mol%): \n "
+            f"O2: {gas.mO2[-1] * 100:.4e} \n "
+            f"H2: {gas.mH2[-1] * 100:.4f} \n "
+            f"H2O: {gas.mH2O[-1] * 100:.4f} \n "
+            f"CO2: {gas.mCO2[-1] * 100:.4f} \n "
+            f"CO: {gas.mCO[-1] * 100:.4f} \n "
+            f"CH4: {gas.mCH4[-1] * 100:.4e} \n "
+            f"S2: {gas.mS2[-1] * 100:.4f} \n "
+            f"SO2: {gas.mSO2[-1] * 100:.4f} \n "
+            f"H2S: {gas.mH2S[-1] * 100:.4f} \n "
+            f"N2: {gas.mN2[-1] * 100:.4f} \n"
+        )
+
+        print(
+            "The first, middle, last gas molar fractions are: \n "
+            f"O2: {gas.mO2[0]}   {gas.mO2[(len(gas.mO2) // 2)]}   {gas.mO2[-1]}\n"
+            f"H2: {gas.mH2[0]}   {gas.mH2[(len(gas.mH2) // 2)]}   {gas.mH2[-1]}\n"
+            f"H2O: {gas.mH2O[0]}   {gas.mH2O[(len(gas.mH2O) // 2)]}   {gas.mH2O[-1]}\n"
+            f"CO2: {gas.mCO2[0]}   {gas.mCO2[(len(gas.mCO2) // 2)]}   {gas.mCO2[-1]}\n"
+            f"CO: {gas.mCO[0]}   {gas.mCO[(len(gas.mCO) // 2)]}   {gas.mCO[-1]}\n"
+            f"CH4: {gas.mCH4[0]}   {gas.mCH4[(len(gas.mCH4) // 2)]}   {gas.mCH4[-1]}\n"
+            f"S2: {gas.mS2[0]}   {gas.mS2[(len(gas.mS2) // 2)]}   {gas.mS2[-1]}\n"
+            f"SO2: {gas.mSO2[0]}   {gas.mSO2[(len(gas.mSO2) // 2)]}   {gas.mSO2[-1]}\n"
+            f"H2S: {gas.mH2S[0]}   {gas.mH2S[(len(gas.mH2S) // 2)]}   {gas.mH2S[-1]}\n"
+            f"N2: {gas.mN2[0]}   {gas.mN2[(len(gas.mN2) // 2)]}   {gas.mN2[-1]}\n"
+        )
+
         end = time.time()
-        print("Run time is ", end-start)
+        print("Run time is ", end - start)
 
-        writeout_file(sys, gas, melt, sys.P_track)
+        df = writeout_file(sys, gas, melt, sys.P_track)
         writeout_figs(sys, melt, gas, out, sys.P_track)
 
-        filepath = Path(__file__).parent / "Output"
-        df = pd.read_csv(filepath / "dgs_output.csv", sep='\t', header=8)
         return df
 
+
 if __name__ == "__main__":
-       
     # -------------------------------------------------------------------
     # SYSTEM SETUP ------------------------------------------------------
     # -------------------------------------------------------------------
-    
+
     # Create the parser
-    my_parser = argparse.ArgumentParser(prog='dgs', description='Run EVo: a thermodynamic magma degassing model')
+    my_parser = argparse.ArgumentParser(
+        prog="dgs", description="Run EVo: a thermodynamic magma degassing model"
+    )
 
     # Add the arguments
-    my_parser.add_argument('chem',
-                        metavar='chem.yaml',
-                        help='the magma chemistry file')
-    
-    my_parser.add_argument('env',
-                        metavar='env.yaml',
-                        help='the run environment settings file')
-    
-    my_parser.add_argument('--output',
-                        help='use selected output options from output.yaml file rather than default outputs')
+    my_parser.add_argument("chem", metavar="chem.yaml", help="the magma chemistry file")
+
+    my_parser.add_argument(
+        "env", metavar="env.yaml", help="the run environment settings file"
+    )
+
+    my_parser.add_argument(
+        "--output",
+        help="use selected output options from output.yaml file",
+    )
 
     # Parse in files
     args = my_parser.parse_args()
 
-    f_chem = args.chem          # set chemical compositions file
-    f_env = args.env            # set environment file
-    
+    f_chem = args.chem  # set chemical compositions file
+    f_env = args.env  # set environment file
+
     if args.output:
-        f_out = args.output     # set output file as an optional input (i.e. if want to specify types of output rather than printing/ graphing all of them
+        f_out = args.output  # set output file as an optional input
         main(f_chem, f_env, f_out)
     else:
         f_out = None
         main(f_chem, f_env, f_out)
-

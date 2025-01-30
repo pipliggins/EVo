@@ -9,3 +9,4 @@ dependencies:
   - matplotlib>=3.4.2
   - mpmath>=1.2.1
   - pyyaml
+  - pandas>=2.1.0
