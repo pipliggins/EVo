@@ -17,8 +17,7 @@ __pycache__/
 
 .venv
 
-Output/*
-evo/Output/*
+outputs/*
 
 # sphinx docs
 docs/_build/

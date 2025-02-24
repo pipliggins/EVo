@@ -3,10 +3,6 @@ Writes the results of the run to a file and
 contains options to produce a graph of the results.
 """
 
-import glob
-import os
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -168,9 +164,9 @@ def writeout_file(sys, gas, melt, P, crashed=False):
 
     df = pd.DataFrame(data)
 
-    filepath = Path(__file__).parent / "Output"
-    if not os.path.exists(filepath):
-        os.makedirs(filepath)
+    filepath = sys.run.results_folder
+    if not filepath.exists():
+        filepath.mkdir()
 
     if not crashed:
         file_name = (
@@ -183,7 +179,7 @@ def writeout_file(sys, gas, melt, P, crashed=False):
             f"_{sys.run.RUN_TYPE}_{sys.T:.0f}K.csv"
         )
 
-    output_path = os.path.join(filepath, file_name)
+    output_path = filepath / file_name
 
     if sys.run.FIND_SATURATION is True or sys.run.ATOMIC_MASS_SET is True:
         df_sat = pd.DataFrame(
@@ -227,14 +223,14 @@ def writeout_figs(sys, melt, gas, out, P):
         List of the pressures each step was calculated at (bar)
     """
 
-    filepath = Path(__file__).parent / "Output"
-
-    filelist = glob.glob(str(filepath / "*.png"))
+    filepath = sys.run.results_folder
+    # filelist = glob.glob(str(filepath / "*.png"))
+    filelist = list(filepath.glob("*.png"))
     # Removes previous files so if output specification is changed
     # there is no confusion as to up to date files.
 
     for file in filelist:
-        os.remove(file)
+        file.unlink()
     if (
         out is not None
     ):  # If an output file listing requested figures has been included:
@@ -272,7 +268,7 @@ def plot_fo2FMQ(melt, gas, P, path):
     plt.xscale("log")
     plt.xlabel("Pressure (bars)")
     plt.ylabel(r"$\Delta$ FMQ")
-    plt.savefig("Output/FMQ.png")
+    plt.savefig(path / "FMQ.png")
     plt.close()
 
     fo2 = []
@@ -283,7 +279,7 @@ def plot_fo2FMQ(melt, gas, P, path):
     # plt.xscale('log')
     plt.xlabel("Pressure (bars)")
     plt.ylabel("log(10) fO2")
-    plt.savefig(os.path.join(path, "fO2.png"))
+    plt.savefig(path / "fO2.png")
     plt.close()
 
 
@@ -326,7 +322,7 @@ def plot_gasspecies_mol(gas, P, path):
     plt.gca().invert_yaxis()
     plt.xlabel(f"Speciation in a {gas.sys.run.GAS_SYS} gas (mol frac)")
     plt.ylabel("Pressure (bar)")
-    plt.savefig(os.path.join(path, "speciation(mol).png"))
+    plt.savefig(path / "speciation(mol).png")
     plt.close()
 
 
@@ -371,7 +367,7 @@ def plot_gasspecies_wt(gas, P, path):
     plt.gca().invert_yaxis()
     plt.xlabel(f"Gas phase speciation of a {gas.sys.run.GAS_SYS} system (wt %)")
     plt.ylabel("Pressure (bar)")
-    plt.savefig(os.path.join(path, "speciation(wt).png"))
+    plt.savefig(path / "speciation(wt).png")
     plt.close()
 
 
@@ -406,7 +402,7 @@ def plot_meltspecies(melt, P, path):
     plt.gca().invert_yaxis()
     plt.xlabel("Melt volatile content (wt%)")
     plt.ylabel("Pressure (bar)")
-    plt.savefig(os.path.join(path, "meltspecies.png"))
+    plt.savefig(path / "meltspecies.png")
     plt.close()
 
 
@@ -423,4 +419,4 @@ def plot_gasfraction(sys, P, path):
     ax1.set_ylabel("Pressure (bar)")
     ax2.plot(cnvt.frac2perc(sys.GvF), P)
     ax2.set_xlabel("Exsolved gas volume %")
-    plt.savefig(os.path.join(path, "exsolved_gas.png"))
+    plt.savefig(path / "exsolved_gas.png")

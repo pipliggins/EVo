@@ -59,6 +59,7 @@ solve homogenoud and heterogeneous equilibria simultaneously at each step
 # python main [ ensure these are on your system ]
 import argparse
 import time
+from pathlib import Path
 
 import numpy as np
 
@@ -74,7 +75,7 @@ from evo.writeout import writeout_figs, writeout_file
 # ------------------------------------------------------------------------
 
 
-def main(f_chem, f_env, f_out):
+def main(f_chem, f_env, f_out, folder="outputs"):
     """Main function for EVo.
 
     Call to run the model.
@@ -87,6 +88,8 @@ def main(f_chem, f_env, f_out):
         Path to the environment input file
     f_out : str or NoneType
         Path to the file describing the required outputs, None if not used
+    folder : str
+        Path to the folder to write the results to
     """
     start = time.time()
 
@@ -97,6 +100,7 @@ def main(f_chem, f_env, f_out):
 
     # Instantiate the run, thermosystem, melt and output objects
     run, sys, melt, out = readin(f_chem, f_env, f_out)
+    run.results_folder = Path(folder)
 
     print("Set parameters:")
     run.print_conditions()
@@ -228,8 +232,12 @@ if __name__ == "__main__":
     )
 
     my_parser.add_argument(
-        "--output",
+        "--output-options",
         help="use selected output options from output.yaml file",
+    )
+
+    my_parser.add_argument(
+        "-o", "--output", help="the folder location to write the results to"
     )
 
     # Parse in files
@@ -238,9 +246,9 @@ if __name__ == "__main__":
     f_chem = args.chem  # set chemical compositions file
     f_env = args.env  # set environment file
 
-    if args.output:
-        f_out = args.output  # set output file as an optional input
-        main(f_chem, f_env, f_out)
+    if args.output_options:
+        f_out = args.output_options  # set output file as an optional input
+        main(f_chem, f_env, f_out, folder=args.output)
     else:
         f_out = None
-        main(f_chem, f_env, f_out)
+        main(f_chem, f_env, f_out, folder=args.output)
