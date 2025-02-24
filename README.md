@@ -11,12 +11,7 @@ Single pressure and decompression can be run for OH, COH, SOH, COHS and COHSN sy
 
 EVo can be set up using either melt volatile contents, or for a set amount of atomic volatile which is preferable for conducting experiments over a wide range of fO2 values.
 
-### Prerequisites
-
-This programme requires Python 3 to run.
-
-Installation/Usage:
-*******************
+## Installation/Usage:
 
 To install locally, EVo must be downloaded from GitHub using
 
@@ -41,6 +36,9 @@ python evo input_files/chem.yaml input_files/env.yaml --output-options input_fil
 ```
 
 The model should run and produce an output file `outputs/dgs_output_*.csv`, and a set of graphs in an 'outputs' folder, if a decompression run has been selected.
+
+The settings are controlled by a set of config files, found in the `input_files` folder.
+You should edit these as described below to set up your decompression experiment.
 
 ### Choosing run options in the env.yaml file
 
