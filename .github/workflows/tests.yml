@@ -14,7 +14,7 @@ on:
     paths:
     - '**.py'
     - '.github/workflows/tests.yml'
-  workflow_dispatch:
+
 
 jobs:
   build:
