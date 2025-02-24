@@ -825,10 +825,9 @@ class Molecule:
             Gibbs free energy of formation
         """
 
-        package_name = "evo.data"
         filename = f"{self.Mol}.txt"
 
-        data_file = importlib.resources.files(package_name) / filename
+        data_file = importlib.resources.files("evo") / "data" / filename
 
         with data_file.open("r", encoding="utf-8") as path:
             Temp_ref = []  # To store temperatures for interpolation
