@@ -8,6 +8,9 @@ build-backend = 'setuptools.build_meta'
     where = ["src"]
     include = ["evo*"]
 
+  [tool.setuptools.package-data]
+    "evo" = ["data/*.txt"]
+
 [project]
 name = "EVo"
 version = "1.0.2"
