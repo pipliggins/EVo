@@ -270,7 +270,7 @@ def plot_fo2FMQ(melt, gas, P, path):
     plt.xscale("log")
     plt.xlabel("Pressure (bars)")
     plt.ylabel(r"$\Delta$ FMQ")
-    plt.savefig("Output/FMQ.png")
+    plt.savefig(os.path.join(path, "FMQ.png"))
     plt.close()
 
     fo2 = []
