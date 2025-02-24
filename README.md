@@ -44,7 +44,7 @@ cd EVO/evo
 python dgs.py input/chem.yaml input/env.yaml --output-options input/output.yaml
 ```
 
-The model should run and produce an output file Outputs/dgs_output_*.csv, and a set of graphs in the Output folder, if a decompression run has been selected.
+The model should run and produce an output file `outputs/dgs_output_*.csv`, and a set of graphs in an 'outputs' folder, if a decompression run has been selected.
 
 ### Choosing run options in the env.yaml file
 

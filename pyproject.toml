@@ -7,7 +7,7 @@ packages = ["evo"]
 
 [project]
 name = "EVo"
-version = "1.0.1"
+version = "1.0.2"
 authors = [{name = "Philippa Liggins", email = "philippa.liggins@dtc.ox.ac.uk"}]
 readme = "README.md"
 license = {file = "LICENSE"}
