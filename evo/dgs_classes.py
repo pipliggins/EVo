@@ -812,7 +812,7 @@ class Molecule:
 
         Calculates the GfF for a given temperature, to use in calculations
         of equilibrium constants. Reads in critical data for the species
-        from the Data folder, linearly interpolating between temperatures.
+        from the 'data' folder, linearly interpolating between temperatures.
 
         Parameters
         ----------
@@ -826,7 +826,7 @@ class Molecule:
         """
 
         # Open the file for data for the molecule
-        file_path = Path(__file__).parent / f"Data/{self.Mol}.txt"
+        file_path = Path(__file__).parent / f"data/{self.Mol}.txt"
 
         path = open(file_path)  # Opens the file for data for the molecule
 
