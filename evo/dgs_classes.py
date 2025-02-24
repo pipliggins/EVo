@@ -189,6 +189,8 @@ class RunDef:
         self.GRAPHITE_SATURATED = False
         self.GRAPHITE_START = 0.0  # initial melt graphite content
 
+        self.results_folder = None
+
     def param_set(self, params):
         """
         Sets class up with parameters from the environment file.

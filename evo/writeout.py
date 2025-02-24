@@ -5,7 +5,6 @@ contains options to produce a graph of the results.
 
 import glob
 import os
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -168,7 +167,7 @@ def writeout_file(sys, gas, melt, P, crashed=False):
 
     df = pd.DataFrame(data)
 
-    filepath = Path(__file__).parent / "Output"
+    filepath = sys.run.results_folder
     if not os.path.exists(filepath):
         os.makedirs(filepath)
 
@@ -227,8 +226,7 @@ def writeout_figs(sys, melt, gas, out, P):
         List of the pressures each step was calculated at (bar)
     """
 
-    filepath = Path(__file__).parent / "Output"
-
+    filepath = sys.run.results_folder
     filelist = glob.glob(str(filepath / "*.png"))
     # Removes previous files so if output specification is changed
     # there is no confusion as to up to date files.
