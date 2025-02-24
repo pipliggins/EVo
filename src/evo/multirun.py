@@ -5,7 +5,7 @@ from shutil import copyfile
 import numpy as np
 import ruamel.yaml
 
-from evo.dgs import main
+from evo.dgs import run_evo
 
 ryaml = ruamel.yaml.YAML()
 
@@ -74,7 +74,7 @@ def multirun(**kwargs):
         onerun = {}
 
         # Runs EVo
-        main("chem.yaml", "multirun.yaml", None)
+        run_evo("chem.yaml", "multirun.yaml", None)
 
         # Copies the dgs_output file into a separate file ready to be run again.
         copyfile("Output/dgs_output.csv", f"Output/output_{run_name}.csv")

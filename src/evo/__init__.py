@@ -5,10 +5,10 @@ A Python model for volcanic degassing, using the equilibrium constants and mass 
 method.
 """
 
-__version__ = "1.0.1"
-__author__ = "Philippa Liggins"
-__all__ = ["main", "multirun"]
-
 # ----------------- IMPORTS ----------------- #
-from evo.dgs import main
+from evo.dgs import run_evo
 from evo.multirun import multirun
+
+__version__ = "1.0.2"
+__author__ = "Philippa Liggins"
+__all__ = ["run_evo", "multirun"]

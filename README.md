@@ -11,22 +11,14 @@ Single pressure and decompression can be run for OH, COH, SOH, COHS and COHSN sy
 
 EVo can be set up using either melt volatile contents, or for a set amount of atomic volatile which is preferable for conducting experiments over a wide range of fO2 values.
 
-**Note: In very rare cases, this version of EVo may result in a run failure if low pressure conditions are being used. If these low pressure runs are needed, an alternative EVo version which contains a multipoint precision module (GMPY2) is available upon emailing me at philippa.liggins@dtc.ox.ac.uk. However, for the vast majority of scenarios, this version is preferable, as it runs faster.**
-
-### Prerequisites
-
-This programme requires Python 3 to run.
-
-If you use python virtual environments, or Anaconda, requirements files (requirements.txt and environment.yml for virtualenv and conda, respectively) can be found in the Data file.
-
-Installation/Usage:
-*******************
+## Installation/Usage:
 
 To install locally, EVo must be downloaded from GitHub using
 
 `git clone git@github.com:pipliggins/EVo.git`
 
-into the project directory where you wish to use EVo. EVo must then be locally pip-installed:
+into the project directory where you wish to use EVo. EVo must then be locally pip-installed
+(I recommend doing this inside a virtual/conda environment):
 ```
 cd EVO
 python -m pip install -e .
@@ -36,15 +28,17 @@ From this point, EVo can either be imported into your python scripts as a regula
 `import evo`
 
 and run using
-`evo.main(<chem_file>, <env_file>, <output_options_file>, folder=<output folder name>)`
+`evo.run_evo(<chem_file>, <env_file>, <output_options_file>, folder=<output folder name>)`
 
-Or EVo can be run directly from the terminal from inside the `evo` directory:
+Or EVo can be run directly from the terminal:
 ```
-cd EVO/evo
-python dgs.py input/chem.yaml input/env.yaml --output-options input/output.yaml
+python evo input_files/chem.yaml input_files/env.yaml --output-options input_files/output.yaml
 ```
 
-The model should run and produce an output file Outputs/dgs_output_*.csv, and a set of graphs in the Output folder, if a decompression run has been selected.
+The model should run and produce an output file `outputs/dgs_output_*.csv`, and a set of graphs in an 'outputs' folder, if a decompression run has been selected.
+
+The settings are controlled by a set of config files, found in the `input_files` folder.
+You should edit these as described below to set up your decompression experiment.
 
 ### Choosing run options in the env.yaml file
 
