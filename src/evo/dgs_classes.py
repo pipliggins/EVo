@@ -1,11 +1,11 @@
 # dgs_classes
 
 import copy
+import importlib.resources
 import inspect
 import itertools
 import re
 import sys
-from pathlib import Path
 
 import numpy as np
 
@@ -825,37 +825,38 @@ class Molecule:
             Gibbs free energy of formation
         """
 
-        # Open the file for data for the molecule
-        file_path = Path(__file__).parent / f"data/{self.Mol}.txt"
+        package_name = "evo.data"
+        filename = f"{self.Mol}.txt"
 
-        path = open(file_path)  # Opens the file for data for the molecule
+        data_file = importlib.resources.files(package_name) / filename
 
-        Temp_ref = []  # To store temperatures which need to be interpolated
-        del_G_ref = []  # To store values of G which need to be interpolated
-        inter_count = 0
+        with data_file.open("r", encoding="utf-8") as path:
+            Temp_ref = []  # To store temperatures for interpolation
+            del_G_ref = []  # To store values of G for interpolation
+            inter_count = 0
 
-        # iterate through file to find correct values according to T provided.
-        for aRow in path:
-            values = aRow.split("\t")
-            if not aRow.startswith("#"):  # takes out descriptive headers
-                if T - float(values[0]) == 0:
-                    # can find K with values in table, no interpolation needed
-                    # adds name of mol. and delG. of form. to the del_G dictionary
-                    self.delG = float(values[6])
-                    break
-                elif inter_count == 1:
-                    # adds in the upper table values for interpolation
-                    Temp_ref.append(float(values[0]))
-                    del_G_ref.append(float(values[6]))
-                    break
-                elif T - float(values[0]) <= 99:
-                    Temp_ref.append(float(values[0]))
-                    del_G_ref.append(float(values[6]))
-                    inter_count += 1
+            # Iterate through file to find correct values according to T provided.
+            for aRow in path:
+                values = aRow.split("\t")
+                if not aRow.startswith("#"):  # Skips descriptive headers
+                    if T - float(values[0]) == 0:
+                        # Exact match found, no interpolation needed
+                        self.delG = float(values[6])
+                        return self.delG
+                    elif inter_count == 1:
+                        # Adds in the upper table values for interpolation
+                        Temp_ref.append(float(values[0]))
+                        del_G_ref.append(float(values[6]))
+                        break
+                    elif T - float(values[0]) <= 99:
+                        Temp_ref.append(float(values[0]))
+                        del_G_ref.append(float(values[6]))
+                        inter_count += 1
+
+        # Perform interpolation if needed
         if len(Temp_ref) == 2:
-            # interpolate between 2 and returns value for Gf.
             self.delG = np.interp(T, Temp_ref, del_G_ref)
-        path.close()
+
         return self.delG
 
 
