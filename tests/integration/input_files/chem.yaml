@@ -1,0 +1,81 @@
+# Dry magma major element chemistry
+# Standard chemistry is provided for basalt, phonolite and rhyolite. Please comment out (using # at the start of each line) data you DO NOT want to use,
+# and/or provide your own chemistry data in the empty section at the bottom of the file.
+
+# ----------------------
+# BASALT
+# ----------------------
+
+SIO2: 47.95
+TIO2: 1.67
+AL2O3: 17.32
+FEO: 10.24
+MNO: 0.17
+MGO: 5.76
+CAO: 10.93
+NA2O: 3.45
+K2O: 1.99
+P2O5: 0.51
+
+# # ----------------------
+# # PHONOLITE
+# # ----------------------
+
+# SIO2: 56.16
+# TIO2: 0.95
+# AL2O3: 20.03
+# FEO: 5.0
+# MNO: 0.23
+# MGO: 0.87
+# CAO: 2.65
+# NA2O: 8.51
+# K2O: 4.57
+# P2O5: 0.39
+
+# # ----------------------
+# # RHYOLITE
+# # ----------------------
+
+# SIO2: 75.65
+# TIO2: 0.26
+# AL2O3: 12.97
+# FEO: 2.15
+# MNO: 0.08
+# MGO: 0.34
+# CAO: 2.26
+# NA2O: 4.34
+# K2O: 1.94
+# P2O5: 0.0
+
+# # ----------------------
+# # SHERGOTTITE
+# # ----------------------
+
+# SIO2: 50.0
+# TIO2: 1.3
+# AL2O3: 10.0
+# FEO: 18.5
+# MNO: 0.3
+# MGO: 8.5
+# CAO: 8.5
+# NA2O: 1.6
+# K2O: 0.3
+# P2O5: 0.6
+
+# # ----------------------
+# # USER-DEFINED - PLEASE PROVIDE OXIDE VALUES FOR YOUR MELT IN WT%. ELEMENTS CAN BE REMOVED IF DATA IS MISSING
+# # ----------------------
+
+# SIO2: 0
+# TIO2: 0
+# AL2O3: 0
+# FEO: 0
+# FE2O3: 0
+# MNO: 0
+# MGO: 0
+# CAO: 0
+# NA2O: 0
+# K2O: 0
+# P2O5: 0
+# NIO: 0
+# CR2O3: 0

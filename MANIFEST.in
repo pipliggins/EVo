@@ -1,2 +1,1 @@
-include evo/Data/*.txt
-include evo/input/*.yaml
+include evo/data/*.txt
