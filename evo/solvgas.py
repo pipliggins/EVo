@@ -157,20 +157,21 @@ def find_Y(P, T, species_list):
 
                     # Carries out NR on eq f, with initial guess 'guess'
                     # and to an allowable error of tol
-                    return newton(f, guess, fprime=df, tol=1e20)
+                    return newton(f, guess, fprime=df)
 
-                assert volMRK(T, P_kb, R, a, b, guess) > 0, "MRK Volume is negative"
+                V_mrk = volMRK(T, P_kb, R, a, b, guess)
+
+                if V_mrk < 0:
+                    raise ValueError("find_Y(H2O): MRK Volume is negative")
 
                 if P_kb > P0:
-                    V = (
-                        volMRK(T, P_kb, R, a, b, guess)
-                        + c * ((P_kb - P0) ** 0.5)
-                        + d * (P_kb - P0)
-                    )
+                    V = V_mrk + c * ((P_kb - P0) ** 0.5) + d * (P_kb - P0)
                 else:
-                    V = volMRK(T, P_kb, R, a, b, guess)
+                    V = V_mrk
 
-                assert V > 0, "Total volume is negative"
+                if V < 0:
+                    raise ValueError("find_Y(H2O): Total volume is negative")
+
                 return V
 
             guess = (R * T / P_kb) + b

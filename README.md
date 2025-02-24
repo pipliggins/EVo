@@ -15,7 +15,7 @@ EVo can be set up using either melt volatile contents, or for a set amount of at
 
 ### Prerequisites
 
-This programme requires Python 3 to run. 
+This programme requires Python 3 to run.
 
 If you use python virtual environments, or Anaconda, requirements files (requirements.txt and environment.yml for virtualenv and conda, respectively) can be found in the Data file.
 
@@ -29,19 +29,19 @@ To install locally, EVo must be downloaded from GitHub using
 into the project directory where you wish to use EVo. EVo must then be locally pip-installed:
 ```
 cd EVO
-python -m pip install -e evo/
+python -m pip install -e .
 ```
 
 From this point, EVo can either be imported into your python scripts as a regular module using
-`install evo`
+`import evo`
 
 and run using
-`evo.main('chem_file', 'env_file', 'output_options_file')`
+`evo.main(<chem_file>, <env_file>, <output_options_file>, folder=<output folder name>)`
 
 Or EVo can be run directly from the terminal from inside the `evo` directory:
 ```
 cd EVO/evo
-python dgs.py input/chem.yaml input/env.yaml --output input/output.yaml
+python dgs.py input/chem.yaml input/env.yaml --output-options input/output.yaml
 ```
 
 The model should run and produce an output file Outputs/dgs_output_*.csv, and a set of graphs in the Output folder, if a decompression run has been selected.
@@ -53,7 +53,7 @@ The different run types, model parameters and input values are all set in the en
 There are multiple run types which can be selected within EVo. At the highest level, a run can either be (1). single pressure, where equilibration between the gas and the melt only occurs at 1 pressure step set using P_START, or (2) a decompression run, where calculations start at P_START and run through pressure steps (the max and min size of which can be set using DP_MAX and DP_MIN respectively) until P_STOP is reached. These two high-level un options can be toggled between using SINGLE_STEP, where True sets up EVo to do a single pressure run, and False asks for decompression.
 
 Within these two high-level run types, 3 options for selecting starting conditions are available:
-* Standard: pick a pressure (P_START), a starting gas weight fraction (WgT) and some combination of either current melt volatile contents, or gas fugacities. EVo will calculate the missing variables and either stop at that point for a single pressure run, or continue on in decompression mode. This is the default option, and will be used if both FIND_SATURATION and ATOMIC_MASS_SET are False. 
+* Standard: pick a pressure (P_START), a starting gas weight fraction (WgT) and some combination of either current melt volatile contents, or gas fugacities. EVo will calculate the missing variables and either stop at that point for a single pressure run, or continue on in decompression mode. This is the default option, and will be used if both FIND_SATURATION and ATOMIC_MASS_SET are False.
 * Volatile saturation: Chosen by switching FIND_SATURATION to True, given only the melt volatile contents and magma fO2, EVo will calculate the volatile saturation pressure and start a run from there. Any values given in P_START and WgT will be ignored; WgT will be set to 1e-8 at the volatile saturation point.
 * Atomic set: Chosen by switching ATOMIC_MASS_SET to True (and FIND_SATURATION to False). Given the melt fO2 and the atomic weight fractions of each of the other volatile species (H, +/- C, S & N, set using ATOMIC_H etc.), Evo will calculate both the appropriate distribution of each element across the different species considered, and the volatile saturation point of that composition. Particularly useful for studies where fO2 is varied but the amount of other elements should be held constant. Again, P_START and WgT will be ignored, WgT will be set to 1e-8 at the volatile saturation point.
 

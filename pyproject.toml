@@ -13,7 +13,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3"]
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 
 dependencies = ["numpy>=1.21.0",
   "scipy>=1.7.0",
@@ -26,6 +26,7 @@ dependencies = ["numpy>=1.21.0",
 dev = ["ruff", "pre-commit"]
 doc = ["sphinx == 5.3.0"]
 web = ["streamlit"]
+test = ["pytest"]
 
 [project.urls]
 Home = "https://github.com/pipliggins/EVo"
