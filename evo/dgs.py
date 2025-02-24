@@ -57,7 +57,6 @@ solve homogenoud and heterogeneous equilibria simultaneously at each step
 # ------------------------------------------------------------------------
 
 # python main [ ensure these are on your system ]
-import argparse
 import time
 from pathlib import Path
 
@@ -75,7 +74,7 @@ from evo.writeout import writeout_figs, writeout_file
 # ------------------------------------------------------------------------
 
 
-def main(f_chem, f_env, f_out, folder="outputs"):
+def run_evo(f_chem, f_env, f_out, folder="outputs"):
     """Main function for EVo.
 
     Call to run the model.
@@ -212,43 +211,3 @@ def main(f_chem, f_env, f_out, folder="outputs"):
         writeout_figs(sys, melt, gas, out, sys.P_track)
 
         return df
-
-
-if __name__ == "__main__":
-    # -------------------------------------------------------------------
-    # SYSTEM SETUP ------------------------------------------------------
-    # -------------------------------------------------------------------
-
-    # Create the parser
-    my_parser = argparse.ArgumentParser(
-        prog="dgs", description="Run EVo: a thermodynamic magma degassing model"
-    )
-
-    # Add the arguments
-    my_parser.add_argument("chem", metavar="chem.yaml", help="the magma chemistry file")
-
-    my_parser.add_argument(
-        "env", metavar="env.yaml", help="the run environment settings file"
-    )
-
-    my_parser.add_argument(
-        "--output-options",
-        help="use selected output options from output.yaml file",
-    )
-
-    my_parser.add_argument(
-        "-o", "--output", help="the folder location to write the results to"
-    )
-
-    # Parse in files
-    args = my_parser.parse_args()
-
-    f_chem = args.chem  # set chemical compositions file
-    f_env = args.env  # set environment file
-
-    if args.output_options:
-        f_out = args.output_options  # set output file as an optional input
-        main(f_chem, f_env, f_out, folder=args.output)
-    else:
-        f_out = None
-        main(f_chem, f_env, f_out, folder=args.output)

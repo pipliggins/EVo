@@ -33,12 +33,11 @@ From this point, EVo can either be imported into your python scripts as a regula
 `import evo`
 
 and run using
-`evo.main(<chem_file>, <env_file>, <output_options_file>, folder=<output folder name>)`
+`evo.run_evo(<chem_file>, <env_file>, <output_options_file>, folder=<output folder name>)`
 
-Or EVo can be run directly from the terminal from inside the `evo` directory:
+Or EVo can be run directly from the terminal:
 ```
-cd EVO/evo
-python dgs.py input/chem.yaml input/env.yaml --output-options input/output.yaml
+python evo input_files/chem.yaml input_files/env.yaml --output-options input_files/output.yaml
 ```
 
 The model should run and produce an output file `outputs/dgs_output_*.csv`, and a set of graphs in an 'outputs' folder, if a decompression run has been selected.
