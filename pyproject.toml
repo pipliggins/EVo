@@ -3,7 +3,10 @@ requires = ['setuptools>=40.8.0']
 build-backend = 'setuptools.build_meta'
 
 [tool.setuptools]
-packages = ["evo"]
+
+  [tool.setuptools.packages.find]
+    where = ["src"]
+    include = ["evo*"]
 
 [project]
 name = "EVo"
@@ -14,6 +17,7 @@ license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3"]
 requires-python = ">=3.9"
+scripts = { evo = "evo:main" }
 
 dependencies = ["numpy>=1.21.0",
   "scipy>=1.7.0",

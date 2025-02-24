@@ -1,6 +1,6 @@
 import argparse
 
-from dgs import run_evo
+from evo.dgs import run_evo
 
 
 def main(argv=None):
