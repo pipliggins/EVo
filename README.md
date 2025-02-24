@@ -11,13 +11,9 @@ Single pressure and decompression can be run for OH, COH, SOH, COHS and COHSN sy
 
 EVo can be set up using either melt volatile contents, or for a set amount of atomic volatile which is preferable for conducting experiments over a wide range of fO2 values.
 
-**Note: In very rare cases, this version of EVo may result in a run failure if low pressure conditions are being used. If these low pressure runs are needed, an alternative EVo version which contains a multipoint precision module (GMPY2) is available upon emailing me at philippa.liggins@dtc.ox.ac.uk. However, for the vast majority of scenarios, this version is preferable, as it runs faster.**
-
 ### Prerequisites
 
 This programme requires Python 3 to run.
-
-If you use python virtual environments, or Anaconda, requirements files (requirements.txt and environment.yml for virtualenv and conda, respectively) can be found in the Data file.
 
 Installation/Usage:
 *******************
@@ -26,7 +22,8 @@ To install locally, EVo must be downloaded from GitHub using
 
 `git clone git@github.com:pipliggins/EVo.git`
 
-into the project directory where you wish to use EVo. EVo must then be locally pip-installed:
+into the project directory where you wish to use EVo. EVo must then be locally pip-installed
+(I recommend doing this inside a virtual/conda environment):
 ```
 cd EVO
 python -m pip install -e .
