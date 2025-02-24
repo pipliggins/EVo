@@ -26,12 +26,13 @@ dependencies = ["numpy>=1.21.0",
   "scipy>=1.7.0",
   "matplotlib>=3.4.2",
   "mpmath>=1.2.1",
-  "pyyaml",
   "ruamel.yaml",
   "pandas>=2.1.0",]
 
 [project.optional-dependencies]
 dev = ["ruff", "pre-commit"]
+doc = ["sphinx == 5.3.0"]
+web = ["streamlit"]
 test = ["pytest"]
 
 [project.urls]

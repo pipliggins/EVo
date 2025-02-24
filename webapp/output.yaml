@@ -1,0 +1,7 @@
+# Graphical output selection
+
+Plt_melt_species: True
+Plt_gas_species_wt: False
+Plt_gas_species_mol: True
+Plt_gas_fraction: True
+Plt_fo2_dFMQ: False

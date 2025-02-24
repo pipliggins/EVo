@@ -1,9 +1,14 @@
 """
 EVo
+
 A Python model for volcanic degassing, using the equilibrium constants and mass balance
 method.
 """
 
-from evo.dgs import run_evo as run_evo
+# ----------------- IMPORTS ----------------- #
+from evo.dgs import run_evo
+from evo.multirun import multirun
 
-__all__ = ["run_evo"]
+__version__ = "1.0.2"
+__author__ = "Philippa Liggins"
+__all__ = ["run_evo", "multirun"]
