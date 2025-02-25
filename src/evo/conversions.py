@@ -1,9 +1,10 @@
 # conversions.py
 
-import ferric
-import constants as cnst
-import solubility_laws as sl
 import numpy as np
+
+from evo import constants as cnst
+from evo import ferric
+from evo import solubility_laws as sl
 
 # ------------------------------------------------------------------------
 # FUNCTIONS

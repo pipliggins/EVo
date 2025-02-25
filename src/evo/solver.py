@@ -1,14 +1,18 @@
 # solver.py
 """STORES THE SOLVING EQUATIONS AND SOLVE ROUTINE"""
 
-import constants as cnst
-import conversions as cnvs
-import solvgas as sg
-from scipy import optimize
-import numpy as np
+from __future__ import annotations
+
 import warnings
-import messages as msgs
-import solubility_laws as sl
+
+import numpy as np
+from scipy import optimize
+
+import evo.constants as cnst
+import evo.conversions as cnvs
+import evo.messages as msgs
+import evo.solubility_laws as sl
+import evo.solvgas as sg
 
 
 def decompress(run, sys, melt, gas, system):
@@ -37,12 +41,12 @@ def decompress(run, sys, melt, gas, system):
     None
     """
 
-    # --------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     # FUNCTION DEFINITIONS
-    # --------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
 
     # OH equations
-    def oh_eqs(guesses=[1], fe=True):
+    def oh_eqs(guesses: list[float], fe=True):
         """
         Defines the non-linear equation set to be solved for the OH system.
 
@@ -92,7 +96,7 @@ def decompress(run, sys, melt, gas, system):
         ]
 
     # COH system -----------------------------------------------------------------------
-    def coh_eqs(guesses=[], fe=True, graph=False):
+    def coh_eqs(guesses: list[float], fe=True, graph=False):
         """
         Defines the non-linear equation set to be solved for the COH system.
 
@@ -245,7 +249,7 @@ def decompress(run, sys, melt, gas, system):
                 - (sys.atomicM["c"] / (cnst.m["c"])),
             ]
 
-    def soh_eqs(guesses=[1, 1], fe=True):
+    def soh_eqs(guesses: list[float], fe=True):
         """
         Defines the non-linear equation set to be solved for the SOH system.
 
@@ -342,7 +346,7 @@ def decompress(run, sys, melt, gas, system):
             - (sys.atomicM["h"] / (2 * cnst.m["h"])),
         ]
 
-    def cohs_eqs(guesses=[], fe=True, graph=False):
+    def cohs_eqs(guesses: list[float], fe=True, graph=False):
         """
         Defines the non-linear equation set to be solved for the COHS system.
 
@@ -540,7 +544,7 @@ def decompress(run, sys, melt, gas, system):
                 - (sys.atomicM["s"] / cnst.m["s"]),
             ]
 
-    def cohsn_eqs(guesses=[], fe=True, graph=False):
+    def cohsn_eqs(guesses: list[float], fe=True, graph=False):
         """
         Defines the non-linear equation set to be solved for the COHSN system.
 
@@ -892,7 +896,7 @@ def decompress(run, sys, melt, gas, system):
                             )
                             return newguess[0], newguess[1], newguess[2], newguess[3]
 
-                except RuntimeWarning:
+                except RuntimeWarning as err:
                     message = sys.variable_step()
                     if message is None:
                         sg.set_Y(sys, mols)
@@ -905,11 +909,11 @@ def decompress(run, sys, melt, gas, system):
                         # resets pstep for the iron equilibration scenario
                         sys.P_step = initial_pstep  # PL: is this still necessary?
                         print(message)
-                        raise RuntimeError(message)
+                        raise RuntimeError(message) from err
 
-    # --------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
     # CALCULATION AND PRINT LOOPS
-    # --------------------------------------------------------------------------------------------------------
+    # ----------------------------------------------------------------------------------
 
     if run.GAS_SYS == "OH":
         H2O, O2, H2 = system
@@ -943,7 +947,7 @@ def decompress(run, sys, melt, gas, system):
             (1 - gas.mO2[-1])
             / (1 + (H2O.Y / (sys.K["K1"] * H2.Y * (gas.mO2[-1] * O2.Y * sys.P) ** 0.5)))
         )
-        gas.mH2.append((1 - gas.mO2[-1] - gas.mH2O[-1]))
+        gas.mH2.append(1 - gas.mO2[-1] - gas.mH2O[-1])
         empty_lists = [
             gas.mCO2,
             gas.mCO,
@@ -1042,7 +1046,7 @@ def decompress(run, sys, melt, gas, system):
                     "graphite_fco2:",
                     graph_fCO2,
                 )
-                melt.graphite_sat is True
+                melt.graphite_sat = True
 
         if run.FE_SYSTEM is True:
             sys.fe_save(melt, guessx, O2)

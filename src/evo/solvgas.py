@@ -1,11 +1,12 @@
 # ------------------------------------------------------------------------
 # solvgas.py
 
-import constants as cnst
-from scipy.optimize import newton
 from math import exp
-import numpy as np
 
+import numpy as np
+from scipy.optimize import newton
+
+import evo.constants as cnst
 
 # ------------------------------------------------------------------------
 # FUGACITY COEFFICIENTS
@@ -131,9 +132,9 @@ def find_Y(P, T, species_list):
             c = -3.025650e-2 + (-5.343144e-6 * T)
             d = -3.2297554e-3 + (2.2215221e-6 * T)
 
-            def find_V(T, P_kb, guess):
+            def find_V(T, P_kb, P0, R, a, b, c, d, guess):
                 def volMRK(
-                    T, P_kb, guess
+                    T, P_kb, R, a, b, guess
                 ):  # Temp, Pressure, H2O/CO2, a or agas, initial guess for NR
                     # PL: having trimmed down, there may just be one real root for this,
                     # negating need to newton algoritham, just use a solve.
@@ -156,24 +157,25 @@ def find_Y(P, T, species_list):
 
                     # Carries out NR on eq f, with initial guess 'guess'
                     # and to an allowable error of tol
-                    return newton(f, guess, fprime=df, tol=1e20)
+                    return newton(f, guess, fprime=df)
 
-                assert volMRK(T, P_kb, guess) > 0, "MRK Volume is negative"
+                V_mrk = volMRK(T, P_kb, R, a, b, guess)
+
+                if V_mrk < 0:
+                    raise ValueError("find_Y(H2O): MRK Volume is negative")
 
                 if P_kb > P0:
-                    V = (
-                        volMRK(T, P_kb, guess)
-                        + c * ((P_kb - P0) ** 0.5)
-                        + d * (P_kb - P0)
-                    )
+                    V = V_mrk + c * ((P_kb - P0) ** 0.5) + d * (P_kb - P0)
                 else:
-                    V = volMRK(T, P_kb, guess)
+                    V = V_mrk
 
-                assert V > 0, "Total volume is negative"
+                if V < 0:
+                    raise ValueError("find_Y(H2O): Total volume is negative")
+
                 return V
 
             guess = (R * T / P_kb) + b
-            Z = (P_kb * find_V(T, P_kb, guess)) / (R * T)
+            Z = (P_kb * find_V(T, P_kb, P0, R, a, b, c, d, guess)) / (R * T)
 
             if P_kb > P0:
                 lnYvirial = (1 / (R * T)) * (
@@ -268,7 +270,7 @@ def find_Y(P, T, species_list):
                 C = (-0.00103 / Tr**1.5) + (0.01427 / Tr**4)
                 D = 0.0
 
-                return Z(A, B, C, D, Pr, P0r)
+                return Z(A, B, C, D, Pr, P0r)  # noqa: B023
 
             def Z5000(pcrit, Tr):
                 # z at 5000 bar, except H2S
@@ -280,7 +282,7 @@ def find_Y(P, T, species_list):
                 C = (-0.0001416 / Tr**2) + (-0.000002835 * np.log(Tr))
                 D = 0.0
 
-                return Z(A, B, C, D, Pr, P0r)
+                return Z(A, B, C, D, Pr, P0r)  # noqa: B023
 
             def H2S500(pcrit, Tr):
                 # z for H2S at 500 bar
@@ -304,9 +306,9 @@ def find_Y(P, T, species_list):
                 )
                 D = 0.0
 
-                return Z(A, B, C, D, Pr, P0r)
+                return Z(A, B, C, D, Pr, P0r)  # noqa: B023
 
-            def find_Z0(Pr, Tr, species):
+            def find_Z0(Tr, species):
                 # Returns the A, B, C and D parameters for Z, and Z0
 
                 if species != "H2S":
@@ -469,9 +471,9 @@ def find_Y(P, T, species_list):
                 Tr = T / cnst.PTcrit[species][0]
                 Pr = P / cnst.PTcrit[species][1]
 
-                A, B, C, D, P0r, Z0 = find_Z0(Pr, Tr, species)
+                A, B, C, D, P0r, Z0 = find_Z0(Tr, species)
 
-                intZ = Z(A, B, C, D, Pr, P0r)
+                intZ = Z(A, B, C, D, Pr, P0r)  # noqa: B023
 
                 return np.exp(intZ + Z0) / P
 

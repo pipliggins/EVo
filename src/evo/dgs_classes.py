@@ -1,37 +1,21 @@
 # dgs_classes
 
-# ------------------------------------------------------------------------
-# IMPORT
-# ------------------------------------------------------------------------
-
-# python
-import sys
 import copy
+import importlib.resources
+import inspect
 import itertools
 import re
+import sys
+
 import numpy as np
 
-# local
-import inspect
-import density
-import conversions as cnvs
-import constants as cnst
-import solvgas as sg
-import init_cons as ic
-import messages as msgs
-import solubility_laws as sl
-
-
-# ------------------------------------------------------------------------
-# CLASSES
-# ------------------------------------------------------------------------
-
-#  -------------------------------------------------------------------------
-#
-""" Creates an object defining the parameters of the degassing run.
-Contains system properties, start and stop T/P, FO2 and buffering.
-fo2 - Delta FMQ (Frost 1991, Rev. Min.)
-"""
+import evo.constants as cnst
+import evo.conversions as cnvs
+import evo.density as density
+import evo.init_cons as ic
+import evo.messages as msgs
+import evo.solubility_laws as sl
+import evo.solvgas as sg
 
 
 class RunDef:
@@ -132,7 +116,7 @@ class RunDef:
     """
 
     # keep track of number of possible parameters (mainly for output purposes)
-    n_par = int(40)
+    n_par = 40
 
     # setup DEFAULT run parameters
     # will be overwritten by anything set in the environment file
@@ -162,18 +146,18 @@ class RunDef:
         self.LOSS_FRAC = 0.99
 
         # Select physical property and chemical solubility models
-        self.DENSITY_MODEL = str("spera2000")
-        self.FO2_MODEL = str("kc1991")
-        self.FMQ_MODEL = str("frost1991")
-        self.H2O_MODEL = str("burguisser2015")
-        self.H2_MODEL = str("gaillard2003")
-        self.C_MODEL = str("burguisser2015")
-        self.CO_MODEL = str("None")
-        self.CH4_MODEL = str("None")
-        self.SULFIDE_CAPACITY = str("oneill2020")
-        self.SULFATE_CAPACITY = str("nash2019")
-        self.SCSS = str("liu2007")
-        self.N_MODEL = str("libourel2003")
+        self.DENSITY_MODEL = "spera2000"
+        self.FO2_MODEL = "kc1991"
+        self.FMQ_MODEL = "frost1991"
+        self.H2O_MODEL = "burguisser2015"
+        self.H2_MODEL = "gaillard2003"
+        self.C_MODEL = "burguisser2015"
+        self.CO_MODEL = "None"
+        self.CH4_MODEL = "None"
+        self.SULFIDE_CAPACITY = "oneill2020"
+        self.SULFATE_CAPACITY = "nash2019"
+        self.SCSS = "liu2007"
+        self.N_MODEL = "libourel2003"
 
         # initial redox
         self.FO2_buffer_SET = False
@@ -210,6 +194,8 @@ class RunDef:
         self.NITROGEN_START = 0.01  # initial melt FRACTION
         self.GRAPHITE_SATURATED = False
         self.GRAPHITE_START = 0.0  # initial melt graphite content
+
+        self.results_folder = None
 
     def param_set(self, params):
         """
@@ -250,7 +236,7 @@ class RunDef:
             self.COMPOSITION = self.COMPOSITION.lower()
 
         if self.RUN_TYPE.lower() == "closed" or self.RUN_TYPE.lower() == "open":
-            self.RUN_TYPE == self.RUN_TYPE.lower()
+            self.RUN_TYPE = self.RUN_TYPE.lower()
         else:
             exit(
                 f"RUN_TYPE '{self.RUN_TYPE}'' is not recognised. "
@@ -837,7 +823,7 @@ class Molecule:
 
         Calculates the GfF for a given temperature, to use in calculations
         of equilibrium constants. Reads in critical data for the species
-        from the Data folder, linearly interpolating between temperatures.
+        from the 'data' folder, linearly interpolating between temperatures.
 
         Parameters
         ----------
@@ -850,35 +836,37 @@ class Molecule:
             Gibbs free energy of formation
         """
 
-        # Open the file for data for the molecule
-        path = open("Data/" + self.Mol + ".txt", "r")
+        filename = f"{self.Mol}.txt"
 
-        Temp_ref = []  # To store temperatures which need to be interpolated
-        del_G_ref = []  # To store values of G which need to be interpolated
-        inter_count = 0
+        data_file = importlib.resources.files("evo") / "data" / filename
 
-        # iterate through file to find correct values according to T provided.
-        for aRow in path:
-            values = aRow.split("\t")
-            if not aRow.startswith("#"):  # takes out descriptive headers
-                if T - float(values[0]) == 0:
-                    # can find K with values in table, no interpolation needed
-                    # adds name of mol. and delG. of form. to the del_G dictionary
-                    self.delG = float(values[6])
-                    break
-                elif inter_count == 1:
-                    # adds in the upper table values for interpolation
-                    Temp_ref.append(float(values[0]))
-                    del_G_ref.append(float(values[6]))
-                    break
-                elif T - float(values[0]) <= 99:
-                    Temp_ref.append(float(values[0]))
-                    del_G_ref.append(float(values[6]))
-                    inter_count += 1
+        with data_file.open("r", encoding="utf-8") as path:
+            Temp_ref = []  # To store temperatures for interpolation
+            del_G_ref = []  # To store values of G for interpolation
+            inter_count = 0
+
+            # Iterate through file to find correct values according to T provided.
+            for aRow in path:
+                values = aRow.split("\t")
+                if not aRow.startswith("#"):  # Skips descriptive headers
+                    if T - float(values[0]) == 0:
+                        # Exact match found, no interpolation needed
+                        self.delG = float(values[6])
+                        return self.delG
+                    elif inter_count == 1:
+                        # Adds in the upper table values for interpolation
+                        Temp_ref.append(float(values[0]))
+                        del_G_ref.append(float(values[6]))
+                        break
+                    elif T - float(values[0]) <= 99:
+                        Temp_ref.append(float(values[0]))
+                        del_G_ref.append(float(values[6]))
+                        inter_count += 1
+
+        # Perform interpolation if needed
         if len(Temp_ref) == 2:
-            # interpolate between 2 and returns value for Gf.
             self.delG = np.interp(T, Temp_ref, del_G_ref)
-        path.close()
+
         return self.delG
 
 
@@ -991,7 +979,9 @@ class Melt:
 
         # if (
         #     self.run.FE3_FET_SET is True
-        # ):  # PL: Rather than do this, maybe store the original values to allow the ratio to be calculated later? It's not quite accurate when calculating the saturation P.
+        # ):  # PL: Rather than do this, maybe store the original values to allow the
+        # ratio to be calculated later? It's not quite accurate when calculating the
+        # saturation P.
         #     # set correct fe2o3 and feo
         #     eles.append("fe2o3")
 
@@ -1177,7 +1167,7 @@ class Melt:
             elif x == "fe2o3":
                 cation_formula["fe3"] = formula[x]
             else:
-                no_num = re.sub("\d", "", x)  # noqa:W605
+                no_num = re.sub(r"\d", "", x)
                 new_name = re.sub("o", "", no_num)
                 cation_formula[new_name] = formula[x]
 
@@ -1210,7 +1200,7 @@ class Melt:
 
         # strip down to cation name
         for x in formula.keys():
-            no_num = re.sub("\d", "", x)  # noqa:W605
+            no_num = re.sub(r"\d", "", x)
             new_name = re.sub("o", "", no_num)
 
             fwm += cnst.m[new_name] * formula[x]
@@ -2126,7 +2116,7 @@ class Output:
         If True, fO2 relative to FMQ will be plotted against pressure
     """
 
-    n_par = int(5)
+    n_par = 5
 
     def __init__(self):
         # Graphical outputs

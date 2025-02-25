@@ -32,11 +32,11 @@ LOSS_FRAC: 0.9999
 DENSITY_MODEL: spera2000
 # Relate fo2 to Fe2/Fe3 ratio; pick from kc1991 (Kress & Carmicheal 1991), r2013 (Righter et al., 2013))
 FO2_MODEL: kc1991
-# Rock buffer definitions, options: frost1991; 
+# Rock buffer definitions, options: frost1991;
 FMQ_MODEL: frost1991
 
 # select solubility laws from options. Some options do not include OH-, CO3, CH4 species.
-# OH system models, pick from: burguisser2015 (H2O only); 
+# OH system models, pick from: burguisser2015 (H2O only);
 H2O_MODEL: burguisser2015
 # H2 model, pick from: burguisser2015 (ONLY USE TO COMPARE TO DCOMPRESS; ERROR!); gaillard2003
 H2_MODEL: gaillard2003
@@ -46,9 +46,9 @@ C_MODEL: burguisser2015
 CO_MODEL: armstrong2015
 # CH4 model, pick either ardia2013, or None (preferred for higher fO2 cases above ~ IW+1)
 CH4_MODEL: ardia2013
-# S models, pick from: sulfide capacity: oneill2002, oneill2020;  sulfate capacity: nash2019 , oneill2022 ; SCSS: liu2007
+# S models, pick from: sulfide capacity: oneill2002, oneill2020;  sulfate capacity: nash2019  ; SCSS: liu2007
 SULFIDE_CAPACITY: oneill2020
-SULFATE_CAPACITY: oneill2022
+SULFATE_CAPACITY: nash2019
 SCSS: liu2007
 # N model, pick from: libourel2003 (N2 only)
 N_MODEL: libourel2003
@@ -58,9 +58,6 @@ N_MODEL: libourel2003
 FO2_buffer_SET: False
 FO2_buffer: FMQ
 FO2_buffer_START: 0
-
-FE3_FET_SET: False
-FE3_FET_START: 0.1
 
 FO2_SET: False
 FO2_START: 8.3777516486972E-12

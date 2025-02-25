@@ -11,24 +11,34 @@ Single pressure and decompression can be run for OH, COH, SOH, COHS and COHSN sy
 
 EVo can be set up using either melt volatile contents, or for a set amount of atomic volatile which is preferable for conducting experiments over a wide range of fO2 values.
 
-**Note: In very rare cases, this version of EVo may result in a run failure if low pressure conditions are being used. If these low pressure runs are needed, an alternative EVo version which contains a multipoint precision module (GMPY2) is available upon emailing me at pkl28@cam.ac.uk. However, for the vast majority of scenarios, this version is preferable, as it runs faster.**
+## Installation/Usage:
 
-### Prerequisites
+To install locally, EVo must be downloaded from GitHub using
 
-This programme requires Python 3 to run. 
+`git clone git@github.com:pipliggins/EVo.git`
 
-If you use python virtual environments, or Anaconda, requirements files (requirements.txt and environment.yml for virtualenv and conda, respectively) can be found in the Data file.
-
-## Running EVo
-
-The model is set up using the env.yaml file. Open the file and edit the parameters to match what you want.
-
-Then inside a terminal (and inside the virtual environment if you use one):
+into the project directory where you wish to use EVo. EVo must then be locally pip-installed
+(I recommend doing this inside a virtual/conda environment):
 ```
-python3 dgs.py chem.yaml env.yaml --output output.yaml
+cd EVO
+python -m pip install -e .
 ```
 
-The model should run and produce an output file Outputs/dgs_output_*.csv, and a set of graphs in the Output folder, if a decompression run has been selected.
+From this point, EVo can either be imported into your python scripts as a regular module using
+`import evo`
+
+and run using
+`evo.run_evo(<chem_file>, <env_file>, <output_options_file>, folder=<output folder name>)`
+
+Or EVo can be run directly from the terminal:
+```
+python evo input_files/chem.yaml input_files/env.yaml --output-options input_files/output.yaml
+```
+
+The model should run and produce an output file `outputs/dgs_output_*.csv`, and a set of graphs in an 'outputs' folder, if a decompression run has been selected.
+
+The settings are controlled by a set of config files, found in the `input_files` folder.
+You should edit these as described below to set up your decompression experiment.
 
 ### Choosing run options in the env.yaml file
 
@@ -37,7 +47,7 @@ The different run types, model parameters and input values are all set in the en
 There are multiple run types which can be selected within EVo. At the highest level, a run can either be (1). single pressure, where equilibration between the gas and the melt only occurs at 1 pressure step set using P_START, or (2) a decompression run, where calculations start at P_START and run through pressure steps (the max and min size of which can be set using DP_MAX and DP_MIN respectively) until P_STOP is reached. These two high-level un options can be toggled between using SINGLE_STEP, where True sets up EVo to do a single pressure run, and False asks for decompression.
 
 Within these two high-level run types, 3 options for selecting starting conditions are available:
-* Standard: pick a pressure (P_START), a starting gas weight fraction (WgT) and some combination of either current melt volatile contents, or gas fugacities. EVo will calculate the missing variables and either stop at that point for a single pressure run, or continue on in decompression mode. This is the default option, and will be used if both FIND_SATURATION and ATOMIC_MASS_SET are False. 
+* Standard: pick a pressure (P_START), a starting gas weight fraction (WgT) and some combination of either current melt volatile contents, or gas fugacities. EVo will calculate the missing variables and either stop at that point for a single pressure run, or continue on in decompression mode. This is the default option, and will be used if both FIND_SATURATION and ATOMIC_MASS_SET are False.
 * Volatile saturation: Chosen by switching FIND_SATURATION to True, given only the melt volatile contents and magma fO2, EVo will calculate the volatile saturation pressure and start a run from there. Any values given in P_START and WgT will be ignored; WgT will be set to 1e-8 at the volatile saturation point.
 * Atomic set: Chosen by switching ATOMIC_MASS_SET to True (and FIND_SATURATION to False). Given the melt fO2 and the atomic weight fractions of each of the other volatile species (H, +/- C, S & N, set using ATOMIC_H etc.), Evo will calculate both the appropriate distribution of each element across the different species considered, and the volatile saturation point of that composition. Particularly useful for studies where fO2 is varied but the amount of other elements should be held constant. Again, P_START and WgT will be ignored, WgT will be set to 1e-8 at the volatile saturation point.
 

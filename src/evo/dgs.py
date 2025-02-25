@@ -57,22 +57,24 @@ solve homogenoud and heterogeneous equilibria simultaneously at each step
 # ------------------------------------------------------------------------
 
 # python main [ ensure these are on your system ]
-import argparse
 import time
+from pathlib import Path
+
 import numpy as np
 
+import evo.conversions as cnvs
+import evo.solver as solver
+
 # bundled scripts
-from readin import readin, set_init_chem
-from writeout import writeout_file, writeout_figs
-import solver
-import conversions as cnvs
+from evo.readin import readin, set_init_chem
+from evo.writeout import writeout_figs, writeout_file
 
 # ------------------------------------------------------------------------
 # MAIN
 # ------------------------------------------------------------------------
 
 
-def main(f_chem, f_env, f_out):
+def run_evo(f_chem, f_env, f_out, folder="outputs"):
     """Main function for EVo.
 
     Call to run the model.
@@ -85,6 +87,8 @@ def main(f_chem, f_env, f_out):
         Path to the environment input file
     f_out : str or NoneType
         Path to the file describing the required outputs, None if not used
+    folder : str
+        Path to the folder to write the results to
     """
     start = time.time()
 
@@ -95,6 +99,7 @@ def main(f_chem, f_env, f_out):
 
     # Instantiate the run, thermosystem, melt and output objects
     run, sys, melt, out = readin(f_chem, f_env, f_out)
+    run.results_folder = Path(folder)
 
     print("Set parameters:")
     run.print_conditions()
@@ -105,7 +110,7 @@ def main(f_chem, f_env, f_out):
     print("\nSystem chemistry (wt%)")
     sm = 0.0
     for k, v in cnvs.mol2wt(melt.cm_dry).items():
-        print(k, ":", "{0:0.3g}".format(v * 100))
+        print(k, ":", f"{v * 100:0.3g}")
         sm += v * 100
     print("Total =", round(sm, 2), "\n")
 
@@ -202,41 +207,7 @@ def main(f_chem, f_env, f_out):
         end = time.time()
         print("Run time is ", end - start)
 
-        writeout_file(sys, gas, melt, sys.P_track)
+        df = writeout_file(sys, gas, melt, sys.P_track)
         writeout_figs(sys, melt, gas, out, sys.P_track)
 
-
-if __name__ == "__main__":
-    # -------------------------------------------------------------------
-    # SYSTEM SETUP ------------------------------------------------------
-    # -------------------------------------------------------------------
-
-    # Create the parser
-    my_parser = argparse.ArgumentParser(
-        prog="dgs", description="Run EVo: a thermodynamic magma degassing model"
-    )
-
-    # Add the arguments
-    my_parser.add_argument("chem", metavar="chem.yaml", help="the magma chemistry file")
-
-    my_parser.add_argument(
-        "env", metavar="env.yaml", help="the run environment settings file"
-    )
-
-    my_parser.add_argument(
-        "--output",
-        help="use selected output options from output.yaml file",
-    )
-
-    # Parse in files
-    args = my_parser.parse_args()
-
-    f_chem = args.chem  # set chemical compositions file
-    f_env = args.env  # set environment file
-
-    if args.output:
-        f_out = args.output  # set output file as an optional input
-        main(f_chem, f_env, f_out)
-    else:
-        f_out = None
-        main(f_chem, f_env, f_out)
+        return df
