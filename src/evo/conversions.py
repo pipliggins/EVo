@@ -16,10 +16,11 @@ def K2C(T):
     return T - 273.15
 
 
-def truncate(n, decimals=0):
-    """Round a number mathematically"""
-    multiplier = 10**decimals
-    return np.floor(n * multiplier) / multiplier
+def round_down(n, dp):
+    """Round a number according to the number of decimal places"""
+    step_size = min(1, dp)
+    factor = 1 / step_size
+    return np.floor(n * factor) / factor
 
 
 # ------------------------------------------------------------------------
