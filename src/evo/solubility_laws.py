@@ -769,12 +769,12 @@ def oneill2020(T, melt):
     In: Magma Redox Chemistry.
     """
     if not bool(melt.cm_dry):
-        comp = melt.Cm()
+        comp = melt.Cm().copy()
     else:
-        comp = melt.cm_dry
+        comp = melt.cm_dry.copy()
 
     if comp["fe2o3"] > 0:
-        comp["feo"] = comp["feo"] + comp["fe2o3"] * 0.8998
+        comp["feo"] = comp["feo"] + comp["fe2o3"] * 2
         comp["fe2o3"] = 0.0
 
     comp = cnvs.mol2wt(comp)
@@ -811,6 +811,67 @@ def oneill2020(T, melt):
             - 2.06 * erf(-7.2 * FeX)
         )
     ) / 1000000  # Convert ppm -> wt fraction
+
+    return capacity
+
+
+def oneill2022(T, melt):
+    """
+    Returns the sulfate capacity of a melt.
+
+    Parameters
+    ----------
+    T : float
+        Temperature (K)
+    melt : Melt class
+        Active instance of the Melt class
+
+    Returns
+    -------
+    capacity : float
+        Sulfate (S6+) capacity of melt as a weight fraction
+
+    References
+    ----------
+    O'Neill, H.S.C., Mavrogenes, J.A (2022) The sulfate capacities of silicate melts.
+    In: GCA.
+    """
+
+    if not bool(melt.cm_dry):
+        comp = melt.Cm().copy()
+    else:
+        comp = melt.cm_dry.copy()
+
+    comp = cnvs.mol2wt(comp)
+
+    # Converts the dry wt fraction to normalized mol fraction on single cation basis.
+    comp = cnvs.single_cat(comp)
+
+    Na = comp["na2o"]
+    K = comp["k2o"]
+    Ca = comp["cao"]
+    Mg = comp["mgo"]
+    Al = comp["al2o3"]
+    Fe2 = comp["feo"]
+    Mn = comp["mno"]
+
+    capacity = (
+        np.exp(
+            -8.02
+            + (
+                21100
+                + 44000 * Na
+                + 18700 * Mg
+                + 4300 * Al
+                + 44200 * K
+                + 35600 * Ca
+                + 12600 * Mn
+                + 16500 * Fe2
+            )
+            / T
+        )
+        / 1000000
+    )  # Convert ppm -> wt fraction
 
     return capacity
 
@@ -1024,7 +1085,7 @@ def sulfate_melt(fS2, fO2, P, T, melt, run, name="nash2019"):
         Active instance of the Melt class
     run : RunDef class
         Active instance of the RunDef class
-    name : {'nash2019'}
+    name : {'nash2019', 'oneill2022'}
         The name of the solubility law to be used
 
     Returns
@@ -1035,6 +1096,20 @@ def sulfate_melt(fS2, fO2, P, T, melt, run, name="nash2019"):
 
     if name == "nash2019":
         ratio = nash2019(fO2, P, T, melt, run)
+
+        return ratio * (sulfide_melt(fS2, fO2, P, T, melt, name=run.SULFIDE_CAPACITY))
+
+    elif name == "oneill2022":
+        C6 = oneill2022(T, melt)
+
+        if run.SULFIDE_CAPACITY == "oneill2002":
+            C2 = oneill2002(fO2, P, melt)
+        elif run.SULFIDE_CAPACITY == "oneill2020":
+            C2 = oneill2020(T, melt)
+
+        K = np.exp(55921 / T - 25.07 + 0.6465 * np.log(T))
+
+        ratio = (C6 / C2) * K * fO2**2
 
         return ratio * (sulfide_melt(fS2, fO2, P, T, melt, name=run.SULFIDE_CAPACITY))
 
@@ -1288,20 +1363,26 @@ def S2_fugacity(
         The fugacity of S2 (bar)
     """
 
+    # sets the Fe2/Fe3 ratio and dry melt chemistry for the sulfide capacity
+    melt.cm_dry = melt.iron_fraction(np.log(fO2), ppa=P * 1e5)[0]
+
+    if sulfidename == "oneill2002":
+        C2 = oneill2002(fO2, P, melt)
+
+    elif sulfidename == "oneill2020":
+        C2 = oneill2020(T, melt)
+
+    # need to find the ratio of s6+/s2-, then use the amount of s2- to get mS2.
     if sulfatename == "nash2019":
-        # sets the Fe2/Fe3 ratio and dry melt chemistry for the sulfide capacity
-        melt.cm_dry = melt.iron_fraction(np.log(fO2), ppa=P * 1e5)[0]
-
-        # need to find the ratio of s6+/s2-, then use the amount of s2- to get mS2.
         ratio = nash2019(fO2, P, T, melt, run)  # s6+/s2-
-        s2_melt = s_melt * (1 / (1 + ratio))
 
-        if sulfidename == "oneill2002":
-            capacity = oneill2002(fO2, P, melt)
+    elif sulfatename == "oneill2022":
+        C6 = oneill2022(T, melt)
+        K = np.exp(55921 / T - 25.07 + 0.6465 * np.log(T))
+        ratio = (C6 / C2) * K * fO2**2
 
-        elif sulfidename == "oneill2020":
-            capacity = oneill2020(T, melt)
+    s2_melt = s_melt * (1 / (1 + ratio))
 
-        fS2 = (s2_melt / capacity) ** (1 / 0.5) * fO2
+    fS2 = (s2_melt / C2) ** (1 / 0.5) * fO2
 
-        return fS2
+    return fS2

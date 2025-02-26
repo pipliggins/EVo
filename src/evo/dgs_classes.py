@@ -88,6 +88,8 @@ class RunDef:
         Mineral buffer to cite fO2 relative to
     FO2_buffer_START : float
         System fO2 relative to `FO2_buffer`.
+    FE3_FET: float
+        Set the redox state with the Fe3/FeT ratio
     FO2_START : float
         Set the absolute fO2. Do not use in conjunction with `FO2_buffer_START`.
     FH2_START : float
@@ -157,12 +159,16 @@ class RunDef:
         self.SCSS = "liu2007"
         self.N_MODEL = "libourel2003"
 
-        # initial gas fugacities
+        # initial redox
         self.FO2_buffer_SET = False
         self.FO2_buffer = "FMQ"
         self.FO2_buffer_START = 0.0  # delta buffer value
+        self.FE3_FET_SET = False
+        self.FE3_FET_START = 0.0  # ratio
         self.FO2_SET = False
         self.FO2_START = 0.0  # bar
+
+        # initial gas fugacities
         self.FH2_SET = False
         self.FH2_START = 0.24  # bar
         self.FH2O_SET = False
@@ -440,14 +446,15 @@ class ThermoSystem:
         # returns the 9 major oxides as weight %, with feoT and volatiles held constant.
         oxides = cnvs.norm(C_s, (1 - cons))
 
-        self.Cw.update(
-            oxides
-        )  # adds the normalised oxide values to the total system mass frac dictionary
+        # add the normalised oxide values to the total system mass frac dictionary
+        self.Cw.update(oxides)
 
-        melt.cm_dry, F = melt.iron_fraction(
-            self.FO2
-        )  # this is now a duplicate of the one inside init cons, hopefully.
+        # this is now a duplicate of the one inside init cons, hopefully.
+        melt.cm_dry, F = melt.iron_fraction(self.FO2)
         melt.F.append(F)
+        melt.Fe3FeT.append(
+            melt.cm_dry["fe2o3"] * 2 / (melt.cm_dry["fe2o3"] * 2 + melt.cm_dry["feo"])
+        )
 
     def get_wto_tot(self, melt):
         """
@@ -547,8 +554,8 @@ class ThermoSystem:
 
         fo2 = np.log(O2.Y * mo2 * self.P)
 
-        # returns anhydrous silicate melt comp mol fraction, Fe2/Fe3.
-        F = melt.iron_fraction(fo2)[1]
+        # returns anhydrous silicate melt comp mol fraction, Fe2O3/FeO.
+        cm_dry, F = melt.iron_fraction(fo2)
 
         ofe = (
             cnst.m["o"]
@@ -560,6 +567,7 @@ class ThermoSystem:
         self.atomicM["o"] = self.atomicM["o_tot"] - ofe
         melt.ofe.append(ofe)
         melt.F.append(F)
+        melt.Fe3FeT.append(cm_dry["fe2o3"] * 2 / (cm_dry["fe2o3"] * 2 + cm_dry["feo"]))
 
     def mass_conservation_reset(self, melt, gas):
         """
@@ -606,7 +614,9 @@ class ThermoSystem:
             melt.s,
             melt.n,
             melt.F,
+            melt.Fe3FeT,
             melt.ofe,
+            melt.rho_store,
         ]
         gas_wts_f = ["H2O", "O2", "H2", "CO", "CO2", "CH4", "S2", "SO2", "H2S", "N2"]
 
@@ -925,6 +935,7 @@ class Melt:
         self.s = []
         self.n = []  # stores the melt n content, independent of speciation.
         self.F = []  # stores the mfe2o3/mFeO ratio at each step.
+        self.Fe3FeT = []  # stores the fe3+/fe(total) ratio
         self.ofe = []
         self.graph_current = (
             0  # number of moles of graphite in the system at current timestep
@@ -965,9 +976,37 @@ class Melt:
             sm += tmp_Cw[e]
             length += 1
 
-        # normalise to 100 and define initial system element mass
+        # if (
+        #     self.run.FE3_FET_SET is True
+        # ):  # PL: Rather than do this, maybe store the original values to allow the
+        # ratio to be calculated later? It's not quite accurate when calculating the
+        # saturation P.
+        #     # set correct fe2o3 and feo
+        #     eles.append("fe2o3")
+
+        #     # fe3_fe2 = 1 / (1 / self.run.FE3_FET_START - 1)
+        #     fe3_fe2 = self.run.FE3_FET_START / (1 - self.run.FE3_FET_START)
+        #     F = fe3_fe2 / 2
+
+        #     tmp_Cm = cnvs.wt2mol(tmp_Cw)
+        #     tmp_Cm["fe2o3"] = F * tmp_Cm["feo"] / (2 * F + 1)
+        #     tmp_Cm["feo"] = tmp_Cm["feo"] / (1 + 2 * F)
+
+        #     # X * molecular weight
+        #     x_mw = {k: v * cnst.m[k] for k, v in tmp_Cm.items()}
+
+        #     # wt% normalised
+        #     for e in eles:
+        #         tmp_Cw[e] = x_mw[e] * 100.0 / sum(x_mw.values())
+        # else:
+        #     # normalise to 100
+        #     for e in eles:
+        #         tmp_Cw[e] = tmp_Cw[e] * 100.0 / sm
         for e in eles:
             tmp_Cw[e] = tmp_Cw[e] * 100.0 / sm
+
+        # define initial system element mass
+        for e in eles:
             self.C_s[e] = tmp_Cw[e] / 100.0 * self.run.MASS  # actual oxide mass
 
         # add Fe+++ in if component has not been specified
@@ -1000,7 +1039,13 @@ class Melt:
 
         # if Fe3 and Fe2 exist, then need to determine system fO2;
         # also updates the Fe mass in system.
-        if "feo" in eles and "fe2o3" in eles and self.sys.FO2 is None:
+        if self.sys.FO2 is None and self.run.FE3_FET_SET:
+            self.sys.FO2 = np.log(
+                cnvs.generate_fo2_fe3fet(
+                    self.sys, self, self.sys.Ppa, self.run.FE3_FET_START
+                )
+            )
+        elif "feo" in eles and "fe2o3" in eles and self.sys.FO2 is None:
             self.sys.FO2 = np.log(
                 cnvs.c2fo2(self.Cm(), self.sys.T, self.sys.Ppa, self.run.FO2_MODEL)
             )
@@ -1040,7 +1085,7 @@ class Melt:
 
         mFeoT = composition["feo"]
 
-        mfe2o3 = F * mFeoT / (1 + 0.8998 * F)
+        mfe2o3 = F * mFeoT / (1 + 2 * F)
 
         mfeo = mfe2o3 / F
 
@@ -1048,7 +1093,9 @@ class Melt:
 
         composition["fe2o3"] = mfe2o3
 
-        composition = cnvs.norm(composition)
+        # PL: need to think through why you would/wouldn't normalise while holding
+        #  Fe constant...
+        composition = cnvs.norm(composition)  # , cons=["feo", "fe2o3"]
         return composition, F
 
     def Cw(self):
@@ -1385,6 +1432,11 @@ class Melt:
             if self.run.FE_SYSTEM is False:
                 # otherwise this is done in fe_save
                 self.F.append(F)
+                self.Fe3FeT.append(
+                    self.cm_dry["fe2o3"]
+                    * 2
+                    / (self.cm_dry["fe2o3"] * 2 + self.cm_dry["feo"])
+                )
 
             self.sulfide.append(
                 sl.sulfide_melt(
@@ -1417,6 +1469,11 @@ class Melt:
                 fo2 = O2.Y * gas.mO2[-1] * self.sys.P
                 self.cm_dry, F = self.iron_fraction(np.log(fo2))
                 self.F.append(F)
+                self.Fe3FeT.append(
+                    self.cm_dry["fe2o3"]
+                    * 2
+                    / (self.cm_dry["fe2o3"] * 2 + self.cm_dry["feo"])
+                )
 
             self.sulfide.append(0.0)
             self.sulfate.append(0.0)

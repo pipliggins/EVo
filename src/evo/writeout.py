@@ -38,6 +38,7 @@ def get_data(sys, gas, melt, P):
         ],
         "fo2": [np.exp(gas.fo2[i]) for i in range(len(P))],
         "F": melt.F[1:] if not sys.run.SINGLE_STEP else [melt.F[-1]],
+        "Fe3FeT": melt.Fe3FeT[1:] if not sys.run.SINGLE_STEP else [melt.Fe3FeT[-1]],
         "rho_bulk": sys.rho,
         "rho_melt": melt.rho_store,
         "Exsol_vol%": [(sys.GvF[i] * 100) for i in range(len(P))],
