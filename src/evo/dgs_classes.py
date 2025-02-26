@@ -449,9 +449,8 @@ class ThermoSystem:
         # add the normalised oxide values to the total system mass frac dictionary
         self.Cw.update(oxides)
 
-        melt.cm_dry, F = melt.iron_fraction(
-            self.FO2
-        )  # this is now a duplicate of the one inside init cons, hopefully.
+        # this is now a duplicate of the one inside init cons, hopefully.
+        melt.cm_dry, F = melt.iron_fraction(self.FO2)
         melt.F.append(F)
         melt.Fe3FeT.append(
             melt.cm_dry["fe2o3"] * 2 / (melt.cm_dry["fe2o3"] * 2 + melt.cm_dry["feo"])
@@ -1094,7 +1093,9 @@ class Melt:
 
         composition["fe2o3"] = mfe2o3
 
-        composition = cnvs.norm(composition, cons=["feo", "fe2o3"])
+        # PL: need to think through why you would/wouldn't normalise while holding
+        #  Fe constant...
+        composition = cnvs.norm(composition)  # , cons=["feo", "fe2o3"]
         return composition, F
 
     def Cw(self):
