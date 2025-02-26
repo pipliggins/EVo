@@ -21,7 +21,10 @@ def main(argv=None):
     )
 
     my_parser.add_argument(
-        "-o", "--output", help="the folder location to write the results to"
+        "-o",
+        "--output",
+        help="the folder location to write the results to",
+        default="outputs",
     )
 
     # Parse in files

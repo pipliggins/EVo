@@ -208,6 +208,6 @@ def run_evo(f_chem, f_env, f_out, folder="outputs"):
         print("Run time is ", end - start)
 
         df = writeout_file(sys, gas, melt, sys.P_track)
-        writeout_figs(sys, melt, gas, out, sys.P_track)
+        writeout_figs(df, run.results_folder, out=out)
 
         return df
