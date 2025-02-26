@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 
 import evo.conversions as cnvt
+import evo.plots as plots
 import evo.sat_pressure as sat
 
 
@@ -202,7 +203,7 @@ def writeout_file(sys, gas, melt, P, crashed=False):
     return df
 
 
-def writeout_figs(sys, melt, gas, out, P):
+def writeout_figs(df, filepath, out=None):
     """
     Selects the figures to produce at the end of a successful run.
 
@@ -211,212 +212,36 @@ def writeout_figs(sys, melt, gas, out, P):
 
     Parameters
     ----------
-    sys : ThermoSystem class
-        Active instance of the ThermoSystem class
-    melt : Melt class
-        Active instance of the Melt class
-    gas : Gas class
-        Active instance of the Gas class
+    df:
+        DataFrame containing the output data
+    filepath : Path
+        Path to the desired output folder
     out : Output class or None
         Active instance of the Output class, or None
-    P : list of float
-        List of the pressures each step was calculated at (bar)
     """
 
-    filepath = sys.run.results_folder
-    # filelist = glob.glob(str(filepath / "*.png"))
     filelist = list(filepath.glob("*.png"))
     # Removes previous files so if output specification is changed
     # there is no confusion as to up to date files.
 
     for file in filelist:
         file.unlink()
-    if (
-        out is not None
-    ):  # If an output file listing requested figures has been included:
-        if out.Plt_melt_species:
-            plot_meltspecies(melt, P, filepath)
 
-        if out.Plt_gas_species_wt:
-            plot_gasspecies_wt(gas, P, filepath)
+    plot_map = {
+        "plot_melt_species": ("melt_species.png", plots.plot_meltspecies),
+        "plot_gas_species_wt": ("speciation(wt).png", plots.plot_gasspecies_wt),
+        "plot_gas_species_mol": ("speciation(mol).png", plots.plot_gasspecies_mol),
+        "plot_gas_fraction": ("exsolved_gas.png", plots.plot_gasfraction),
+        "plot_fo2_dFMQ": ("fo2_fmq.png", plots.plot_fo2FMQ),
+    }
 
-        if out.Plt_gas_species_mol:
-            plot_gasspecies_mol(gas, P, filepath)
+    chose_plots = {
+        k: getattr(out, k) if out is not None else True for k in plot_map.keys()
+    }
 
-        if out.Plt_gas_fraction:
-            plot_gasfraction(sys, P, filepath)
-
-        if out.Plt_fo2_dFMQ:
-            plot_fo2FMQ(melt, gas, P, filepath)
-
-        if out.Plt_gas_fraction is not None:
-            pass
-            # plot
-
-    else:  # else plot every option
-        plot_meltspecies(melt, P, filepath)
-        plot_gasspecies_wt(gas, P, filepath)
-        plot_gasspecies_mol(gas, P, filepath)
-        plot_gasfraction(sys, P, filepath)
-        plot_fo2FMQ(melt, gas, P, filepath)
-
-
-# fO2 and dFMQ
-def plot_fo2FMQ(melt, gas, P, path):
-    """Plots the fO2 relative to FMQ against pressure"""
-    plt.plot(P, melt.fmq)
-    plt.xscale("log")
-    plt.xlabel("Pressure (bars)")
-    plt.ylabel(r"$\Delta$ FMQ")
-    plt.savefig(path / "FMQ.png")
-    plt.close()
-
-    fo2 = []
-    for x in gas.fo2:
-        fo2.append(np.log10(np.exp(x)))
-
-    plt.plot(P, fo2)
-    # plt.xscale('log')
-    plt.xlabel("Pressure (bars)")
-    plt.ylabel("log(10) fO2")
-    plt.savefig(path / "fO2.png")
-    plt.close()
-
-
-# Gas speciation mol
-def plot_gasspecies_mol(gas, P, path):
-    """Plots the gas speciation (mole fraction) vs pressure"""
-
-    plt.plot(gas.mH2O[1:], P, c="darkblue")
-    plt.plot(gas.mH2[1:], P, c="steelblue")
-    plt.plot(gas.mO2[1:], P, c="firebrick")
-    plt.annotate("H2O", xy=[gas.mH2O[-1], P[-1]], color="darkblue")
-    plt.annotate("H2", xy=[gas.mH2[-1], P[-1]], color="steelblue")
-    plt.annotate("O2", xy=[gas.mO2[-1], P[-1]], color="firebrick")
-    if (
-        gas.sys.run.GAS_SYS == "COH"
-        or gas.sys.run.GAS_SYS == "COHS"
-        or gas.sys.run.GAS_SYS == "COHSN"
-    ):
-        plt.plot(gas.mCO2[1:], P, c="saddlebrown")
-        plt.plot(gas.mCO[1:], P, c="darkgreen")
-        plt.plot(gas.mCH4[1:], P, c="forestgreen")
-        plt.annotate("CO2", xy=[gas.mCO2[-1], P[-1]], color="saddlebrown")
-        plt.annotate("CO", xy=[gas.mCO[-1], P[-1]], color="darkgreen")
-        plt.annotate("CH4", xy=[gas.mCH4[-1], P[-1]], color="forestgreen")
-    if (
-        gas.sys.run.GAS_SYS == "SOH"
-        or gas.sys.run.GAS_SYS == "COHS"
-        or gas.sys.run.GAS_SYS == "COHSN"
-    ):
-        plt.plot(gas.mSO2[1:], P, c="maroon")
-        plt.plot(gas.mS2[1:], P, c="goldenrod")
-        plt.plot(gas.mH2S[1:], P, c="pink")
-        plt.annotate("SO2", xy=[gas.mSO2[-1], P[-1]], color="maroon")
-        plt.annotate("S2", xy=[gas.mS2[-1], P[-1]], color="goldenrod")
-        plt.annotate("H2S", xy=[gas.mH2S[-1], P[-1]], color="pink")
-    if gas.sys.run.GAS_SYS == "COHSN":
-        plt.plot(gas.mN2[1:], P, c="grey")
-        plt.annotate("N2", xy=[gas.mN2[-1], P[-1]], color="grey")
-    plt.xscale("log")
-    plt.gca().invert_yaxis()
-    plt.xlabel(f"Speciation in a {gas.sys.run.GAS_SYS} gas (mol frac)")
-    plt.ylabel("Pressure (bar)")
-    plt.savefig(path / "speciation(mol).png")
-    plt.close()
-
-
-# Gas speciation wt%
-
-
-def plot_gasspecies_wt(gas, P, path):
-    """Plots the gas speciation (weight fraction) vs pressure"""
-
-    plt.plot(gas.Wt["H2O"], P, c="darkblue")
-    plt.plot(gas.Wt["H2"], P, c="steelblue")
-    plt.plot(gas.Wt["O2"], P, c="firebrick")
-    plt.annotate("H2O", xy=[gas.Wt["H2O"][-1], P[-1]], color="darkblue")
-    plt.annotate("H2", xy=[gas.Wt["H2"][-1], P[-1]], color="steelblue")
-    plt.annotate("O2", xy=[gas.Wt["O2"][-1], P[-1]], color="firebrick")
-    if (
-        gas.sys.run.GAS_SYS == "COH"
-        or gas.sys.run.GAS_SYS == "COHS"
-        or gas.sys.run.GAS_SYS == "COHSN"
-    ):
-        plt.plot(gas.Wt["CO2"], P, c="saddlebrown")
-        plt.plot(gas.Wt["CO"], P, c="darkgreen")
-        # plt.plot(gas.Wt['CH4'], P, c='mediumseagreen')
-        plt.annotate("CO2", xy=[gas.Wt["CO2"][-1], P[-1]], color="saddlebrown")
-        plt.annotate("CO", xy=[gas.Wt["CO"][-1], P[-1]], color="darkgreen")
-        # plt.annotate('CH4', xy=[gas.mCH4[-1], 0.9], color='mediumseagreen')
-    if (
-        gas.sys.run.GAS_SYS == "SOH"
-        or gas.sys.run.GAS_SYS == "COHS"
-        or gas.sys.run.GAS_SYS == "COHSN"
-    ):
-        plt.plot(gas.Wt["SO2"], P, c="maroon")
-        plt.plot(gas.Wt["S2"], P, c="goldenrod")
-        plt.plot(gas.Wt["H2S"], P, c="pink")
-        plt.annotate("SO2", xy=[gas.Wt["SO2"][-1], P[-1]], color="maroon")
-        plt.annotate("S2", xy=[gas.Wt["S2"][-1], P[-1]], color="goldenrod")
-        plt.annotate("H2S", xy=[gas.Wt["H2S"][-1], P[-1]], color="pink")
-    if gas.sys.run.GAS_SYS == "COHSN":
-        plt.plot(gas.Wt["N2"], P, c="grey")
-        plt.annotate("N2", xy=[gas.Wt["N2"][-1], P[-1]], color="grey")
-    plt.xscale("log")
-    plt.gca().invert_yaxis()
-    plt.xlabel(f"Gas phase speciation of a {gas.sys.run.GAS_SYS} system (wt %)")
-    plt.ylabel("Pressure (bar)")
-    plt.savefig(path / "speciation(wt).png")
-    plt.close()
-
-
-# Melt volatile wt%
-
-
-def plot_meltspecies(melt, P, path):
-    """Plots the volatile content of the melt vs pressure"""
-
-    plt.plot(melt.h2o, P, c="darkblue")
-    plt.plot(melt.h2, P, c="steelblue")
-    plt.annotate("H2O", xy=[melt.h2o[-1], P[-1]], color="darkblue")
-    plt.annotate("H2", xy=[melt.h2[-1], P[-1]], color="steelblue")
-    if (
-        melt.sys.run.GAS_SYS == "COH"
-        or melt.sys.run.GAS_SYS == "COHS"
-        or melt.sys.run.GAS_SYS == "COHSN"
-    ):
-        plt.plot(melt.co2, P, c="saddlebrown")
-        plt.annotate("CO2", xy=[melt.co2[-1], P[-1]], color="saddlebrown")
-    if (
-        melt.sys.run.GAS_SYS == "SOH"
-        or melt.sys.run.GAS_SYS == "COHS"
-        or melt.sys.run.GAS_SYS == "COHSN"
-    ):
-        plt.plot(melt.s, P, c="maroon")
-        plt.annotate("S", xy=[melt.s[-1], P[-1]], color="maroon")
-    if melt.sys.run.GAS_SYS == "COHSN":
-        plt.plot(melt.n, P, c="grey")
-        plt.annotate("N", xy=[melt.n[-1], P[-1]], color="grey")
-    plt.xscale("log")
-    plt.gca().invert_yaxis()
-    plt.xlabel("Melt volatile content (wt%)")
-    plt.ylabel("Pressure (bar)")
-    plt.savefig(path / "meltspecies.png")
-    plt.close()
-
-
-# Exsolved gas mass and volume
-
-
-def plot_gasfraction(sys, P, path):
-    """Plots the gas volume fraction vs pressure"""
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
-    ax1.plot(cnvt.frac2perc(sys.WgT[1:]), P)
-    ax1.invert_yaxis()
-    ax1.set_xlabel("Exsolved gas wt%")
-    ax1.set_ylabel("Pressure (bar)")
-    ax2.plot(cnvt.frac2perc(sys.GvF), P)
-    ax2.set_xlabel("Exsolved gas volume %")
-    plt.savefig(path / "exsolved_gas.png")
+    for key, (filename, plot_func) in plot_map.items():
+        if not chose_plots[key]:
+            continue
+        fig = plot_func(df)  # Call the plotting function
+        fig.savefig(filepath / filename)
+        plt.close(fig)  # Ensure the figure is closed to free memory
