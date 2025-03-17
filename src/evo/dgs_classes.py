@@ -2064,11 +2064,11 @@ class Output:
 
     def __init__(self):
         # Graphical outputs
-        self.Plt_melt_species = True
-        self.Plt_gas_species_wt = True
-        self.Plt_gas_species_mol = True
-        self.Plt_gas_fraction = True
-        self.Plt_fo2_dFMQ = False
+        self.plot_melt_species = True
+        self.plot_gas_species_wt = True
+        self.plot_gas_species_mol = True
+        self.plot_gas_fraction = True
+        self.plot_fo2_dFMQ = False
 
     def set_outputs(self, params):
         """
@@ -2087,7 +2087,7 @@ class Output:
                 setattr(self, par, val)
 
             else:
-                sys.exit("Warning: %s not a valid output option" % par)
+                raise ValueError("Invalid output choice: %s" % par)
 
     # helper methods
     def zTest_Params(self, par):
