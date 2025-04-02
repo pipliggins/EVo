@@ -241,6 +241,8 @@ def sat_pressure(run, sys, gas, melt, mols):
             fo2 = np.exp(
                 cnvs.generate_fo2(sys, sys.run.FO2_buffer_START, sys.run.FO2_buffer, P)
             )
+        elif run.FE3_FET_SET:
+            fo2 = cnvs.generate_fo2_fe3fet(sys, melt, P * 1e5, run.FE3_FET_START)
 
         else:
             fo2 = cnvs.c2fo2(melt.Cm(), sys.T, P * 1e5, sys.run.FO2_MODEL)
@@ -351,6 +353,11 @@ def sat_pressure(run, sys, gas, melt, mols):
     if run.FO2_buffer_SET:
         sys.FO2 = cnvs.generate_fo2(
             sys, sys.run.FO2_buffer_START, sys.run.FO2_buffer, sys.P
+        )
+
+    elif run.FE3_FET_SET:
+        sys.FO2 = np.log(
+            cnvs.generate_fo2_fe3fet(sys, melt, sys.Ppa, run.FE3_FET_START)
         )
 
     else:
@@ -1067,9 +1074,9 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         or sys.run.GAS_SYS == "COHSN"
     ):
         fo2 = o2y * mO2 * P
-        melt.cm_dry, F = melt.iron_fraction(
-            np.log(fo2), ppa=P * 1e5
-        )  # Set the Fe2/Fe3 ratio and dry melt chemistry for the sulfide capacity
+        # Set the Fe2/Fe3 ratio and dry melt chemistry for the sulfide capacity
+        cm_dry, F = melt.iron_fraction(np.log(fo2), ppa=P * 1e5)
+        melt.cm_dry.update(cm_dry)
 
         # use mS2 to work back and find amount of S2- in melt
         s2_melt = (
@@ -1134,6 +1141,9 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         fo2_buffer: cnvs.generate_fo2_buffer(sys, (o2y * mO2 * P), P),
         "fo2": fo2,
         "F": F,
+        "Fe3FeT": melt.cm_dry["fe2o3"]
+        * 2
+        / (melt.cm_dry["fe2o3"] * 2 + melt.cm_dry["feo"]),
         "rho_bulk": rho_bulk,
         "rho_melt": rho_melt,
         "Exsol_vol%": GvF * 100,
