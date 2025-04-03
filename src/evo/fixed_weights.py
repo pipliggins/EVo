@@ -926,10 +926,12 @@ def sat_pressure(run, sys, gas, melt, mols):
             )
         elif run.GAS_SYS == "COHSN":
             try:
-                melt_h2o, melt_co2, melt_s, melt_n = fsolve(
-                    fixed_weights_cohsn, [guess_h2o, guess_co2, guess_s, guess_n]
-                )
-            except Exception:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("ignore")
+                    melt_h2o, melt_co2, melt_s, melt_n = fsolve(
+                        fixed_weights_cohsn, [guess_h2o, guess_co2, guess_s, guess_n]
+                    )
+            except RuntimeWarning:
                 print("Convergence struggling; trying Levenberg-Marquardt method")
                 sol = root(
                     fixed_weights_cohsn,
