@@ -74,7 +74,7 @@ from evo.writeout import writeout_figs, writeout_file
 # ------------------------------------------------------------------------
 
 
-def run_evo(f_chem, f_env, f_out, folder="outputs"):
+def run_evo(f_chem, f_env, f_out=None, folder="outputs"):
     """Main function for EVo.
 
     Call to run the model.

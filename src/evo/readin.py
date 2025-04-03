@@ -47,8 +47,7 @@ def readin_env(f):
     x = yaml.full_load(f)
 
     # setup run definitions
-    run = RunDef()
-    run.param_set(x)  # calls the param_set function from the RunDef() class
+    run = RunDef(**x)
 
     # use run definitions to initialise system state
     sys = ThermoSystem(run)
@@ -232,7 +231,7 @@ def run_melt_match(run, melt):
 
 
 #  -------------------------------------------------------------------------
-def readin(f_chem, f_env, *args):
+def readin(f_chem, f_env, f_out=None):
     """
     Opens the input files and sets up major classes with the input data.
 
@@ -245,7 +244,7 @@ def readin(f_chem, f_env, *args):
         Path to the chemistry input file
     f_env : string
         Path to the environment input file
-    *args : string
+    f_out : string or None
         optional path to the output options input file
 
     Returns
@@ -291,12 +290,11 @@ def readin(f_chem, f_env, *args):
         msgs.vol_setup_saturation(run, sys)
 
     # outputs
-    for arg in args:
-        if arg:
-            with open(arg) as f:
-                out = readin_output(f)
-        else:
-            out = None
+    if f_out:
+        with open(f_out) as f:
+            out = readin_output(f)
+    else:
+        out = Output()
 
     return run, sys, melt, out
 
