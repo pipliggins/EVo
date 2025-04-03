@@ -6,8 +6,11 @@ import inspect
 import itertools
 import re
 import sys
+from pathlib import PosixPath
+from typing import Literal, Optional
 
 import numpy as np
+from pydantic import BaseModel, field_validator, model_validator
 
 import evo.constants as cnst
 import evo.conversions as cnvs
@@ -18,7 +21,7 @@ import evo.solubility_laws as sl
 import evo.solvgas as sg
 
 
-class RunDef:
+class RunDef(BaseModel):
     """
     Stores the parameters of the degassing run
 
@@ -113,162 +116,107 @@ class RunDef:
         `GRAPHITE_SATURATED` is True
     """
 
-    # keep track of number of possible parameters (mainly for output purposes)
-    n_par = 40
+    COMPOSITION: Literal["basalt", "phonolite", "rhyolite"] = "basalt"
+    RUN_TYPE: Literal["closed", "open"] = "closed"
+    SINGLE_STEP: bool = False
+    FIND_SATURATION: bool = False
+    GAS_SYS: str = "OH"
+    FE_SYSTEM: bool = True
+    OCS: bool = False
+    S_SAT_WARN: bool = True
 
-    # setup DEFAULT run parameters
-    # will be overwritten by anything set in the environment file
-    def __init__(self):
-        # run type
-        self.COMPOSITION = "basalt"  # Magma composition
-        self.RUN_TYPE = (
-            "closed"  # Select the run type from closed system, open system or gas only.
-        )
-        self.SINGLE_STEP = False  # Specifies single pressure or full decompression
-        self.FIND_SATURATION = (
-            False  # Search for the saturation point; ignores P_Start and WgT
-        )
-        self.GAS_SYS = "OH"  # Sets the gas phase system user wants to look at
-        self.FE_SYSTEM = True  # Set to true to run iron equilibration steps
-        self.OCS = False
-        self.S_SAT_WARN = True  # Turns the check on sulphur saturation on/off
+    # Physical parameters
+    T_START: float = 1473.15
+    P_START: float = 3000.0
+    P_STOP: float = 1.0
+    DP_MIN: float = 1.0
+    DP_MAX: float = 100.0
+    MASS: float = 100.0
+    WgT: float = 0.001
+    LOSS_FRAC: float = 0.99
 
-        # model parameters
-        self.T_START = 1473.15  # K
-        self.P_START = 3000  # bar
-        self.P_STOP = 1.0  # bar
-        self.DP_MIN = 1.0  # Minimum pressure step
-        self.DP_MAX = 100.0  # Maximum pressure step
-        self.MASS = 100.0  # System mass, g
-        self.WgT = 0.001  # Initial total gas FRACTION (not percent)
-        self.LOSS_FRAC = 0.99
+    # Model options
+    DENSITY_MODEL: Literal["spera2000"] = "spera2000"
+    FO2_MODEL: Literal["kc1991", "r2013"] = "kc1991"
+    FMQ_MODEL: Literal["frost1991"] = "frost1991"
+    H2O_MODEL: Literal["burguisser2015"] = "burguisser2015"
+    H2_MODEL: Literal["gaillard2003", "burguisser2015"] = "gaillard2003"
+    C_MODEL: Literal["burguisser2015", "eguchi2018"] = "burguisser2015"
+    CO_MODEL: Optional[Literal["armstrong2015"]] = None
+    CH4_MODEL: Optional[Literal["ardia2013"]] = None
+    SULFIDE_CAPACITY: Literal["oneill2020", "oneill2002"] = "oneill2020"
+    SULFATE_CAPACITY: Literal["nash2019"] = "nash2019"
+    SCSS: Literal["liu2007"] = "liu2007"
+    N_MODEL: Literal["libourel2003"] = "libourel2003"
 
-        # Select physical property and chemical solubility models
-        self.DENSITY_MODEL = "spera2000"
-        self.FO2_MODEL = "kc1991"
-        self.FMQ_MODEL = "frost1991"
-        self.H2O_MODEL = "burguisser2015"
-        self.H2_MODEL = "gaillard2003"
-        self.C_MODEL = "burguisser2015"
-        self.CO_MODEL = "None"
-        self.CH4_MODEL = "None"
-        self.SULFIDE_CAPACITY = "oneill2020"
-        self.SULFATE_CAPACITY = "nash2019"
-        self.SCSS = "liu2007"
-        self.N_MODEL = "libourel2003"
+    # fO2 and fugacity controls
+    FO2_buffer_SET: bool = False
+    FO2_buffer: Literal["FMQ", "IW", "NNO"] = "FMQ"
+    FO2_buffer_START: float = 0.0
+    FO2_SET: bool = False
+    FO2_START: float = 0.0
+    FH2_SET: bool = False
+    FH2_START: float = 0.24
+    FH2O_SET: bool = False
+    FH2O_START: float = 1000.0
+    FCO2_SET: bool = False
+    FCO2_START: float = 0.01
 
-        # initial gas fugacities
-        self.FO2_buffer_SET = False
-        self.FO2_buffer = "FMQ"
-        self.FO2_buffer_START = 0.0  # delta buffer value
-        self.FO2_SET = False
-        self.FO2_START = 0.0  # bar
-        self.FH2_SET = False
-        self.FH2_START = 0.24  # bar
-        self.FH2O_SET = False
-        self.FH2O_START = 1000.0  # bar
-        self.FCO2_SET = False
-        self.FCO2_START = 0.01
+    # Atomic masses - ppm
+    ATOMIC_MASS_SET: bool = False
+    ATOMIC_H: float = 550.0
+    ATOMIC_C: float = 200.0
+    ATOMIC_S: float = 4000.0
+    ATOMIC_N: float = 10.0
 
-        # set to run using total atomic mass fractions - ppm
-        self.ATOMIC_MASS_SET = False
-        self.ATOMIC_H = 550.0
-        self.ATOMIC_C = 200.0
-        self.ATOMIC_S = 4000.0
-        self.ATOMIC_N = 10.0
+    # Initial melt volatile concentrations
+    WTH2O_SET: bool = False
+    WTH2O_START: float = 0.03
+    WTCO2_SET: bool = False
+    WTCO2_START: float = 0.01
+    SULFUR_SET: bool = False
+    SULFUR_START: float = 0.001
+    NITROGEN_SET: bool = False
+    NITROGEN_START: float = 0.01
+    GRAPHITE_SATURATED: bool = False
+    GRAPHITE_START: float = 0.0
 
-        # initial wt frac volatile in magma (at given T and P, not total)
-        self.WTH2O_SET = False
-        self.WTH2O_START = 0.03  # initial melt FRACTION
-        self.WTCO2_SET = False
-        self.WTCO2_START = 0.01  # initial melt FRACTION
-        self.SULFUR_SET = False
-        self.SULFUR_START = 0.001  # initial melt FRACTION
-        self.NITROGEN_SET = False
-        self.NITROGEN_START = 0.01  # initial melt FRACTION
-        self.GRAPHITE_SATURATED = False
-        self.GRAPHITE_START = 0.0  # initial melt graphite content
+    # Optional output parameter
+    results_folder: Optional[PosixPath] = None
 
-        self.results_folder = None
-
-    def param_set(self, params):
-        """
-        Sets class up with parameters from the environment file.
-
-        Checks for invalid strings and values from the input file.
-
-        Parameters
-        ----------
-        params : dict
-            dictionary of attribute:value pairs read in from yaml file.
-        """
-
-        # expect dictionary of key:value pairs
-        # force type based on what's already been set
-        for par, val in params.items():
-            if self.zTest_Params(par):
-                setattr(self, par, val)
-
-            else:
-                sys.exit("Warning: %s not a valid calculation parameter" % par)
-
-        # Check for valid parameters
-
-        if self.OCS is True:
-            exit("Error: OCS functionality has not been released yet. Sorry!")
-
-        if (
-            self.COMPOSITION.lower() != "basalt"
-            and self.COMPOSITION.lower() != "phonolite"
-            and self.COMPOSITION.lower() != "rhyolite"
-        ):
-            exit(
-                f"Error: The composition '{self.COMPOSITION}' is invalid. "
-                "Please enter 'basalt', 'phonolite', or 'rhyolite'."
-            )
-        else:
-            self.COMPOSITION = self.COMPOSITION.lower()
-
-        if self.RUN_TYPE.lower() == "closed" or self.RUN_TYPE.lower() == "open":
-            self.RUN_TYPE = self.RUN_TYPE.lower()
-        else:
-            exit(
-                f"RUN_TYPE '{self.RUN_TYPE}'' is not recognised. "
-                "Please select either 'closed' or 'open'; "
-                "gas-only is not available in this release."
+    @model_validator(mode="after")
+    def validate_config(self) -> "RunDef":
+        if self.OCS:
+            raise ValueError(
+                "Error: OCS functionality has not been released yet. Sorry!"
             )
 
         if self.MASS <= 0:
             raise ValueError("The system has no mass value")
 
-        if (
-            self.WgT <= 0
-            and self.FIND_SATURATION is False
-            and self.ATOMIC_MASS_SET is False
-        ):
+        if self.WgT <= 0 and not self.FIND_SATURATION and not self.ATOMIC_MASS_SET:
             raise ValueError(
                 "A gas weight fraction of greater than 0 must be entered "
                 "if the saturation pressure is not being calculated."
             )
 
-    def zTest_Params(
-        self, par
-    ):  # z is a fudge to put at end of print list, so l stops the methods printing
-        """Checks `par` is a valid attribute of the RunDef class"""
-        for item in inspect.getmembers(self):
-            if item[0] == par:
-                return True
-        return 0
+        return self
+
+    @field_validator("GAS_SYS")
+    @classmethod
+    def validate_gas_sys(cls, v: str) -> str:
+        ALLOWED_VARIANTS = ["OH", "COH", "SOH", "COHS", "COHSN"]
+        # Normalize: uppercase, sort letters
+        normalized = "".join(sorted(v.upper()))
+        for allowed in ALLOWED_VARIANTS:
+            if normalized == "".join(sorted(allowed)):
+                return allowed  # Return canonical form (e.g. "COHS")
+        raise ValueError(
+            f"Invalid GAS_SYS: {v}. Must be a permutation of one of {ALLOWED_VARIANTS}"
+        )
 
     def print_conditions(self):
-        """Prints the run conditions to the terminal after setup with file."""
-        length = 0
-        for item in inspect.getmembers(self):
-            if length < self.n_par:
-                print(item[0], ":", item[1])
-                length += 1
-            else:
-                break
+        print("".join(f"{k} = {v}\n" for k, v in self.model_dump().items()))
 
 
 #  -------------------------------------------------------------------------
@@ -2045,18 +1993,18 @@ class Output:
 
     Attributes
     ----------
-    Plt_melt_species : bool
+    plot_melt_species : bool
         If True, the melt volatile content will be plotted against
         pressure at the end of the run.
-    Plt_gas_species_wt : bool
+    plot_gas_species_wt : bool
         If True, the composition of the gas phase as weight fractions
         will be plotted against pressure at the end of the run.
-    Plt_gas_species_mol : bool
+    plot_gas_species_mol : bool
         If True, the composition of the gas phase as mole fractions
         will be plotted against pressure at the end of the run.
-    Plt_gas_fraction : bool
+    plot_gas_fraction : bool
         If True, the gas volume fraction will be plotted against pressure
-    Plt_fo2_dFMQ : bool
+    plot_fo2_dFMQ : bool
         If True, fO2 relative to FMQ will be plotted against pressure
     """
 
