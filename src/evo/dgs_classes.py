@@ -5,7 +5,6 @@ import importlib.resources
 import inspect
 import itertools
 import re
-import sys
 from pathlib import PosixPath
 from typing import Literal, Optional
 
@@ -543,6 +542,7 @@ class ThermoSystem:
         ]
         melt_lsts = [
             melt.fmq,
+            melt.rho_store,
             melt.h2o,
             melt.h2,
             melt.co2,
