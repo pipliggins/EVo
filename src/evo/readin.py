@@ -5,6 +5,7 @@
 # ------------------------------------------------------------------------
 
 import numpy as np
+import pandas as pd
 import yaml
 from numpy import exp, log10
 from numpy import log as ln
@@ -23,7 +24,7 @@ from evo.dgs_classes import Gas, Melt, Molecule, Output, RunDef, ThermoSystem
 # ------------------------------------------------------------------------
 
 
-def readin_env(f):
+def readin_env(df: pd.Series):
     """
     Instantiates the RunDef and ThermoSystem classes.
 
@@ -42,12 +43,8 @@ def readin_env(f):
     sys : ThermoSystem class
         The instantiated ThermoSystem class
     """
-
-    # creates a dictionary of the environment parameters from env.yaml
-    x = yaml.full_load(f)
-
     # setup run definitions
-    run = RunDef(**x)
+    run = RunDef(**df.to_dict())
 
     # use run definitions to initialise system state
     sys = ThermoSystem(run)
@@ -90,7 +87,7 @@ def readin_env(f):
 
 
 #  -------------------------------------------------------------------------
-def readin_chem(f, run, sys):
+def readin_chem(df, run, sys):
     """
     Instantiates the Melt class, reading in the chemistry file.
 
@@ -101,8 +98,8 @@ def readin_chem(f, run, sys):
 
     Parameters
     ----------
-    f : file object
-        The open chemistry file
+    df : pd.Series
+        The chemistry data
     run : RunDef class
         Active instance of the RunDef class
     sys : ThermoSystem class
@@ -113,8 +110,6 @@ def readin_chem(f, run, sys):
     melt : Melt class
         The instantiated Melt class
     """
-
-    data = yaml.full_load(f)
 
     ele_names = []
     chems = []
@@ -136,7 +131,7 @@ def readin_chem(f, run, sys):
         "cr2o3",
     ]
 
-    for chem, frac in data.items():
+    for chem, frac in df.items():
         if chem.lower() in allowed_names:
             ele_names.append(chem.lower())
             chems.append(frac)
@@ -153,7 +148,7 @@ def readin_chem(f, run, sys):
         elif run.FH2_SET and (run.FH2O_SET or run.WTH2O_SET):
             pass
         else:
-            exit("Error: Only FeO given without setting dgs_FO2 = True.")
+            raise RuntimeError("Only FeO given without setting dgs_FO2 = True.")
 
     elif "fe2o3" in ele_names and "feo" not in ele_names and run.FO2_SET is not True:
         if run.GAS_SYS == "OH" and (run.FH2_SET):
@@ -161,13 +156,13 @@ def readin_chem(f, run, sys):
         elif run.FH2_SET and (run.FH2O_SET or run.WTH2O_SET):
             pass
         else:
-            exit("Error: Only Fe2O3 given without setting dgs_FO2 = True.")
+            raise RuntimeError("Only Fe2O3 given without setting dgs_FO2 = True.")
 
     elif "feo" not in ele_names and "fe2o3" not in ele_names:
-        exit("Error: No iron in system")
+        raise RuntimeError("No iron in system")
 
     elif run.FO2_SET is True and "feo" in ele_names and "fe2o3" in ele_names:
-        exit("Error: fO2 and iron proportions specified, only give one.")
+        raise RuntimeError("fO2 and iron proportions specified, only give one.")
 
     # populate melt object
     melt = Melt(run, sys)
@@ -231,7 +226,7 @@ def run_melt_match(run, melt):
 
 
 #  -------------------------------------------------------------------------
-def readin(f_chem, f_env, f_out=None):
+def readin(df_chem: pd.DataFrame, df_env: pd.DataFrame, f_out=None):
     """
     Opens the input files and sets up major classes with the input data.
 
@@ -240,10 +235,10 @@ def readin(f_chem, f_env, f_out=None):
 
     Parameters
     ----------
-    f_chem : string
-        Path to the chemistry input file
-    f_env : string
-        Path to the environment input file
+    f_chem : pd.Series
+        Chemistry input file
+    f_env : pd.Series
+        Environment input file
     f_out : string or None
         optional path to the output options input file
 
@@ -259,9 +254,7 @@ def readin(f_chem, f_env, f_out=None):
         The active instance of the Output class
     """
 
-    # environment
-    with open(f_env) as f:
-        run, sys = readin_env(f)
+    run, sys = readin_env(df_env)
 
     # check stepsize requirements
     if run.DP_MIN > run.DP_MAX:
@@ -278,8 +271,7 @@ def readin(f_chem, f_env, f_out=None):
         )
 
     # chemistry
-    with open(f_chem) as f:
-        melt = readin_chem(f, run, sys)
+    melt = readin_chem(df_chem, run, sys)
 
     # check the melt SiO2 content matches the run composition definition
     run_melt_match(run, melt)

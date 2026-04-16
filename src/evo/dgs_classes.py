@@ -9,7 +9,7 @@ from pathlib import PosixPath
 from typing import Literal, Optional
 
 import numpy as np
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 import evo.constants as cnst
 import evo.conversions as cnvs
@@ -115,6 +115,8 @@ class RunDef(BaseModel):
         `GRAPHITE_SATURATED` is True
     """
 
+    model_config = ConfigDict(extra="forbid")
+
     COMPOSITION: Literal["basalt", "phonolite", "rhyolite"] = "basalt"
     RUN_TYPE: Literal["closed", "open"] = "closed"
     SINGLE_STEP: bool = False
@@ -141,8 +143,8 @@ class RunDef(BaseModel):
     H2O_MODEL: Literal["burguisser2015"] = "burguisser2015"
     H2_MODEL: Literal["gaillard2003", "burguisser2015"] = "gaillard2003"
     C_MODEL: Literal["burguisser2015", "eguchi2018"] = "burguisser2015"
-    CO_MODEL: Optional[Literal["armstrong2015"]] = None
-    CH4_MODEL: Optional[Literal["ardia2013"]] = None
+    CO_MODEL: Literal["armstrong2015", "None"] = "None"
+    CH4_MODEL: Literal["ardia2013", "None"] = "None"
     SULFIDE_CAPACITY: Literal["oneill2020", "oneill2002"] = "oneill2020"
     SULFATE_CAPACITY: Literal["nash2019"] = "nash2019"
     SCSS: Literal["liu2007"] = "liu2007"

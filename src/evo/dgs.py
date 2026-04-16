@@ -61,6 +61,8 @@ import time
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
+import yaml
 
 import evo.conversions as cnvs
 import evo.solver as solver
@@ -81,10 +83,10 @@ def run_evo(f_chem, f_env, f_out=None, folder="outputs"):
 
     Parameters
     ----------
-    f_chem : str
-        Path to the chemistry input file
-    f_env : str
-        Path to the environment input file
+    f_chem : str | pd.Series
+        Path to the chemistry input file, or chemistry series
+    f_env : str | pd.Series
+        Path to the environment input file. or env series
     f_out : str or NoneType
         Path to the file describing the required outputs, None if not used
     folder : str
@@ -93,12 +95,34 @@ def run_evo(f_chem, f_env, f_out=None, folder="outputs"):
     start = time.time()
 
     print("Reading in from:")
-    print("Chemistry file:", f_chem)
-    print("Environment file:", f_env)
+    if isinstance(f_chem, str):
+        print("Chemistry file:", f_chem)
+        with open(f_chem) as f_c:
+            df_chem = pd.Series(yaml.full_load(f_c))
+    elif isinstance(f_chem, pd.Series):
+        df_chem = f_chem
+    else:
+        raise RuntimeError(
+            f"Unrecognised input type for f_chem: {type(f_chem)}.\
+            \nMust be string (filepath) or pandas Series."
+        )
+
+    if isinstance(f_env, str):
+        print("Environment file:", f_env)
+        with open(f_env) as f_e:
+            df_env = pd.Series(yaml.full_load(f_e))
+    elif isinstance(f_env, pd.Series):
+        df_env = f_env
+    else:
+        raise RuntimeError(
+            f"Unrecognised input type for f_env: {type(f_env)}.\
+            \nMust be string (filepath) or pandas Series."
+        )
+
     print("Output file:", f_out, "\n")
 
     # Instantiate the run, thermosystem, melt and output objects
-    run, sys, melt, out = readin(f_chem, f_env, f_out)
+    run, sys, melt, out = readin(df_chem, df_env, f_out)
     run.results_folder = Path(folder)
 
     print("Set parameters:")
