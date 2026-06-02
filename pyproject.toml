@@ -34,6 +34,7 @@ dependencies = ["numpy>=1.21.0",
 [project.optional-dependencies]
 dev = ["ruff", "pre-commit"]
 test = ["pytest"]
+docs = ["sphinx==5.3.0", "sphinx_rtd_theme"]
 
 [project.urls]
 Home = "https://github.com/pipliggins/EVo"
