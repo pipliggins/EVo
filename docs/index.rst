@@ -8,7 +8,7 @@ The current implementation has been developed in Python 3 and tested on Windows,
 Installation/Usage:
 *******************
 
-EVo can be used through local installation, either through a CLI or a webapp.
+EVo can be used through local installation, either through a CLI or as a library.
 
 To install locally, EVo must be downloaded from GitHub using
 ::
@@ -19,12 +19,12 @@ into the project directory where you wish to use EVo. EVo must then be locally p
 ::
 
    cd EVO
-   python -m pip install ".[streamlit]"
+   python -m pip install .
 
 From this point, EVo can either be imported into your python scripts as a regular module using
 ::
 
-   install evo
+   import evo
 
 and run using
 ::
@@ -36,13 +36,6 @@ Or EVo can be run directly from the terminal from inside the `evo` directory:
 
    cd EVO/evo
    python dgs.py input/chem.yaml input/env.yaml --output input/output.yaml
-
-Alternatively you can interact with EVo using the webapp interface, by running:
-::
-
-   cd EVO/webapp
-   streamlit run streamlit-app.py
-
 
 .. toctree::
    :maxdepth: 2
