@@ -37,7 +37,8 @@ test = ["pytest"]
 docs = ["sphinx==5.3.0", "sphinx_rtd_theme"]
 
 [project.urls]
-Home = "https://github.com/pipliggins/EVo"
+homepage = "https://evo-outgas.readthedocs.io"
+github = "https://github.com/pipliggins/EVo"
 
 [tool.black]
 line-length = 88
