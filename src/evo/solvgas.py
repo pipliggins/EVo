@@ -72,6 +72,7 @@ def find_Y(P, T, species_list):
 
         elif species == "CO2":
             # Holland and Powell 1991
+            # eq 6, 8, Table 1
 
             P0 = 5.00  # kbar
             R = cnst.R / 1000  # kJ/mol.K

@@ -702,6 +702,7 @@ def nash2019(fO2, P, T, melt, run):
     Nash, W.M., Smythe, D.J., and Wood, B.J., (2019) Compositional and
     temperature effects on sulfur speciation and solubility in silicate
     melts. EPSL.
+    Eq 11
     """
     F = 2 * cnvs.fo2_2F(
         melt.Cm(), T, P * 1e5, np.log(fO2), run.FO2_MODEL
@@ -767,6 +768,7 @@ def oneill2020(T, melt):
     O'Neill, H.S.C. (2021) The thermodynamic controls on sulfide saturation
     in silicate melts with application to ocean floor basalts.
     In: Magma Redox Chemistry.
+    Eq 10.34
     """
     if not bool(melt.cm_dry):
         comp = melt.Cm()
