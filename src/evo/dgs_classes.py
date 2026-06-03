@@ -124,7 +124,7 @@ class RunDef(BaseModel):
     GAS_SYS: str = "OH"
     FE_SYSTEM: bool = True
     OCS: bool = False
-    S_SAT_WARN: bool = True
+    S_SAT_WARN: bool = False
 
     # Physical parameters
     T_START: float = 1473.15
@@ -1831,7 +1831,7 @@ class Gas:
             List of gas phase mole fractions, in same order as `molecules`
         """
 
-        for m, g in zip(molecules, gas_phase):
+        for m, g in zip(molecules, gas_phase, strict=True):
             if isinstance(m, str):
                 if m in self.f:
                     self.f[m].append(0.0)

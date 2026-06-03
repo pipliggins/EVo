@@ -142,9 +142,9 @@ def get_data(sys, gas, melt, P):
     return data
 
 
-def writeout_file(sys, gas, melt, P, crashed=False):
+def writeout_file(sys, gas, melt, P, crashed=False, write=True):
     """
-    At the end of a run, writes data to a single output CSV file
+    Assembles the results DataFrame and optionally writes it to a CSV file.
 
     Parameters
     ----------
@@ -156,31 +156,17 @@ def writeout_file(sys, gas, melt, P, crashed=False):
         Active instance of the Melt class
     P : list
         Pressure path (bar)
-    crashed: bool, False
+    crashed : bool, False
         If EVo has crashed before reaching its final pressure,
-        crashed=true will append 'CRASHED' to the datafile name.
+        crashed=True will append 'CRASHED' to the datafile name.
+    write : bool, True
+        If True, write the results to a CSV file in sys.run.results_folder.
+        Set to False when calling from library code to suppress file I/O.
     """
 
     data = get_data(sys, gas, melt, P)
 
     df = pd.DataFrame(data)
-
-    filepath = sys.run.results_folder
-    if not filepath.exists():
-        filepath.mkdir()
-
-    if not crashed:
-        file_name = (
-            f"dgs_output_{sys.run.COMPOSITION}_{sys.run.GAS_SYS}_{sys.run.RUN_TYPE}"
-            f"_{sys.T:.0f}K.csv"
-        )
-    else:
-        file_name = (
-            f"dgs_output_CRASHED_{sys.run.COMPOSITION}_{sys.run.GAS_SYS}"
-            f"_{sys.run.RUN_TYPE}_{sys.T:.0f}K.csv"
-        )
-
-    output_path = filepath / file_name
 
     if sys.run.FIND_SATURATION is True or sys.run.ATOMIC_MASS_SET is True:
         df_sat = pd.DataFrame(
@@ -197,9 +183,26 @@ def writeout_file(sys, gas, melt, P, crashed=False):
             index=[0],
         )
 
-        df = pd.concat([df_sat, df])
+        df = pd.concat([df_sat, df]).reset_index(drop=True)
 
-    df.to_csv(output_path, index=False)
+    if write:
+        filepath = sys.run.results_folder
+        if not filepath.exists():
+            filepath.mkdir()
+
+        if not crashed:
+            file_name = (
+                f"dgs_output_{sys.run.COMPOSITION}_{sys.run.GAS_SYS}_{sys.run.RUN_TYPE}"
+                f"_{sys.T:.0f}K.csv"
+            )
+        else:
+            file_name = (
+                f"dgs_output_CRASHED_{sys.run.COMPOSITION}_{sys.run.GAS_SYS}"
+                f"_{sys.run.RUN_TYPE}_{sys.T:.0f}K.csv"
+            )
+
+        df.to_csv(filepath / file_name, index=False)
+
     return df
 
 

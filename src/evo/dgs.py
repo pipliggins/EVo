@@ -76,7 +76,7 @@ from evo.writeout import writeout_figs, writeout_file
 # ------------------------------------------------------------------------
 
 
-def run_evo(f_chem, f_env, f_out=None, folder="outputs"):
+def run_evo(f_chem, f_env, f_out=None, folder="outputs", write_output=False):
     """Main function for EVo.
 
     Call to run the model.
@@ -86,11 +86,15 @@ def run_evo(f_chem, f_env, f_out=None, folder="outputs"):
     f_chem : str | pd.Series
         Path to the chemistry input file, or chemistry series
     f_env : str | pd.Series
-        Path to the environment input file. or env series
+        Path to the environment input file, or env series
     f_out : str or NoneType
         Path to the file describing the required outputs, None if not used
     folder : str
         Path to the folder to write the results to
+    write_output : bool
+        If True, write the results CSV (and plots if f_out is provided) to
+        `folder`. Defaults to False so that library callers receive only the
+        returned DataFrame. The CLI sets this to True.
     """
     start = time.time()
 
@@ -168,7 +172,7 @@ def run_evo(f_chem, f_env, f_out=None, folder="outputs"):
             f"H2S: {gas.mH2S} \n "
             f"N2: {gas.mN2} \n"
         )
-        writeout_file(sys, gas, melt, sys.P_track)
+        return writeout_file(sys, gas, melt, sys.P_track, write=write_output)
 
     elif run.SINGLE_STEP is False:
         dp = (
@@ -231,7 +235,8 @@ def run_evo(f_chem, f_env, f_out=None, folder="outputs"):
         end = time.time()
         print("Run time is ", end - start)
 
-        df = writeout_file(sys, gas, melt, sys.P_track)
-        writeout_figs(df, run.results_folder, out=out)
+        df = writeout_file(sys, gas, melt, sys.P_track, write=write_output)
+        if write_output and f_out is not None:
+            writeout_figs(df, run.results_folder, out=out)
 
         return df
