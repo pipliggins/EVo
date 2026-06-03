@@ -45,13 +45,13 @@ def get_inputs(sys, run, melt, gas, mols) -> tuple[float, ...]:
     """
 
     if run.GAS_SYS == "COH":
-        H2O, O2, H2, CO, CO2, CH4 = mols
+        H2O, O2, H2, _, CO2, _ = mols
     elif run.GAS_SYS == "SOH":
-        H2O, O2, H2, S2, SO2, H2S = mols
+        H2O, O2, H2, S2 = mols[:4]
     elif run.GAS_SYS == "COHS":
-        H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S = mols
+        H2O, O2, H2, _, CO2, _, S2 = mols[:7]
     elif run.GAS_SYS == "COHSN":
-        H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2 = mols
+        H2O, O2, H2, _, CO2, _, S2 = mols[:7]
 
     if run.FH2_SET is True:
         mH2 = run.FH2_START / (H2.Y * sys.P)
@@ -180,9 +180,7 @@ def get_inputs(sys, run, melt, gas, mols) -> tuple[float, ...]:
                     )
                     graph_melt = (
                         (run.WTCO2_START - co2_melt) / cnst.m["co2"]
-                    ) * cnst.m[
-                        "c"
-                    ]  # wt frac graphite in melt
+                    ) * cnst.m["c"]  # wt frac graphite in melt
                     melt.graphite_sat = True
                     melt.graph_current = graph_melt / cnst.m["c"]
                     run.WTCO2_START = co2_melt

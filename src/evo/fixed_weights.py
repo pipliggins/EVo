@@ -212,23 +212,23 @@ def sat_pressure(run, sys, gas, melt, mols):
         sys.atomicM["h"] = run.ATOMIC_H / 1e6
 
     elif run.GAS_SYS == "COH":
-        H2O, O2, H2, CO, CO2, CH4 = mols
+        H2O, O2, H2, CO, CO2, _ = mols
         sys.atomicM["c"] = run.ATOMIC_C / 1e6
         sys.atomicM["h"] = run.ATOMIC_H / 1e6
 
     elif run.GAS_SYS == "SOH":
-        H2O, O2, H2, S2, SO2, H2S = mols
+        H2O, O2, H2 = mols[:3]
         sys.atomicM["h"] = run.ATOMIC_H / 1e6
         sys.atomicM["s"] = run.ATOMIC_S / 1e6
 
     elif run.GAS_SYS == "COHS":
-        H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S = mols
+        H2O, O2, H2, CO, CO2 = mols[:5]
         sys.atomicM["c"] = run.ATOMIC_C / 1e6
         sys.atomicM["h"] = run.ATOMIC_H / 1e6
         sys.atomicM["s"] = run.ATOMIC_S / 1e6
 
     elif run.GAS_SYS == "COHSN":
-        H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2 = mols
+        H2O, O2, H2, CO, CO2 = mols[:5]
         sys.atomicM["c"] = run.ATOMIC_C / 1e6
         sys.atomicM["h"] = run.ATOMIC_H / 1e6
         sys.atomicM["n"] = run.ATOMIC_N / 1e6
@@ -388,7 +388,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
         fugacities = get_f(P_sat, melt_h2o, melt_co2, melt_s, melt_n, sys, melt, gamma)
 
-        h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
+        h2o_y, o2_y, h2_y = gamma[:3]
         O2.Y = o2_y
 
         mH2O, mO2, mH2 = get_molfrac(P_sat, fugacities, gamma)
@@ -448,7 +448,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
         fugacities = get_f(P_sat, melt_h2o, melt_co2, melt_s, melt_n, sys, melt, gamma)
 
-        h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
+        h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y = gamma[:6]
         O2.Y = o2_y
 
         mH2O, mO2, mH2, mCO, mCO2, mCH4 = get_molfrac(P_sat, fugacities, gamma)
@@ -548,7 +548,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
         fugacities = get_f(P_sat, melt_h2o, melt_co2, melt_s, melt_n, sys, melt, gamma)
 
-        h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
+        h2o_y, o2_y, h2_y, _, _, _, s2_y = gamma[:7]
         O2.Y = o2_y
 
         mH2O, mO2, mH2, mS2, mSO2, mH2S = get_molfrac(P_sat, fugacities, gamma)
@@ -629,7 +629,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
         fugacities = get_f(P_sat, melt_h2o, melt_co2, melt_s, melt_n, sys, melt, gamma)
 
-        h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
+        h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y = gamma[:7]
         O2.Y = gamma[1]
 
         mH2O, mO2, mH2, mCO, mCO2, mCH4, mS2, mSO2, mH2S = get_molfrac(
@@ -768,7 +768,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         gamma = sg.find_Y(P_sat, sys.T, sys.SC)[:10]
         fugacities = get_f(P_sat, melt_h2o, melt_co2, melt_s, melt_n, sys, melt, gamma)
 
-        h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y, so2_y, h2s_y, n2_y = gamma
+        h2o_y, o2_y, h2_y, co_y, co2_y, ch4_y, s2_y = gamma[:7]
         O2.Y = o2_y
 
         mH2O, mO2, mH2, mCO, mCO2, mCH4, mS2, mSO2, mH2S, mN2 = get_molfrac(
@@ -915,9 +915,7 @@ def sat_pressure(run, sys, gas, melt, mols):
 
     try:
         if run.GAS_SYS == "OH":
-            melt_h2o = fsolve(fixed_weights_oh, [guess_h2o])[
-                0
-            ]  # otherwise melt_h2o is an array!
+            melt_h2o = fsolve(fixed_weights_oh, [guess_h2o])[0]
         elif run.GAS_SYS == "COH":
             melt_h2o, melt_co2 = fsolve(fixed_weights_coh, [guess_h2o, guess_co2])
         elif run.GAS_SYS == "SOH":
@@ -1139,7 +1137,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         values = [mH2O, mO2, mH2, mCO, mCO2, mCH4, mS2, mSO2, mH2S, mN2]
 
     # add gas speciation to lists to act as initial guess for first 'proper' P step
-    for ls, val in zip(lists, values):
+    for ls, val in zip(lists, values, strict=True):
         ls.append(val)
 
     for ls in empty_list:

@@ -63,7 +63,7 @@ def multirun(**kwargs):
     onerun = {}
 
     for run in options:
-        for a, b in zip(keys, run):
+        for a, b in zip(keys, run, strict=True):
             onerun[a] = b
 
         run_name = "_".join([str(x) for x in run])

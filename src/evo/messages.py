@@ -121,7 +121,7 @@ def query_yes_no(question, default="yes"):
         elif choice in valid:
             return valid[choice]
         else:
-            sys.stdout.write("Please respond with 'yes' or 'no' " "(or 'y' or 'n').\n")
+            sys.stdout.write("Please respond with 'yes' or 'no' (or 'y' or 'n').\n")
 
 
 def run_chem_mismatch(mtype, lims, sio2):
@@ -231,7 +231,7 @@ def sulfate_warn(s6, sys, gas, melt):
     closed_earlyexit(sys, gas, melt)
 
     raise ValueError(
-        f"The sulfate (S6+ speciated as SO4) content of the melt is {s6*100:.1f}% "
+        f"The sulfate (S6+ speciated as SO4) content of the melt is {s6 * 100:.1f}% "
         "of the total melt S content.\n"
         "As sulfate currently does not exsolve, gas phase sulphur-bearing species "
         "will now be significantly underestimated.\n"
@@ -667,7 +667,7 @@ def graphite_warn(melt):
                 "melt CO2 content at graphite saturation."
             )
             answer = query_yes_no(
-                f"Continue with a melt graphite content of {graph*100} wt%?",
+                f"Continue with a melt graphite content of {graph * 100} wt%?",
                 default="yes",
             )
 
@@ -727,10 +727,12 @@ def graphite_warn_saturation(melt, fCO2, fO2, CO2):
         ]  # wt frac graphite in melt
         melt.graph_current = graph_melt / cnst.m["c"]
 
-        print(f"The original melt CO2 content was {melt.sys.run.WTCO2_START*100} wt%.")
+        print(
+            f"The original melt CO2 content was {melt.sys.run.WTCO2_START * 100} wt%."
+        )
         print(
             "At graphite-present volatile saturation, the melt CO2 content is "
-            f"{co2_melt*100} wt% and the graphite content is {graph_melt*100} wt%."
+            f"{co2_melt * 100} wt% and the graphite content is {graph_melt * 100} wt%."
         )
 
         answer = query_yes_no("Do you wish to continue?", default="yes")
