@@ -1,4 +1,6 @@
 # EVo
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+
 This code calculates the speciation and volume of a volcanic gas phase erupting in equilibrium with it's parent magma.
 Models can be run to calculate the gas phase in equilibrium with a melt at a single pressure, or the melt can be decompressed from depth rising to the surface as a closed-system case.
 Single pressure and decompression can be run for OH, COH, SOH, COHS and COHSN systems, and outputs include:
