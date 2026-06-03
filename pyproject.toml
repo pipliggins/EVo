@@ -33,7 +33,6 @@ dependencies = ["numpy>=1.21.0",
 
 [project.optional-dependencies]
 dev = ["ruff", "pre-commit"]
-doc = ["sphinx == 5.3.0"]
 web = ["streamlit"]
 test = ["pytest"]
 docs = ["sphinx==5.3.0", "sphinx_rtd_theme"]
