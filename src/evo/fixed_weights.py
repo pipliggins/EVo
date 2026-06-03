@@ -745,16 +745,18 @@ def sat_pressure(run, sys, gas, melt, mols):
             guesses[3],
         )
 
-        try:
-            with warnings.catch_warnings():
-                warnings.filterwarnings("ignore")
-                P_sat = fsolve(
-                    find_p, 1.0, args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt)
-                )
-        except RuntimeWarning as err:
+        P_sat, msg, ier, _ = fsolve(
+            find_p,
+            1.0,
+            args=(melt_h2o, melt_co2, melt_s, melt_n, sys, melt),
+            full_output=True,
+        )
+
+        if ier != 1:
+            print(msg)
             raise RuntimeError(
                 "Failed to find saturation pressure; solver not converging."
-            ) from err
+            )
 
         # Check p_sat hasn't returned 1.0
         if P_sat == 1.0:
@@ -926,10 +928,12 @@ def sat_pressure(run, sys, gas, melt, mols):
             )
         elif run.GAS_SYS == "COHSN":
             try:
-                melt_h2o, melt_co2, melt_s, melt_n = fsolve(
-                    fixed_weights_cohsn, [guess_h2o, guess_co2, guess_s, guess_n]
-                )
-            except Exception:
+                with warnings.catch_warnings():
+                    warnings.filterwarnings("error")
+                    melt_h2o, melt_co2, melt_s, melt_n = fsolve(
+                        fixed_weights_cohsn, [guess_h2o, guess_co2, guess_s, guess_n]
+                    )
+            except RuntimeWarning:
                 print("Convergence struggling; trying Levenberg-Marquardt method")
                 sol = root(
                     fixed_weights_cohsn,
@@ -1142,7 +1146,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         ls.append(np.float64(0))
 
     # Round P down to nearest bar ready for solver to find WgT at 'starting' pressure.
-    sys.P = cnvs.truncate(sys.P, decimals=0)
+    sys.P = cnvs.round_down(sys.P, sys.P_step)
     run.P_START = sys.P
 
     return P_sat, values, gamma, mols, melt.graphite_sat

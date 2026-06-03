@@ -13,13 +13,13 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "EVo"
-version = "1.0.2"
+version = "1.1.0"
 authors = [{name = "Philippa Liggins", email = "philippa.liggins@dtc.ox.ac.uk"}]
 readme = "README.md"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Programming Language :: Python :: 3"]
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 scripts = { evo = "evo:main" }
 
 dependencies = ["numpy>=1.21.0",
@@ -27,16 +27,19 @@ dependencies = ["numpy>=1.21.0",
   "matplotlib>=3.4.2",
   "mpmath>=1.2.1",
   "ruamel.yaml",
-  "pandas>=2.1.0",]
+  "pandas>=2.1.0",
+  "pydantic>=2.11.1"]
 
 [project.optional-dependencies]
 dev = ["ruff", "pre-commit"]
 doc = ["sphinx == 5.3.0"]
 web = ["streamlit"]
 test = ["pytest"]
+docs = ["sphinx==5.3.0", "sphinx_rtd_theme"]
 
 [project.urls]
-Home = "https://github.com/pipliggins/EVo"
+homepage = "https://evo-outgas.readthedocs.io"
+github = "https://github.com/pipliggins/EVo"
 
 [tool.black]
 line-length = 88

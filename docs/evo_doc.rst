@@ -39,8 +39,8 @@ EVo computes the gas and melt volatile composition for systems of up to
 5 volatile elements (C, O, H, S and N, in combinations of OH, COH, SOH,
 COHS and COHSN), using an ‘equilibrium constants and mass balance’
 method first established by Holloway (1987) and used since by
-several degassing models, including Iacono-Marziano et al. (2012), 
-Gaillard and Scaillet (2014), and Burgisser et al. (2015). 
+several degassing models, including Iacono-Marziano et al. (2012),
+Gaillard and Scaillet (2014), and Burgisser et al. (2015).
 As stated by Holloway (1987), this method "requires that enough equilibrium
 constant equations are used so that,
 when combined with the equation for mass balance, there are an equal
@@ -54,9 +54,9 @@ with fewer components are modelled, e.g., by definition the COH system
 does not include S or N-bearing species and so comprises just 6
 gas-phase species. In a typical terrestrial volcanic gas, :math:`>`\ 99%
 (by mol) will be made up of |H2O|, |H2|, |CO2|, |SO2|, |H2S| and |N2| (Fischer and
-Chiodini, 2015), so the 10 species EVo considers are sufficient to model the 
+Chiodini, 2015), so the 10 species EVo considers are sufficient to model the
 bulk gas-phase chemistry, although it omits some trace species such as which
-have been detected at various volcanoes (e.g., Mori and Notsu, 1997; 
+have been detected at various volcanoes (e.g., Mori and Notsu, 1997;
 Oppenheimer and Kyle, 2008; Sawyer et al., 2008).
 OCS in particular has been omitted due to the lack of solubility data in
 magmas. This reflects a limitation of this approach: even when the
@@ -65,7 +65,7 @@ they are), unless there is corresponding data for the solubility of a
 species in silicate liquids it cannot be included and a self-consistent
 solution be obtained.
 
-A set of five homogenous gas-phase equilibria, described in :eq:`eq_k1` 
+A set of five homogenous gas-phase equilibria, described in :eq:`eq_k1`
 to :eq:`eq_k5`, define the speciation of the gas phase
 
 .. math:: \ce{H2 + \frac{1}{2} O2 <=> H2O}
@@ -85,19 +85,19 @@ to :eq:`eq_k5`, define the speciation of the gas phase
 
 At thermochemical equilibrium, the abundance of each species in the gas
 phase are related to an equilibrium constant, :math:`K_i`, one for each
-reaction in :eq:`eq_k1` to :eq:`eq_k5`. The general equation for these 
+reaction in :eq:`eq_k1` to :eq:`eq_k5`. The general equation for these
 equilibria is given by
 
 .. math::
    :label: eq_base_eqbm
-   
+
    a\ce{A} + b\ce{B} \ce{<=>} c\ce{C} + d\ce{D},
 
 which has a general equilibrium constant reaction equation of
 
 .. math::
    :label: eq_k_base_eqbm
-   
+
    K_{2.6} = \frac{[\ce{C}]^c\,[\ce{D}]^d}{[\ce{A}]^a\,[\ce{B}]^b},
 
 where square brackets denote activity. For real gases, :math:`K_i` can
@@ -106,7 +106,7 @@ Eq. :eq:`eq_k1`
 
 .. math::
    :label: eq_k1_ex
-   
+
    K_1 = \frac{f_{\ce{|H2O|}}}{f_{\ce{H2}}\,{f_{\ce{O2}}}^{0.5}}.
 
 The fugacity :math:`f_i` of a real gas is an effective partial pressure,
@@ -255,7 +255,7 @@ of each species in the magmatic system (:math:`W_{Ti}`) is the sum its
 exsolved and dissolved components, thus
 
 .. math:: W_{Ti} = W_{gT}\,w^v_i + w^m_i.
-   :label: eq_gasplusmelt 
+   :label: eq_gasplusmelt
 
 :math:`W_{gT}` is the total weight fraction of gas in the system,
 :math:`w^v_i` is the weight fraction of species i in the gas phase, and
@@ -294,7 +294,7 @@ is enforced by keeping the total weight fraction of each element
 
 .. math:: \frac{W_{TN}}{M_{\ce{N}}} = 2\frac{W_{T\ce{N2}}}{M_{\ce{N2}}}
    :label: eq_conserve_n
-   
+
 where :math:`W_Ti` for each volatile species (not element) is calculated
 using :eq:`eq_gasplusmelt`, :math:`M_i` is the
 molecular mass of species :math:`i`, :math:`W_{O(Fe)}` is the weight
@@ -302,7 +302,7 @@ fraction of oxygen held in iron (FeO/Fe\ :sub:`2`\ O\ :sub:`3`\) within the melt
 :math:`W_{C(graph)}` is the mass of graphite in the system (see :ref:`section_worked_example`).
 
 In order to solve for the state of the magmatic system at a given
-temperature and pressure, equations for chemical equilibrium :eq:`eq_k1` 
+temperature and pressure, equations for chemical equilibrium :eq:`eq_k1`
 to :eq:`eq_k5` and :eq:`eq_iron_buffer`,
 solubility laws (:numref:`table_solubility_laws`)
 and mass conservation :eq:`eq_sumtoone` and :eq:`eq_conserve_o` to :eq:`eq_conserve_n` are used jointly to algebraically reduce the
@@ -361,10 +361,10 @@ with derived species in red):
 .. math::
 
    \begin{aligned}
-       \textcolor{red}{X_{\ce{CO2}}} &= \frac{K_2 \, \gamma_{CO} \, \textcolor{blue}{X_{CO}} \, \sqrt{\gamma_{\ce{O2}}\,\textcolor{blue}{X_{\ce{O2}}}\,P}}{\gamma_{\ce{CO2}}}  
+       \textcolor{red}{X_{\ce{CO2}}} &= \frac{K_2 \, \gamma_{CO} \, \textcolor{blue}{X_{CO}} \, \sqrt{\gamma_{\ce{O2}}\,\textcolor{blue}{X_{\ce{O2}}}\,P}}{\gamma_{\ce{CO2}}}
        &  \textcolor{red}{X_{\ce{SO2}}} &= \frac{K_5 \, \gamma_{\ce{O2}} \, \textcolor{blue}{X_{\ce{O2}}} \, \sqrt{\gamma_{\ce{S2}}\,\textcolor{blue}{X_{\ce{S2}}}\,P}}{\gamma_{\ce{SO2}}} \\
-       a &= \frac{\gamma_{\ce{CO2}}\,\textcolor{red}{X_{\ce{CO2}}}\,\gamma_{\ce{H2O}}^2}{K_3\,\gamma_{\ce{CH4}}\,\sqrt{\gamma_{\ce{O2}}\textcolor{blue}{X_{\ce{O2}}}}} & \\ 
-       b &= \frac{\gamma_{\ce{H2O}}}{K_1\,\gamma_{\ce{H2}}\,\sqrt{\gamma_{\ce{O2}}\textcolor{blue}{X_{\ce{O2}}}}} + \frac{K_4\,\gamma_{\ce{|H2O|}}\sqrt{\gamma_{\ce{S2}}\,X_{\ce{S2}}}}{\gamma_{\ce{H2S}}\,\sqrt{\gamma_{\ce{O2}}\,\textcolor{blue}{X_{\ce{O2}}}}} + 1 & \\ 
+       a &= \frac{\gamma_{\ce{CO2}}\,\textcolor{red}{X_{\ce{CO2}}}\,\gamma_{\ce{H2O}}^2}{K_3\,\gamma_{\ce{CH4}}\,\sqrt{\gamma_{\ce{O2}}\textcolor{blue}{X_{\ce{O2}}}}} & \\
+       b &= \frac{\gamma_{\ce{H2O}}}{K_1\,\gamma_{\ce{H2}}\,\sqrt{\gamma_{\ce{O2}}\textcolor{blue}{X_{\ce{O2}}}}} + \frac{K_4\,\gamma_{\ce{|H2O|}}\sqrt{\gamma_{\ce{S2}}\,X_{\ce{S2}}}}{\gamma_{\ce{H2S}}\,\sqrt{\gamma_{\ce{O2}}\,\textcolor{blue}{X_{\ce{O2}}}}} + 1 & \\
        c &= -(1 - \textcolor{blue}{X_{\ce{CO}}} - \textcolor{blue}{X_{\ce{S2}}} - \textcolor{blue}{X_{\ce{O2}}} - \textcolor{blue}{X_{\ce{N2}}} - \textcolor{red}{X_{\ce{CO2}}} - \textcolor{red}{X_{\ce{SO2}}}) & \\
        \textcolor{red}{X_{\ce{H2O}}} &= \frac{-b + \sqrt{b^2 - (4ac)}}{2a} & \\
    \end{aligned}
@@ -402,7 +402,7 @@ and the mass of the volatile dissolved in the melt must be calculated.
 Substituting :eq:`eq_mol2wt` and solubility laws into :eq:`eq_gasplusmelt` gives
 
 .. math:: W_{Ti} = W_{gT}\,\frac{X_iM_i}{\sum^{}_{j} X_jM_j} + w^m_i(X_i,P,T...),
-   :label: eq_expanded_sum 
+   :label: eq_expanded_sum
 
 where :math:`w^m_i(\dots)` denotes the solubility law for species
 :math:`i`, which is dependent on :math:`X_i`, the pressure and
@@ -482,7 +482,7 @@ optimize.fsolve function, formulated as a vector equality
            [W_S]_{predicted}(X_{\ce{O2}}, X_{\ce{CO}}, X_{\ce{S2}}, X_{\ce{N2}})\\
            [W_C]_{predicted}(X_{\ce{O2}}, X_{\ce{CO}}, X_{\ce{S2}}, X_{\ce{N2}})\\
        \end{pmatrix}
-       = 
+       =
        \begin{pmatrix}
            0\\
            0\\
@@ -590,7 +590,7 @@ saturation during the setup of the system, and then after every pressure
 step if the system is not known to already be graphite-saturated.
 
 When solving for a graphite-saturated system, the fugacity of all 3
-carbon-bearing species can be determined solely using the :math:`f_{\ce{O2}}` and :eq:`eq_graphite_eqb`. This removes an extra unknown from all systems containing carbon; 
+carbon-bearing species can be determined solely using the :math:`f_{\ce{O2}}` and :eq:`eq_graphite_eqb`. This removes an extra unknown from all systems containing carbon;
 in the example shown in :ref:`section_worked_example`,
 :eq:`eq_worked_example_c` is no longer used, and :math:`X_{\ce{CO}}` is
 no longer a variable being
@@ -650,7 +650,7 @@ When a magma becomes sulfur-saturated, the phase precipitated is :math:`f_{\ce{O
 dependent. A melt can become sulfide (S\ :sup:`2-`) saturated
 
 .. math:: \ce{FeO_{(melt)} + 0.5S2 <=> FeS_{(sulfide)} + 0.5O2},
-   :label: eq_scss   
+   :label: eq_scss
 
 or sulfate (SO\ :sub:`4`\ :sup:`2-`) saturated (usually speciated as anhydrite, CaSO4). Silicate
 melts can also be multiply saturated with sulfide + sulfate :math:`\pm`
@@ -834,7 +834,7 @@ the system are calculated as in eqs. :eq:`eq_conserve_o` to :eq:`eq_conserve_n` 
 
 The above two setup options work well for use-cases such as modelling
 the degassing path of volcanic samples, or single volcanic systems where
-the starting conditions (e.g., :math:`f_{\ce{O2}}`, volatile content) are similar. 
+the starting conditions (e.g., :math:`f_{\ce{O2}}`, volatile content) are similar.
 However, in planetary science a key component of research is comparing the
 gas phase/atmospheres produced when the only variable is the starting :math:`f_{\ce{O2}}`.
 In set-up options 1 & 2, this poses a problem when dealing with volatile
@@ -894,7 +894,7 @@ the COHSN system) is solved simultaneously:
            [W_S]_{predicted}(w^m_{\ce{H2O}}, w^m_{\ce{CO2}}, w^m_{\ce{S^{2-}}}, w^m_{\ce{N2}})\\
            [W_N]_{predicted}(w^m_{\ce{H2O}}, w^m_{\ce{CO2}}, w^m_{\ce{S^{2-}}}, w^m_{\ce{N2}})\\
        \end{pmatrix}
-       = 
+       =
        \begin{pmatrix}
            0\\
            0\\
@@ -918,12 +918,12 @@ element.
 Benchmarking
 ------------
 
-During the development of EVo, individual elements of the model were each 
-tested to ensure correct implementation. For example, the Kress and 
-Carmichael (1991) relationship between :math:`f_{\ce{O2}}` and ferric/ferrous iron was 
+During the development of EVo, individual elements of the model were each
+tested to ensure correct implementation. For example, the Kress and
+Carmichael (1991) relationship between :math:`f_{\ce{O2}}` and ferric/ferrous iron was
 tested against the spreadsheet of Iacovino (2021), and individual solubility
-laws were tested either against the relevant published calculator (e.g., 
-excel spreadsheets in the case of Newman and Lowenstern, 2002; Eguchi and Dasgupta, 
+laws were tested either against the relevant published calculator (e.g.,
+excel spreadsheets in the case of Newman and Lowenstern, 2002; Eguchi and Dasgupta,
 2018), or against figures in the original publication where these were not provided.
 
 EVo has also been initially tested against DCompress to ensure numerical
@@ -1002,12 +1002,12 @@ solubility laws.
    Dissolved sulfur species
 
 The difference in the treatment of sulfur solubility between DCompress
-and EVo is demonstrated in :numref:`SOH_evodc_fugacities` and 
+and EVo is demonstrated in :numref:`SOH_evodc_fugacities` and
 :numref:`SOH_comp_melt`. When given the same
 gas-phase fugacities for |S2|, |SO2| and |H2S| across an :math:`f_{\ce{O2}}` range, EVo consistently
 predicts a higher total dissolved S content, following an experimentally
 well-established trend that in reduced melts (where sulfur dissolves as S\ :sup:`2-`
-), the solubility of sulfur increases with reducing :math:`f_{\ce{O2}}` 
+), the solubility of sulfur increases with reducing :math:`f_{\ce{O2}}`
 (e.g., Fincham et al., 1954; Katsura and
 Nagashima, 1974; Backnaes and Deubener, 2011; Lesne et al., 2015).
 In contrast, DCompress predicts a largely constant total sulfur content,

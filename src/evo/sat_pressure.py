@@ -855,7 +855,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         ls.append(np.float64(0))
 
     # Round P down to nearest bar ready for solver to find WgT at 'starting' pressure.
-    sys.P = cnvs.truncate(sys.P, decimals=0)
+    sys.P = cnvs.round_down(sys.P, sys.P_step)
     run.P_START = sys.P
 
     return P_sat, values, gamma, mols, melt.graphite_sat

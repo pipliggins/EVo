@@ -8,7 +8,7 @@ The current implementation has been developed in Python 3 and tested on Windows,
 Installation/Usage:
 *******************
 
-EVo can be used through local installation, either through a CLI or a webapp.
+EVo can be used through local installation, either through a CLI, as a library, or with a webapp.
 
 To install locally, EVo must be downloaded from GitHub using
 ::
@@ -24,7 +24,7 @@ into the project directory where you wish to use EVo. EVo must then be locally p
 From this point, EVo can either be imported into your python scripts as a regular module using
 ::
 
-   install evo
+   import evo
 
 and run using
 ::

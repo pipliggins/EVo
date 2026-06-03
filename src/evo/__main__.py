@@ -21,7 +21,10 @@ def main(argv=None):
     )
 
     my_parser.add_argument(
-        "-o", "--output", help="the folder location to write the results to"
+        "-o",
+        "--output",
+        help="the folder location to write the results to",
+        default="outputs",
     )
 
     # Parse in files
@@ -30,12 +33,8 @@ def main(argv=None):
     f_chem = args.chem  # set chemical compositions file
     f_env = args.env  # set environment file
 
-    if args.output_options:
-        f_out = args.output_options  # set output file as an optional input
-        run_evo(f_chem, f_env, f_out, folder=args.output)
-    else:
-        f_out = None
-        run_evo(f_chem, f_env, f_out, folder=args.output)
+    f_out = args.output_options or None
+    run_evo(f_chem, f_env, f_out, folder=args.output, write_output=True)
 
 
 if __name__ == "__main__":
