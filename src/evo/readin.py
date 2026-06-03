@@ -6,7 +6,7 @@
 
 import numpy as np
 import pandas as pd
-import yaml
+import ruamel.yaml
 from numpy import exp, log10
 from numpy import log as ln
 

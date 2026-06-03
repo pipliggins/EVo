@@ -1,12 +1,14 @@
 """Contains code to enable a web interface for EVo, using StreamLit."""
 
-import evo
-import streamlit as st
 from pathlib import Path
+
 import numpy as np
-import ruamel.yaml
 import plotly.express as px
 import plotly.graph_objects as go
+import ruamel.yaml
+import streamlit as st
+
+import evo
 
 ryaml = ruamel.yaml.YAML()
 
@@ -495,7 +497,7 @@ if run_evo:
                 x=df["mH2O"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[0]),
+                line={"color": colors[0]},
                 name="H2O",
             )
         )
@@ -504,7 +506,7 @@ if run_evo:
                 x=df["mH2"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[1]),
+                line={"color": colors[1]},
                 name="H2",
             )
         )
@@ -513,7 +515,7 @@ if run_evo:
                 x=df["mO2"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[2]),
+                line={"color": colors[2]},
                 name="O2",
             )
         )
@@ -522,7 +524,7 @@ if run_evo:
                 x=df["mCO2"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[3]),
+                line={"color": colors[3]},
                 name="CO2",
             )
         )
@@ -531,7 +533,7 @@ if run_evo:
                 x=df["mCO"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[4]),
+                line={"color": colors[4]},
                 name="CO",
             )
         )
@@ -540,7 +542,7 @@ if run_evo:
                 x=df["mCH4"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[5]),
+                line={"color": colors[5]},
                 name="CH4",
             )
         )
@@ -549,7 +551,7 @@ if run_evo:
                 x=df["mH2S"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[6]),
+                line={"color": colors[6]},
                 name="H2S",
             )
         )
@@ -558,7 +560,7 @@ if run_evo:
                 x=df["mSO2"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[7]),
+                line={"color": colors[7]},
                 name="SO2",
             )
         )
@@ -567,7 +569,7 @@ if run_evo:
                 x=df["mS2"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[8]),
+                line={"color": colors[8]},
                 name="S2",
             )
         )
@@ -577,7 +579,7 @@ if run_evo:
                     x=df["mN2"],
                     y=df["P"],
                     mode="lines",
-                    line=dict(color=colors[9]),
+                    line={"color": colors[9]},
                     name="N2",
                 )
             )
@@ -601,7 +603,7 @@ if run_evo:
                 x=df["Exsol_vol%"],
                 y=df["P"],
                 mode="lines",
-                line=dict(color=colors[0]),
+                line={"color": colors[0]},
             )
         )
 

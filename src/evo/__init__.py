@@ -11,4 +11,4 @@ from evo.multirun import multirun
 
 __version__ = "1.0.2"
 __author__ = "Philippa Liggins"
-__all__ = ["run_evo", "multirun"]
+__all__ = ["multirun", "run_evo"]

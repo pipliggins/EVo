@@ -304,7 +304,7 @@ def sat_pressure(run, sys, gas, melt, mols):
     elif run.GAS_SYS == "COHS":
         H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S = mols
     elif run.GAS_SYS == "COHSN":
-        H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2 = mols
+        H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, _ = mols
 
     def find_p(P, sys, melt):
         """
@@ -848,7 +848,7 @@ def sat_pressure(run, sys, gas, melt, mols):
         values = [mH2O, mO2, mH2, mCO, mCO2, mCH4, mS2, mSO2, mH2S, mN2]
 
     # add gas speciation to lists to act as initial guess for first 'proper' P step
-    for ls, val in zip(lists, values):
+    for ls, val in zip(lists, values, strict=False):
         ls.append(val)
 
     for ls in empty_list:
@@ -893,7 +893,7 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
     """
 
     if sys.run.GAS_SYS == "OH":
-        H2O, O2, H2 = mols
+        H2O, _, H2 = mols
         mH2O, mO2, mH2 = tuple(values)
         h2oy, o2y, h2y = gamma[:3]
 
@@ -904,7 +904,7 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         M = cnvs.mean_mol_wt(H2O=mH2O, O2=mO2, H2=mH2)
 
     elif sys.run.GAS_SYS == "COH":
-        H2O, O2, H2, CO, CO2, CH4 = mols
+        H2O, _, H2, _, CO2, _ = mols
         mH2O, mO2, mH2, mCO, mCO2, mCH4 = tuple(values)
         h2oy, o2y, h2y, coy, co2y, ch4y = gamma[:6]
 
@@ -915,7 +915,7 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         M = cnvs.mean_mol_wt(H2O=mH2O, O2=mO2, H2=mH2, CO=mCO, CO2=mCO2, CH4=mCH4)
 
     elif sys.run.GAS_SYS == "SOH":
-        H2O, O2, H2, S2, SO2, H2S = mols
+        H2O, _, H2, _, _, _ = mols
         mH2O, mO2, mH2, mS2, mSO2, mH2S = tuple(values)
         h2oy, o2y, h2y, s2y, so2y, h2sy = gamma[:3] + gamma[6:9]
 
@@ -926,7 +926,7 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         M = cnvs.mean_mol_wt(H2O=mH2O, O2=mO2, H2=mH2, S2=mS2, SO2=mSO2, H2S=mH2S)
 
     elif sys.run.GAS_SYS == "COHS":
-        H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S = mols
+        H2O, _, H2, _, CO2, _, _, _, _ = mols
         mH2O, mO2, mH2, mCO, mCO2, mCH4, mS2, mSO2, mH2S = tuple(values)
         h2oy, o2y, h2y, coy, co2y, ch4y, s2y, so2y, h2sy = gamma[:9]
 
@@ -957,7 +957,7 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         )
 
     elif sys.run.GAS_SYS == "COHSN":
-        H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2 = mols
+        H2O, _, H2, _, CO2 = mols[:5]
         mH2O, mO2, mH2, mCO, mCO2, mCH4, mS2, mSO2, mH2S, mN2 = tuple(values)
         h2oy, o2y, h2y, coy, co2y, ch4y, s2y, so2y, h2sy, n2y = gamma
 

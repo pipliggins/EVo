@@ -752,9 +752,8 @@ class Molecule:
         self.melt = melt
         self.delG = 0  # Gibbs Free energy of formation
         self.Y = 0  # Fugacity coefficient
-        self.y_constants = (
-            {}
-        )  # Stores any constants needed for the activity coefficient calculation
+        # Store constants needed for the activity coefficient calculation
+        self.y_constants = {}
 
     def get_G(self, T):
         """
@@ -1256,11 +1255,11 @@ class Melt:
         elif self.run.GAS_SYS == "COH":
             H2O, O2, H2, CO, CO2, CH4 = mols
         elif self.run.GAS_SYS == "SOH":
-            H2O, O2, H2, S2, SO2, H2S = mols
+            H2O, O2, H2, S2 = mols[:4]
         elif self.run.GAS_SYS == "COHS":
-            H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S = mols
+            H2O, O2, H2, CO, CO2, CH4, S2 = mols[:7]
         elif self.run.GAS_SYS == "COHSN":
-            H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2 = mols
+            H2O, O2, H2, CO, CO2, CH4, S2 = mols[:7]
 
         self.h2o.append(
             sl.h2o_melt(gas.mH2O[-1], H2O, self.sys.P, name=self.sys.run.H2O_MODEL)
@@ -1483,9 +1482,7 @@ class Gas:
         self.mS2 = []
         self.mN2 = []
         self.atomicM = {}
-        self.wt = (
-            {}
-        )  # Temporary store for the results of converting mole frac to weight frac
+        self.wt = {}  # Store for the results of converting mole frac to weight frac
         self.Wt = {}  # Store of weight fractions at each pressure step
         self.f = {}  # Store the fugacity of a species at each step.
         self.M = []  # Stores the mean molecular weight of the gas phase
@@ -1549,7 +1546,7 @@ class Gas:
             ) * sum(mjMj)
 
         elif self.sys.run.GAS_SYS == "SOH":
-            H2O, O2, H2, S2, SO2, H2S = mols
+            H2O, O2, H2 = mols[:3]
             lst = {
                 "o2": self.mO2[-1],
                 "h2": self.mH2[-1],
@@ -1581,7 +1578,7 @@ class Gas:
             ) * sum(mjMj)
 
         elif self.sys.run.GAS_SYS == "COHS":
-            H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S = mols
+            H2O, O2, H2, CO, CO2, CH4 = mols[:6]
             lst = {
                 "o2": self.mO2[-1],
                 "h2": self.mH2[-1],
@@ -1624,7 +1621,7 @@ class Gas:
             ) * sum(mjMj)
 
         elif self.sys.run.GAS_SYS == "COHSN":
-            H2O, O2, H2, CO, CO2, CH4, S2, SO2, H2S, N2 = mols
+            H2O, O2, H2, CO, CO2, CH4 = mols[:6]
             lst = {
                 "o2": self.mO2[-1],
                 "h2": self.mH2[-1],

@@ -80,6 +80,7 @@ def plot_gasspecies_wt(df):
             "pink",
             "grey",
         ],
+        strict=False,
     ):
         ax.plot(df[g], df["P"], c=color, label=g[1:])
         ax.annotate(g[1:], xy=[df[g].iloc[-1], df["P"].iloc[-1]], color=color)
@@ -119,6 +120,7 @@ def plot_meltspecies(df):
             "pink",
             "grey",
         ],
+        strict=False,
     ):
         ax.plot(df[s], df["P"], c=color, label=s.split("_")[0])
         ax.annotate(s.split("_")[0], xy=[df[s].iloc[-1], df["P"].iloc[-1]], color=color)
