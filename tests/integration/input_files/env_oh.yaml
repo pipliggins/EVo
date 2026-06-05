@@ -12,9 +12,9 @@ FIND_SATURATION: False
 ATOMIC_MASS_SET: False
 
 GAS_SYS: oh
-FE_SYSTEM: False
+FE_SYSTEM: True
 OCS: False
-S_SAT_WARN: True
+S_SAT_WARN: False
 
 # model parameters
 T_START: 1473.15
@@ -41,7 +41,7 @@ H2O_MODEL: burguisser2015
 # H2 model, pick from: burguisser2015 (ONLY USE TO COMPARE TO DCOMPRESS; ERROR!); gaillard2003
 H2_MODEL: gaillard2003
 # C models, pick from: burguisser2015 (CO2 & CO3); eguchi2018 (CO2, CO3 & graphite)
-C_MODEL: burguisser2015
+C_MODEL: eguchi2018
 # CO model, pick either armstrong2015, or None (preferred for higher fO2 cases above ~ IW+1)
 CO_MODEL: armstrong2015
 # CH4 model, pick either ardia2013, or None (preferred for higher fO2 cases above ~ IW+1)

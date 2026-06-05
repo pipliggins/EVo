@@ -926,7 +926,7 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         M = cnvs.mean_mol_wt(H2O=mH2O, O2=mO2, H2=mH2, S2=mS2, SO2=mSO2, H2S=mH2S)
 
     elif sys.run.GAS_SYS == "COHS":
-        H2O, _, H2, _, CO2 = mols[:4]
+        H2O, _, H2, _, CO2 = mols[:5]
         mH2O, mO2, mH2, mCO, mCO2, mCH4, mS2, mSO2, mH2S = tuple(values)
         h2oy, o2y, h2y, coy, co2y, ch4y, s2y, so2y, h2sy = gamma[:9]
 
@@ -957,7 +957,7 @@ def satp_writeout(sys, melt, gas, P, values, gamma, mols, graph_sat=False):
         )
 
     elif sys.run.GAS_SYS == "COHSN":
-        H2O, _, H2, _, CO2 = mols[:4]
+        H2O, _, H2, _, CO2 = mols[:5]
         mH2O, mO2, mH2, mCO, mCO2, mCH4, mS2, mSO2, mH2S, mN2 = tuple(values)
         h2oy, o2y, h2y, coy, co2y, ch4y, s2y, so2y, h2sy, n2y = gamma
 
